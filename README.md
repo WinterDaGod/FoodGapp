@@ -1,7 +1,7 @@
 <div align="center">
   <img src="brand/logo.png" width="128" height="128" alt="FoodGapp Logo">
   <h1>FoodGapp</h1>
-  <p><strong>A Premium AI-Driven Nutrition & Meal Planning Ecosystem</strong></p>
+  <p><strong>Eat Better, Track Smarter</strong></p>
 
   [![Flutter](https://img.shields.io/badge/Flutter-v3.22+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
   [![Dart](https://img.shields.io/badge/Dart-v3.4+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
