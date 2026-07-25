@@ -9,12 +9,14 @@ Follow this professional guide to generate a signed production build of FoodGapp
 Android requires all apps to be digitally signed with a certificate before they can be installed.
 
 1.  Open your terminal.
-2.  Run the following command to generate a `upload-keystore.jks` file:
+2.  Run the following command to generate a `upload-keystore.jks` file in your project root:
 
     ```bash
-    keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key
+    keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key
     ```
-    *(Note: On Windows, you might need to run this in PowerShell or CMD as an administrator. If `keytool` is not found, it's located in your JDK `bin` folder.)*
+    *(Note: If `keytool` is not found, it's located in your JDK `bin` folder inside the Android Studio directory.)*
+
+3.  **IMPORTANT**: Keep this file safe. If you are using Git, ensure `upload-keystore.jks` is added to your `.gitignore` so it isn't uploaded to GitHub.
 
 3.  **IMPORTANT**: Keep this file safe and do not lose it. If you lose this key, you cannot update your app on the Play Store.
 
