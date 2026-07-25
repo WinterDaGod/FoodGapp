@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="asset/icon.png" width="128" height="128" alt="FoodGapp Logo">
+  <img src="assets/icon.png" width="128" height="128" alt="FoodGapp Logo">
   <h1>FoodGapp</h1>
   <p><strong>Eat Better, Track Smarter</strong></p>
 
