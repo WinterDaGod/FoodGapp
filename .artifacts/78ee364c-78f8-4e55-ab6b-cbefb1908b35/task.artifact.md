@@ -1,0 +1,6 @@
+- [x] Add `category` field to `ShoppingItem` model
+- [x] Upgrade `DatabaseHelper` to version 16 and add `aisle_cache` table
+- [x] Implement `categorizeIngredients` in `GeminiService`
+- [x] Update `ShoppingListService` with smart caching and batching logic
+- [x] Update `ShoppingListScreen` to display grouped aisles with icons
+- [x] Verify AI-powered grouping and local caching efficiency

@@ -1,0 +1,781 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/meal_log.dart';
+import '../models/recipe.dart';
+import '../models/ingredient.dart';
+import '../services/auth_service.dart';
+import '../services/database_helper.dart';
+import '../services/app_events.dart';
+import '../services/sound_service.dart';
+import 'widgets/add_ingredient_modal.dart';
+import 'widgets/app_toast.dart';
+
+class AddMealScreen extends StatefulWidget {
+  final Recipe? recipe;
+  final MealLog? existingLog;
+
+  const AddMealScreen({super.key, this.recipe, this.existingLog});
+
+  @override
+  State<AddMealScreen> createState() => _AddMealScreenState();
+}
+
+class _AddMealScreenState extends State<AddMealScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _caloriesController = TextEditingController();
+  final _proteinController = TextEditingController();
+  final _carbsController = TextEditingController();
+  final _fatController = TextEditingController();
+
+  final List<Ingredient> _ingredients = [];
+  int _servings = 1;
+  bool _isMacrosView = false; // Start on ingredients if manual? Actually mockup shows Ingredients tab selected
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
+
+  // Base nutrition when starting from a recipe or existing log
+  double _baseCalories = 0;
+  double _baseProtein = 0;
+  double _baseCarbs = 0;
+  double _baseFat = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.recipe != null) {
+      final r = widget.recipe!;
+      _nameController.text = r.name;
+      
+      _baseCalories = r.calories ?? 0;
+      _baseProtein = r.protein ?? 0;
+      _baseCarbs = r.carbs ?? 0;
+      _baseFat = r.fat ?? 0;
+
+      _updateControllers();
+      _isMacrosView = true; // Recipes already have macros
+    } else if (widget.existingLog != null) {
+      final log = widget.existingLog!;
+      _nameController.text = log.foodName;
+
+      // If we have ingredients, use the stored base. 
+      // If no ingredients, it was a manual macro log, so base is 0.
+      _baseCalories = log.baseCalories ?? 0;
+      _baseProtein = log.baseProtein ?? 0;
+      _baseCarbs = log.baseCarbs ?? 0;
+      _baseFat = log.baseFat ?? 0;
+
+      // Restore ingredients list
+      if (log.ingredients != null) {
+        _ingredients.addAll(log.ingredients!);
+      }
+
+      _updateControllers();
+
+      // If it was a manual macro log (no ingredients), ensure the controllers 
+      // show the total logged values, not the 0 base.
+      if (_ingredients.isEmpty) {
+        _caloriesController.text = log.calories?.round().toString() ?? '';
+        _proteinController.text = log.protein?.round().toString() ?? '';
+        _carbsController.text = log.carbs?.round().toString() ?? '';
+        _fatController.text = log.fat?.round().toString() ?? '';
+      }
+
+      _selectedDate = DateTime.tryParse(log.mealDate) ?? DateTime.now();
+      if (log.mealTime != null) {
+        try {
+          final format = DateFormat.jm();
+          final dt = format.parse(log.mealTime!);
+          _selectedTime = TimeOfDay.fromDateTime(dt);
+        } catch (_) {}
+      }
+      _isMacrosView = _ingredients.isEmpty;
+    }
+  }
+
+  void _updateControllers() {
+    _caloriesController.text = _baseCalories.round().toString();
+    _proteinController.text = _baseProtein.round().toString();
+    _carbsController.text = _baseCarbs.round().toString();
+    _fatController.text = _baseFat.round().toString();
+  }
+
+  void _calculateFromIngredients() {
+    double totalCal = _baseCalories;
+    double totalProtein = _baseProtein;
+    double totalCarbs = _baseCarbs;
+    double totalFat = _baseFat;
+
+    for (final ing in _ingredients) {
+      totalCal += ing.calories;
+      totalProtein += ing.protein;
+      totalCarbs += ing.carbs;
+      totalFat += ing.fat;
+    }
+
+    setState(() {
+      _caloriesController.text = (totalCal * _servings).round().toString();
+      _proteinController.text = (totalProtein * _servings).round().toString();
+      _carbsController.text = (totalCarbs * _servings).round().toString();
+      _fatController.text = (totalFat * _servings).round().toString();
+    });
+  }
+
+  void _showComingSoon(String feature) {
+    AppToast.show(
+      context,
+      message: 'The $feature feature is coming soon!',
+      title: 'Coming Soon',
+      type: ToastType.info,
+    );
+  }
+
+  Future<void> _showAddIngredientModal() async {
+    final result = await showModalBottomSheet<Ingredient>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AddIngredientModal(),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _ingredients.add(result);
+        _calculateFromIngredients();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _caloriesController.dispose();
+    _proteinController.dispose();
+    _carbsController.dispose();
+    _fatController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final userId = AuthService().currentUser?.uid;
+    if (userId == null) return;
+
+    final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final timeStr = _selectedTime.format(context);
+
+    final log = MealLog(
+      id: widget.existingLog?.id,
+      userId: userId,
+      mealDate: dateStr,
+      mealTime: timeStr,
+      mealType: widget.existingLog?.mealType ?? 'Manual',
+      foodName: _nameController.text.trim(),
+      calories: double.tryParse(_caloriesController.text),
+      protein: double.tryParse(_proteinController.text),
+      carbs: double.tryParse(_carbsController.text),
+      fat: double.tryParse(_fatController.text),
+      imageUrl: widget.recipe?.imageUrl ?? widget.existingLog?.imageUrl,
+      apiMealId: widget.recipe?.apiMealId ?? widget.existingLog?.apiMealId,
+      ingredients: _ingredients.isNotEmpty ? _ingredients : null,
+      baseCalories: _baseCalories,
+      baseProtein: _baseProtein,
+      baseCarbs: _baseCarbs,
+      baseFat: _baseFat,
+    );
+
+    if (widget.existingLog != null) {
+      // In a real app we'd have an update method, using insert with REPLACE for now if PK matches
+      await DatabaseHelper.instance.upsertMealLog(log); 
+    } else {
+      await DatabaseHelper.instance.insertMealLog(log);
+    }
+
+    // Play feedback sound/haptic
+    SoundService.instance.playSuccess();
+
+    AppEvents.instance.notifyMealChanged();
+
+    if (mounted) {
+      Navigator.of(context).pop();
+      AppToast.show(
+        context,
+        message: widget.existingLog != null ? 'Changes saved to your log.' : 'Successfully added to your dashboard.',
+        title: widget.existingLog != null ? 'Meal Updated' : 'Meal Logged',
+        type: ToastType.success,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Meal name', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
+                      const SizedBox(height: 12),
+                      _buildTextField(_nameController, 'Meal name'),
+                      const SizedBox(height: 32),
+                      _buildToggle(),
+                      const SizedBox(height: 32),
+                      if (_isMacrosView) _buildMacrosGrid() else _buildIngredientsView(),
+                      const SizedBox(height: 48),
+                      Text('Photo (optional)', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showComingSoon('Take Photo'),
+                              borderRadius: BorderRadius.circular(20),
+                              child: _buildActionButton(Icons.camera_alt_outlined, 'Take Photo'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showComingSoon('Upload Photo'),
+                              borderRadius: BorderRadius.circular(20),
+                              child: _buildActionButton(Icons.file_upload_outlined, 'Upload Photo'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Expanded(child: _buildInfoTile('Date', DateFormat('MMMM d, yyyy').format(_selectedDate), Icons.calendar_today, _pickDate)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildInfoTile('Time', _selectedTime.format(context), Icons.access_time, _pickTime)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            _buildBottomBar(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Manual Entry', 
+            style: TextStyle(
+              fontSize: 32, 
+              fontWeight: FontWeight.bold, 
+              color: isDark ? Colors.white : Colors.black
+            )
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.close, color: isDark ? Colors.white70 : Colors.black54),
+            style: IconButton.styleFrom(
+              backgroundColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+        ] : null,
+      ),
+      child: TextFormField(
+        controller: controller,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black26),
+          border: InputBorder.none,
+        ),
+        validator: (val) => (val == null || val.isEmpty) ? 'Required' : null,
+      ),
+    );
+  }
+
+  Widget _buildToggle() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isMacrosView = false),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: !_isMacrosView ? (isDark ? const Color(0xFF333333) : Colors.white) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: !_isMacrosView && !isDark ? [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))
+                  ] : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Ingredients', 
+                    style: TextStyle(
+                      color: !_isMacrosView ? (isDark ? Colors.white : Colors.black) : (isDark ? Colors.white38 : Colors.black38),
+                      fontWeight: !_isMacrosView ? FontWeight.bold : FontWeight.normal,
+                    )
+                  )
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isMacrosView = true),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: _isMacrosView ? (isDark ? const Color(0xFF333333) : Colors.white) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: _isMacrosView && !isDark ? [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))
+                  ] : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Macros', 
+                    style: TextStyle(
+                      color: _isMacrosView ? (isDark ? Colors.white : Colors.black) : (isDark ? Colors.white38 : Colors.black38),
+                      fontWeight: _isMacrosView ? FontWeight.bold : FontWeight.normal,
+                    )
+                  )
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIngredientsView() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    double totalWeight = 0;
+    for (final ing in _ingredients) {
+      totalWeight += ing.amount;
+    }
+    totalWeight *= _servings;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Total servings', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14)),
+            Text('Total weight: ${totalWeight.round()} g', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildServingsSelector(),
+        const SizedBox(height: 32),
+        Text('Ingredients', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
+        const SizedBox(height: 16),
+        ..._ingredients.asMap().entries.map((entry) => _buildIngredientItem(entry.value, entry.key)),
+        const SizedBox(height: 12),
+        InkWell(
+          onTap: _showAddIngredientModal,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: isDark ? Colors.white24 : Colors.black12, width: 1.5),
+              boxShadow: !isDark ? [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+              ] : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add, color: isDark ? Colors.white : Colors.black, size: 24),
+                const SizedBox(width: 12),
+                Text(
+                  'Add ingredients', 
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black, 
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 16
+                  )
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServingsSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+        ] : null,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () {
+              if (_servings > 1) {
+                setState(() => _servings--);
+                _calculateFromIngredients();
+              }
+            },
+            icon: Icon(Icons.remove, color: isDark ? Colors.white70 : Colors.black54),
+          ),
+          Text(
+            '$_servings', 
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black, 
+              fontSize: 24, 
+              fontWeight: FontWeight.bold
+            )
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() => _servings++);
+              _calculateFromIngredients();
+            },
+            icon: Icon(Icons.add, color: isDark ? Colors.white70 : Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIngredientItem(Ingredient ing, int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 12, offset: const Offset(0, 4))
+        ] : null,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Text(
+              '${ing.amount.round()}', 
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black, 
+                fontWeight: FontWeight.bold,
+                fontSize: 18
+              )
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ing.name, 
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black, 
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 17
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (ing.isVerified || ing.source == 'FoodGapp') ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.verified, color: Colors.greenAccent, size: 10),
+                            const SizedBox(width: 4),
+                            Text(
+                              ing.source == 'USDA' ? 'USDA Verified' : 'Verified', 
+                              style: const TextStyle(color: Colors.greenAccent, fontSize: 9, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                  '${ing.unit} · ${ing.calories.round()} kcal', 
+                  style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _ingredients.removeAt(index);
+                _calculateFromIngredients();
+              });
+            },
+            icon: Icon(Icons.delete_outline, color: isDark ? Colors.white24 : Colors.black26),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacrosGrid() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildMacroInput('Calories (kcal)', _caloriesController, 'Calories')),
+            const SizedBox(width: 16),
+            Expanded(child: _buildMacroInput('Protein (g)', _proteinController, 'Protein')),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(child: _buildMacroInput('Carbs (g)', _carbsController, 'Carbs')),
+            const SizedBox(width: 16),
+            Expanded(child: _buildMacroInput('Fats (g)', _fatController, 'Fats')),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMacroInput(String label, TextEditingController controller, String hint) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+            boxShadow: !isDark ? [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+            ] : null,
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black12),
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(IconData icon, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+        ] : null,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: isDark ? Colors.white70 : Colors.black54, size: 22),
+          const SizedBox(width: 12),
+          Text(
+            label, 
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black, 
+              fontWeight: FontWeight.bold,
+              fontSize: 15
+            )
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoTile(String label, String value, IconData icon, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
+        const SizedBox(height: 12),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+              boxShadow: !isDark ? [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+              ] : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    value, 
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black, 
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17
+                    ), 
+                    overflow: TextOverflow.ellipsis
+                  )
+                ),
+                Icon(Icons.chevron_right, color: isDark ? Colors.white24 : Colors.black26, size: 22),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.transparent : Colors.white,
+        border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05))),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, -5))
+        ] : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(context),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: isDark ? Colors.white : Colors.black,
+                side: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.black,
+                foregroundColor: isDark ? Colors.white : Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), 
+                  side: isDark ? const BorderSide(color: Colors.white24, width: 1.5) : BorderSide.none
+                ),
+                elevation: 0,
+              ),
+              child: const Text('Add meal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) setState(() => _selectedDate = picked);
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+    if (picked != null) setState(() => _selectedTime = picked);
+  }
+}

@@ -1,0 +1,55 @@
+name: foodgapp
+description: "FoodGApp — an Android meal-planning and nutrition app (school capstone)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Login/accounts (Firebase Authentication, Email/Password) — used ONLY for login.
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+
+  # Gemini AI for natural language nutrition parsing
+  google_generative_ai: ^0.4.7
+
+  # All app data lives on the phone in SQLite (no cross-device sync, by design).
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+
+  # Recipe/nutrition API calls (Spoonacular primary, TheMealDB backup).
+  http: ^1.2.2
+
+  # Internationalization and date formatting.
+  intl: ^0.19.0
+
+  # Data visualization for progress and history.
+  fl_chart: ^0.70.0
+
+  # Swipable list items for meal management.
+  flutter_slidable: ^3.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Icon generation tool
+  flutter_launcher_icons: ^0.13.1
+
+  # Runs sqflite in the Dart VM (in-memory) so the data layer can be unit-tested.
+  sqflite_common_ffi: ^2.3.3
+
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/icon.png"
+  # This fixes the odd look by using a solid background layer
+  adaptive_icon_background: "#FFFFFF" 
+  adaptive_icon_foreground: "assets/icon.png"
+
+flutter:
+  uses-material-design: true
