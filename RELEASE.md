@@ -55,15 +55,22 @@ flutter build appbundle --release
 ```
 *Output: `build/app/outputs/bundle/release/app-release.aab`*
 
----
+## ✨ 4. Security & Code Protection
 
-## ✨ 4. Optimization & Security (Optional)
+When you build a **Release** APK, Flutter automatically compiles your Dart code into machine language. **Your actual `.dart` source files are never included in the APK.**
 
-To make your app even smaller and protect your source code from reverse engineering, use **Obfuscation**:
+However, to prevent people from "reverse engineering" your app (trying to figure out your logic from the machine code), you should always use **Obfuscation**. This scrambles the names of your functions and classes.
+
+Run this command to build a secure, protected, and optimized APK:
 
 ```bash
 flutter build apk --release --obfuscate --split-debug-info=build/app/outputs/symbols
 ```
 
----
+### What this does:
+1.  **--obfuscate**: Scrambles your code so it's unreadable to hackers.
+2.  **--split-debug-info**: Moves technical "symbols" into a separate folder, making the APK smaller and more secure.
+
+> [!NOTE]
+> You may see warnings about **"DWARF debugging information"** or **"tree-shaken"** icons. These are normal and expected in a production build—they mean the optimizer is successfully shrinking your app!
 *FoodGapp Production Release Pipeline.*
