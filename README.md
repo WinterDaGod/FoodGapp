@@ -1,10 +1,10 @@
 # 🍱 FoodGapp
 
-A premium Android meal-planning and nutrition application (school capstone) designed for the Philippine context. FoodGapp leverages the **Gemini 3.6 Flash AI** to provide highly personalized nutrition tracking, intelligent meal generation, and creative pantry-based cooking.
+A premium Android meal-planning and nutrition application (school capstone) designed for the Philippine context. FoodGapp leverages the **FoodGapp AI Engine** to provide highly personalized nutrition tracking, intelligent meal generation, and creative pantry-based cooking.
 
 ## ✨ Premium Features
 
-### 🧠 FoodGapp AI Engine (Gemini 3.6 Flash)
+### 🧠 FoodGapp AI Engine
 The core "Brain" of the app, providing several high-fidelity features:
 - **Smart AI Meal Planner**: Generates complete 3-meal daily plans (Breakfast, Lunch, Dinner) that are intelligently balanced to hit your specific macro targets (Protein/Carbs/Fats) with support for "Special Requests".
 - **AI Pantry Chef**: Invent creative and delicious recipes using only the ingredients you currently have in your kitchen.
@@ -20,7 +20,7 @@ The core "Brain" of the app, providing several high-fidelity features:
 
 ### 🛡️ 4-Layer Reliability Architecture
 FoodGapp is built to be stable even when APIs are busy or the device is offline:
-1. **Primary**: FoodGapp AI (Gemini 3.6 Flash) for creativity and personalization.
+1. **Primary**: FoodGapp AI for creativity and personalization.
 2. **Verified Database**: Spoonacular (USDA data) for established recipes.
 3. **Backup Source**: TheMealDB for basic results when primary quotas are hit.
 4. **Local Library**: A random selection of previously discovered recipes preloaded from your local cache for instant, offline browsing.
@@ -30,16 +30,12 @@ FoodGapp is built to be stable even when APIs are busy or the device is offline:
 The application is currently in a **high-fidelity production-ready state** for its capstone scope:
 
 - **Authentication**: Fully implemented Firebase Email/Password flow with custom onboarding.
-- **AI Integration**: Gemini 3.6 Flash is fully wired for Natural Language logging, Smart Planning, and the Pantry Chef.
-- **Data Layer**: 9 SQLite tables are functional with built-in caching, local snapshots, and v17 schema migrations.
-- **Nutrition**: Dynamic DOST-FNRI target calculation and real-time intake feedback are complete.
-- **UX/UI**: All premium features including fluid animations, haptic feedback, and multi-select filtering are live.
 - **Reliability**: 4-layer source fallback is active, ensuring zero downtime for recipe discovery.
 
 ## 🛠️ Technical Stack
 
 - **Framework:** Flutter (Dart), Android-native design.
-- **AI Engine:** Google Generative AI (Gemini 3.6 Flash).
+- **AI Engine:** FoodGapp AI (Natural Language Processing).
 - **Database:** Local SQLite (`sqflite`) for all personal data, macro history, and recipe caching.
 - **Authentication:** Firebase Auth (Email/Password).
 - **APIs:** Spoonacular (Primary DB), USDA FoodData Food Central (Verification), TheMealDB (Emergency Backup).
@@ -143,7 +139,7 @@ FoodGapp uses a local SQLite database (`sqflite`) with the following core tables
 
 1.  **Dependencies**: Run `flutter pub get`.
 2.  **API Keys**: Add your keys to `lib/config/api_config.dart`.
-    - `geminiApiKey`: Get a free key from [aistudio.google.com](https://aistudio.google.com).
+    - `geminiApiKey`: Get a free key from the official AI Studio.
     - `spoonacularApiKey`: Get a key from [spoonacular.com](https://spoonacular.com/food-api).
 3.  **Firebase**: Run `flutterfire configure` to link your project.
 4.  **Launch**: Run `flutter run`.
