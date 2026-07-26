@@ -4,18 +4,24 @@ This file tracks the high-level functional and technical evolution of FoodGapp, 
 
 ---
 
-## [v1.1.6] - Professional UX & Interaction Polish (2026-07-26)
+## [v1.1.6] - Total Professional Refinement (Current)
 
 ### 🎨 Visual & Interaction Overhaul
+- **Interactive Calendar Strip**: Re-engineered the top calendar into a dynamic performance tracker with animated progress rings and distinct visual states for past, present, and future dates.
 - **Liquid Glass Quick Add**: Implemented a sophisticated 3x3 "Glassmorphism" grid with high-intensity background blurring and a centralized bottom alignment.
-- **Ergonomic interaction**: Integrated "Tap-Outside" dismissal for the Quick Add menu and aligned it precisely above the primary action button for superior one-handed usability.
+- **Engaging UX Copy**: Replaced generic headers with user-centric messaging: *"Add to your day"* and *"Choose how you'd like to log food."*
+- **Ergonomic Interaction**: Integrated "Tap-Outside" dismissal for the Quick Add menu and aligned it precisely above the primary action button for superior one-handed usability.
 - **High-Density Shopping List**: Overhauled the Shopping List with a compact interface, reducing vertical margins and font sizes to increase information density on mobile screens.
-- **Fixed Navigation Logic**: Resolved a bug where the "Saved" button in the Quick Add menu was incorrectly redirecting to the Discover tab.
+
+### ⚡ Performance & Engineering
+- **Batch Range Querying**: Optimized the dashboard to retrieve 14 days of nutritional history in a single database trip, ensuring zero loading delay for the calendar strip.
+- **Animation Isolation**: Applied `RepaintBoundary` hardware acceleration to intensive animations (Water tracker, Macro rings) to maintain a consistent 60fps.
+- **Technical Info Expansion**: Added an automated App Version display to the Profile screen for professional build tracking.
 - **Resolved UI Overflows**: Fixed a critical RenderFlex overflow error in the Shopping List for narrow device displays.
+- **Fixed Navigation Logic**: Resolved a bug where the "Saved" button in the Quick Add menu was incorrectly redirecting to the Discover tab.
 
 ### 🧹 Interface Cleanup
-- **Streamlined Customizations**: Removed redundant "Meal Logging" options from the Profile to maintain a focused, production-ready settings suite.
-- **Branding Alignment**: Updated all menu headers to engaging, user-centric copy (e.g., *"Add to your day"*).
+- **Streamlined Customizations**: Removed redundant placeholder options (Meal Logging, Day Reset, Week Start, Timezone) from the Profile to ensure 100% functional integrity for production.
 
 ---
 

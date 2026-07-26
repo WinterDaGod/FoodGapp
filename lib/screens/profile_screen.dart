@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../models/user_profile.dart';
 import '../models/weight_log.dart';
@@ -33,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   UserProfile? _profile;
   NutritionTarget? _targets;
+  String _appVersion = '---';
   bool _isLoading = true;
 
   @override
@@ -56,10 +58,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final profile = await _db.getUserProfile(userId);
+    final packageInfo = await PackageInfo.fromPlatform();
     if (!mounted) return;
 
     setState(() {
       _profile = profile;
+      _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       if (profile != null) {
         _targets = NutritionFeedbackService.buildTarget(profile);
       }
@@ -834,6 +838,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 12),
               _buildCustomizationsSection(),
+              const SizedBox(height: 24),
+              Text(
+                'Technical Information', 
+                style: TextStyle(
+                  fontSize: 24, 
+                  fontWeight: FontWeight.bold, 
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildTechnicalInfoSection(),
               const SizedBox(height: 32),
               _buildMaintenanceSection(),
               const SizedBox(height: 24),
@@ -1592,58 +1607,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _saveProfile(_profile!.copyWith(mealLogSoundsEnabled: val == 'Enabled'));
             }),
           ),
-          _buildDivider(),
-          _buildInfoTile(
-            icon: Icons.upload_outlined,
-            iconColor: Colors.grey,
-            label: 'Day Reset',
-            value: _profile?.dayResetTime ?? '12:00 AM',
-            onTap: () async {
-              final time = await showTimePicker(
-                context: context,
-                initialTime: const TimeOfDay(hour: 0, minute: 0),
-              );
-              if (time != null) {
-                if (mounted) {
-                  _saveProfile(_profile!.copyWith(dayResetTime: time.format(context)));
-                }
-              }
-            },
-          ),
-          _buildDivider(),
-          _buildInfoTile(
-            icon: Icons.calendar_today_outlined,
-            iconColor: Colors.grey,
-            label: 'Week Start',
-            value: _profile?.weekStartDay ?? 'Monday',
-            onTap: () => _editField('Week Start', _profile?.weekStartDay, [
-              const SelectionOption('Monday', 'Start week on Monday'),
-              const SelectionOption('Sunday', 'Start week on Sunday'),
-            ], (val) {
-              _saveProfile(_profile!.copyWith(weekStartDay: val));
-            }),
-          ),
-          _buildDivider(),
-          _buildInfoTile(
-            icon: Icons.public_outlined,
-            iconColor: Colors.grey,
-            label: 'Timezone',
-            value: _profile?.timezone ?? 'Manila',
-            onTap: () => _editField('Timezone', _profile?.timezone, [
-              const SelectionOption('Manila', 'PHT (UTC+8)'),
-              const SelectionOption('Singapore', 'SGT (UTC+8)'),
-              const SelectionOption('Tokyo', 'JST (UTC+9)'),
-              const SelectionOption('London', 'GMT (UTC+0)'),
-              const SelectionOption('New York', 'EST (UTC-5)'),
-            ], (val) {
-              _saveProfile(_profile!.copyWith(timezone: val));
-            }),
-          ),
         ],
       ),
     ),
   );
 }
+
+  Widget _buildTechnicalInfoSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
+        ] : null,
+      ),
+      child: Material(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            _buildInfoTile(
+              icon: Icons.info_outline,
+              iconColor: Colors.deepPurpleAccent,
+              label: 'App Version',
+              value: _appVersion,
+              onTap: () {}, // Info only
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _showSurplusModal() async {
     final bool current = _profile?.showSurplus ?? true;
