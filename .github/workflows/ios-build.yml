@@ -19,6 +19,12 @@ jobs:
           channel: 'stable'
           cache: true
           
+      - name: Create Config Files from Secrets
+        run: |
+          mkdir -p lib/config
+          echo "${{ secrets.FIREBASE_OPTIONS }}" > lib/firebase_options.dart
+          echo "${{ secrets.API_CONFIG }}" > lib/config/api_config.dart
+          
       - name: Precache iOS
         run: flutter precache --ios
           
