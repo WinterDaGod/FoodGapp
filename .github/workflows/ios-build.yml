@@ -26,18 +26,21 @@ jobs:
         run: flutter pub get
         
       - name: Build iOS (No Codesign)
-        # We migrate to Swift Package Manager (SPM) by ensuring Podfile is absent.
-        # This resolves the 'podhelper.rb' error found on Windows.
-        # Explicitly disabling code signing requirements for the CI environment.
+        # Using Swift Package Manager (SPM) and bypassing code signing for CI.
         run: |
           rm -rf ios/Podfile ios/Podfile.lock ios/Pods
-          flutter build ios --release --no-codesign --build-name=1.1.6 --build-number=1 --extra-gen-snapshot-options=--obfuscate --extra-gen-snapshot-options=--split-debug-info=build/app/outputs/symbols
+          flutter build ios --release --no-codesign --build-name=1.1.6 --build-number=1 \
+            --extra-gen-snapshot-options=--obfuscate \
+            --extra-gen-snapshot-options=--split-debug-info=build/app/outputs/symbols
         
       - name: Package IPA
         run: |
-          mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
-          zip -r FoodGapp.ipa Payload
+          # Package the .app into a standard IPA structure
+          mkdir -p build/ios/iphoneos/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -vr FoodGapp.ipa Payload
+          mv FoodGapp.ipa ../../../
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
