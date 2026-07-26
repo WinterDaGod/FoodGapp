@@ -26,9 +26,11 @@ jobs:
         run: flutter pub get
         
       - name: Build iOS (No Codesign)
-        # We skip manual pod install and let flutter build handle it.
-        # This ensures the internal Flutter-to-iOS environment is set up correctly.
-        run: flutter build ios --no-codesign --release
+        # We migrate to Swift Package Manager (SPM) by ensuring Podfile is absent.
+        # This resolves the 'podhelper.rb' error found on Windows.
+        run: |
+          rm -rf ios/Podfile ios/Podfile.lock ios/Pods
+          flutter build ios --no-codesign --release
         
       - name: Package IPA
         run: |
