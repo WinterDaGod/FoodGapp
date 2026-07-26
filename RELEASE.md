@@ -16,9 +16,7 @@ Android requires all apps to be digitally signed with a certificate before they 
     ```
     *(Note: If `keytool` is not found, it's located in your JDK `bin` folder inside the Android Studio directory.)*
 
-3.  **IMPORTANT**: Keep this file safe. If you are using Git, ensure `upload-keystore.jks` is added to your `.gitignore` so it isn't uploaded to GitHub.
-
-3.  **IMPORTANT**: Keep this file safe and do not lose it. If you lose this key, you cannot update your app on the Play Store.
+3.  **IMPORTANT**: Keep this file safe. If you are using Git, ensure `upload-keystore.jks` is added to your `.gitignore` so it isn't uploaded to GitHub. If you lose this key, you cannot update your app on the Play Store.
 
 ---
 
