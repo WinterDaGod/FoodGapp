@@ -20,30 +20,27 @@ class ShoppingListService {
 
     if (recipe.ingredients == null || recipe.ingredients!.isEmpty) return;
 
-    // 1. Filter out duplicates for this recipe
-    final currentItems = await _db.getShoppingItems(userId);
-    final Set<String> existingInRecipe = currentItems
-        .where((item) => item.recipeName == recipe.name)
-        .map((item) => item.name.toLowerCase())
-        .toSet();
-
+    // 1. Prepare ingredients for categorization
     final newIngredients = recipe.ingredients!
-        .where((ing) => ing.trim().isNotEmpty && !existingInRecipe.contains(ing.trim().toLowerCase()))
+        .where((ing) => ing.trim().isNotEmpty)
         .toList();
 
     if (newIngredients.isEmpty) return;
 
-    // 2. Efficiently categorize in bulk
+    // 2. Efficiently categorize in bulk (handles AI and Caching)
     final categoryMap = await _categorizeItems(newIngredients);
 
-    // 3. Save to database with duplicate merging
+    // 3. Save to database with intelligent merging (Quantity Support)
     for (var ing in newIngredients) {
       final name = ing.trim();
+      // Check if this exact ingredient for this recipe already exists
       final existing = await _db.findShoppingItem(userId, name, recipe.name);
       
       if (existing != null) {
+        // Increment quantity for multiple servings or repeated clicks
         await _db.updateShoppingItem(existing.copyWith(quantity: existing.quantity + 1));
       } else {
+        // Insert as a new entry with the AI-determined category
         await _db.insertShoppingItem(ShoppingItem(
           userId: userId,
           name: name,

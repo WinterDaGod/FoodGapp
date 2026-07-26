@@ -82,6 +82,40 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     _loadItems();
   }
 
+  Future<void> _clearAll() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: Text('Clear List?', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+        content: Text(
+          'This will remove ALL items from your shopping list. This action cannot be undone.',
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false), 
+            child: Text('Cancel', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), 
+            child: const Text('Clear All', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _db.clearAllShoppingItems(userId);
+      _loadItems();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -122,6 +156,11 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 onPressed: _clearChecked,
                 icon: Icon(Icons.cleaning_services_outlined, color: isDark ? Colors.white38 : Colors.black38),
                 tooltip: 'Clear Checked',
+              ),
+              IconButton(
+                onPressed: _clearAll,
+                icon: Icon(Icons.delete_sweep_outlined, color: isDark ? Colors.redAccent.withValues(alpha: 0.5) : Colors.redAccent.withValues(alpha: 0.7)),
+                tooltip: 'Clear All',
               ),
               const SizedBox(width: 8),
               IconButton(

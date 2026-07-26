@@ -101,12 +101,22 @@ class RecipeRepository {
     int? maxCarbs,
     int? minFat,
     int? maxFat,
+    String? diet,
     int number = 10,
   }) async {
     // 1. Try Gemini AI
     try {
+      // Build a descriptive query for the AI to ensure a diverse range of results
+      String query = 'Recipes';
+      if (maxCalories != null) {
+        query = 'Healthy recipes between ${minCalories ?? 0} and $maxCalories calories';
+      } else if (minProtein != null) {
+        query = 'High protein recipes with at least $minProtein g protein';
+      }
+
       final aiResults = await _gemini.searchRecipes(
-        query: 'Recipe with approx ${maxCalories ?? 500} calories', 
+        query: query, 
+        diet: diet,
         number: number
       );
       if (aiResults != null && aiResults.isNotEmpty) {
@@ -149,6 +159,10 @@ class RecipeRepository {
       if (results.isEmpty) return [];
 
       final ids = results.map((r) => r.apiMealId.split(':').last).toList();
+      
+      // NOTE: Spoonacular's findByNutrients doesn't support diet filters directly.
+      // We rely on getInformationBulk to get full details and could filter here if needed,
+      // or warn that backup macro search is "Best Effort" for diets.
       final fullResults = await _spoonacular.getInformationBulk(ids);
 
       await _cacheAll(fullResults);

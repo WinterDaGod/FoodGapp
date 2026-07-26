@@ -30,9 +30,10 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
   WeeklyMealPlan? _currentWeeklyPlan;
   Set<String> _savedRecipeIds = {};
   bool _isLoading = false;
+  bool _isAddingToList = false;
   Set<String> _selectedDiets = {'Balanced'};
   String _timeframe = 'Day'; // 'Day' or 'Week'
-  bool _isPreferencesExpanded = true;
+  bool _isPreferencesExpanded = false;
   
   final Map<String, List<String>> _dietGroups = {
     '🌱 Diet': ['Balanced', 'Vegetarian', 'Vegan', 'Keto', 'Paleo'],
@@ -123,7 +124,8 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       } else {
         final plan = await _service.generateWeeklyPlan(
           targetCalories: kcal,
-          diet: _selectedDiets.join(','),
+          diets: _selectedDiets.toList(),
+          preferences: _prefsController.text.trim().isNotEmpty ? _prefsController.text.trim() : null,
         );
         if (mounted) {
           setState(() {
@@ -245,17 +247,17 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   Widget _buildShoppingListFAB(bool isDark) {
     return FloatingActionButton.extended(
-      onPressed: () async {
+      onPressed: _isAddingToList ? null : () async {
         final List<Recipe> allRecipes = _timeframe == 'Day' 
           ? _currentDailyPlan! 
           : _currentWeeklyPlan!.days.values.expand((x) => x).toList();
           
-        setState(() => _isLoading = true);
+        setState(() => _isAddingToList = true);
         for (var recipe in allRecipes) {
           await ShoppingListService.instance.addIngredientsFromRecipe(recipe);
         }
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isAddingToList = false);
           Navigator.of(context, rootNavigator: true).push(
             MaterialPageRoute(builder: (_) => const ShoppingListScreen()),
           );
@@ -263,8 +265,19 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       },
       backgroundColor: isDark ? Colors.white : Colors.black,
       foregroundColor: isDark ? Colors.black : Colors.white,
-      icon: const Icon(Icons.shopping_cart_outlined),
-      label: const Text('Add all to List', style: TextStyle(fontWeight: FontWeight.bold)),
+      icon: _isAddingToList 
+        ? SizedBox(
+            width: 18, height: 18, 
+            child: CircularProgressIndicator(
+              strokeWidth: 2, 
+              color: isDark ? Colors.black : Colors.white
+            )
+          )
+        : const Icon(Icons.shopping_cart_outlined),
+      label: Text(
+        _isAddingToList ? 'Adding...' : 'Add all to List', 
+        style: const TextStyle(fontWeight: FontWeight.bold)
+      ),
     );
   }
 
@@ -304,6 +317,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
           _buildTimeframeToggle(isDark),
           const SizedBox(height: 24),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
                 child: Column(
@@ -508,38 +522,12 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   List<Widget> _buildPlanList(bool isDark) {
     final labels = ['Breakfast', 'Lunch', 'Dinner'];
-    final bool isAi = _currentDailyPlan?.any((r) => r.aiReasoning != null) ?? false;
-    final bool isFallback = _currentDailyPlan?.any((r) => r.source == 'FoodGapp AI') ?? false;
     
-    return [
-      if (isAi)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: Row(
-            children: [
-              Icon(Icons.auto_awesome, color: isFallback ? Colors.orangeAccent : Colors.blueAccent, size: 16),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  isFallback 
-                    ? 'AI Generated: Recipe source offline. Using direct AI estimates.'
-                    : 'AI Optimized for your macros & requests',
-                  style: TextStyle(
-                    color: (isFallback ? Colors.orangeAccent : Colors.blueAccent).withValues(alpha: 0.8), 
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 13
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ..._currentDailyPlan!.asMap().entries.map((entry) {
-        final index = entry.key;
-        final recipe = entry.value;
-        return _buildMealCard(labels[index % labels.length], recipe, isDark);
-      }),
-    ];
+    return _currentDailyPlan!.asMap().entries.map((entry) {
+      final index = entry.key;
+      final recipe = entry.value;
+      return _buildMealCard(labels[index % labels.length], recipe, isDark);
+    }).toList();
   }
 
   List<Widget> _buildWeeklyPlanList(bool isDark) {

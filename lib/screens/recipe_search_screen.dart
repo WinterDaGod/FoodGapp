@@ -36,7 +36,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   int _activeTabIndex = 1; // 0: Saved, 1: Discover, 2: Pantry
   bool _isFallbackMode = false;
   bool _isQuotaExceeded = false;
-  bool _isFiltersExpanded = true;
+  bool _isFiltersExpanded = false;
   bool _isShowingLocalLibrary = false;
   final Set<String> _selectedFilters = {};
 
@@ -91,15 +91,28 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
     if (userId == null) return;
 
     final savedMeals = await _db.getSavedMeals(userId);
-    final List<Recipe> recipes = [];
+    if (savedMeals.isEmpty) {
+      if (mounted) setState(() => _userRecipes = []);
+      return;
+    }
 
+    // 1. Collect all unique API IDs
+    final List<String> ids = savedMeals
+        .where((m) => m.apiMealId != null)
+        .map((m) => m.apiMealId!)
+        .toList();
+
+    // 2. Fetch all nutrition data in one bulk query
+    final Map<String, Recipe> cachedMap = await _db.getCachedRecipesBulk(ids);
+
+    final List<Recipe> recipes = [];
     for (final m in savedMeals) {
-      // Try to get from cache to show macros if available
-      final cached = m.apiMealId != null ? await _db.getCachedRecipe(m.apiMealId!) : null;
+      final cached = m.apiMealId != null ? cachedMap[m.apiMealId] : null;
+      
       if (cached != null) {
         recipes.add(cached);
       } else {
-        // Precise source detection for fallback
+        // Fallback for uncached skeleton items
         String source = 'themealdb';
         if (m.apiMealId?.startsWith('spoonacular') == true) source = 'spoonacular';
         if (m.apiMealId?.startsWith('gemini') == true) source = 'FoodGapp';
@@ -221,20 +234,27 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
         maxCal = 350;
       }
 
+      // Extract primary diet for combined search
+      final primaryDiet = _selectedFilters.firstWhere(
+        (f) => ['Vegetarian', 'Vegan', 'Keto', 'Paleo'].contains(f), 
+        orElse: () => '',
+      );
+
       final results = await _repository.searchByNutrition(
         minCalories: 0,
         maxCalories: maxCal,
         minProtein: minProt,
         maxCarbs: maxCarb,
+        diet: primaryDiet.isNotEmpty ? primaryDiet : null,
         number: 15,
       );
 
       // If nutrition search was too broad or didn't capture all intent, 
-      // let searchByName (Gemini) handle the semantic combination.
+      // let searchByName (FoodGapp AI) handle the semantic combination.
       List<Recipe> finalResults = results;
       if (_selectedFilters.length > 1 || currentQuery.isNotEmpty) {
         finalResults = await _repository.searchByName(semanticQuery, 
-          diet: _selectedFilters.firstWhere((f) => ['Vegetarian', 'Vegan', 'Keto', 'Paleo'].contains(f), orElse: () => '').toLowerCase()
+          diet: primaryDiet.isNotEmpty ? primaryDiet.toLowerCase() : null
         );
       }
 

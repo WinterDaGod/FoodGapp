@@ -20,7 +20,7 @@ class DatabaseHelper {
   DatabaseHelper.forTesting(Database database) : _database = database;
 
   static const _databaseName = 'foodgapp.db';
-  static const _databaseVersion = 17;
+  static const _databaseVersion = 19;
 
   Database? _database;
 
@@ -182,6 +182,18 @@ class DatabaseHelper {
         FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE aisle_cache (
+        ingredient_name TEXT PRIMARY KEY,
+        category TEXT NOT NULL
+      )
+    ''');
+
+    // Add indexes for performance
+    await db.execute('CREATE INDEX idx_saved_meals_user ON saved_meals (user_id)');
+    await db.execute('CREATE INDEX idx_meal_log_user_date ON meal_log (user_id, meal_date)');
+    await db.execute('CREATE INDEX idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
   }
 
   static Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -339,6 +351,21 @@ class DatabaseHelper {
       if (!columns.any((c) => c['name'] == 'quantity')) {
         await db.execute('ALTER TABLE shopping_list ADD COLUMN quantity INTEGER DEFAULT 1');
       }
+    }
+    if (oldVersion < 18) {
+      // Ensure aisle_cache exists (Fix for missing table bug)
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS aisle_cache (
+          ingredient_name TEXT PRIMARY KEY,
+          category TEXT NOT NULL
+        )
+      ''');
+    }
+    if (oldVersion < 19) {
+      // Add indexes for performance (Saved tab optimization)
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_saved_meals_user ON saved_meals (user_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_meal_log_user_date ON meal_log (user_id, meal_date)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
     }
   }
 
@@ -623,6 +650,28 @@ class DatabaseHelper {
       if (age > maxAge.inMilliseconds) return null;
     }
     return Recipe.fromCacheMap(row);
+  }
+
+  Future<Map<String, Recipe>> getCachedRecipesBulk(List<String> ids) async {
+    if (ids.isEmpty) return {};
+    final db = await database;
+    
+    // Split into chunks if there are many IDs (SQLite limit is usually 999 parameters)
+    final Map<String, Recipe> results = {};
+    
+    // Using simple IN clause with placeholders
+    final placeholders = List.filled(ids.length, '?').join(',');
+    final rows = await db.query(
+      'nutrition_cache',
+      where: 'api_meal_id IN ($placeholders)',
+      whereArgs: ids,
+    );
+
+    for (final row in rows) {
+      final recipe = Recipe.fromCacheMap(row);
+      results[recipe.apiMealId] = recipe;
+    }
+    return results;
   }
 
   Future<void> cacheRecipe(Recipe recipe) async {

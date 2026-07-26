@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/database_helper.dart';
 import '../services/app_events.dart';
 
+import '../services/sound_service.dart';
 import 'onboarding_screen.dart';
 import 'widgets/app_loading.dart';
 
@@ -31,6 +32,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   String? _error;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+  bool _agreedToTerms = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() {
+    setState(() {}); // Update strength bars
+  }
 
   @override
   void dispose() {
@@ -43,7 +56,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _register() async {
     setState(() => _error = null);
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      SoundService.instance.playError();
+      return;
+    }
 
     setState(() => _isLoading = true);
     final result = await _authService.register(
@@ -143,6 +159,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'Min 8 chars, mixed case, numbers & symbols',
                   icon: Icons.lock_outline,
                   obscureText: _obscurePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: isDark ? Colors.white24 : Colors.black26),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Enter a password';
                     if (value.length < 8) return 'Minimum 8 characters required';
@@ -153,17 +173,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 12),
+                _buildPasswordStrengthIndicator(),
                 const SizedBox(height: 20),
                 _buildLabel('Confirm Password'),
                 _buildTextField(
                   controller: _confirmController,
                   hint: 'Re-enter password',
                   icon: Icons.lock_reset_outlined,
-                  obscureText: _obscurePassword,
+                  obscureText: _obscureConfirm,
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility, color: isDark ? Colors.white24 : Colors.black26),
+                    onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                  ),
                   validator: (value) => (value != _passwordController.text) ? 'Passwords do not match' : null,
                 ),
                 if (_error != null) _buildErrorBanner(),
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
+                _buildTermsCheckbox(isDark),
+                const SizedBox(height: 32),
                 _buildRegisterButton(),
                 const SizedBox(height: 24),
                 Center(
@@ -245,6 +273,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String hint,
     required IconData icon,
     bool obscureText = false,
+    Widget? suffixIcon,
     TextInputType? keyboardType,
     TextCapitalization textCapitalization = TextCapitalization.none,
     String? Function(String?)? validator,
@@ -271,8 +300,150 @@ class _RegisterScreenState extends State<RegisterScreen> {
           hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black26),
           border: InputBorder.none,
           icon: Icon(icon, color: isDark ? Colors.white38 : Colors.black38, size: 22),
+          suffixIcon: suffixIcon,
         ),
         validator: validator,
+      ),
+    );
+  }
+
+  Widget _buildPasswordStrengthIndicator() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pass = _passwordController.text;
+
+    final List<bool> checks = [
+      pass.length >= 8,
+      RegExp(r'[A-Z]').hasMatch(pass),
+      RegExp(r'[0-9]').hasMatch(pass),
+      RegExp(r'[!@#\$&*~]').hasMatch(pass),
+    ];
+
+    final int metCount = checks.where((c) => c).length;
+    
+    String strengthText = 'Weak';
+    Color strengthColor = Colors.redAccent;
+    if (metCount == 2) {
+      strengthText = 'Medium';
+      strengthColor = Colors.orangeAccent;
+    } else if (metCount == 3) {
+      strengthText = 'Strong';
+      strengthColor = Colors.blueAccent;
+    } else if (metCount == 4) {
+      strengthText = 'Secure';
+      strengthColor = Colors.greenAccent;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Password Strength', 
+              style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 12, fontWeight: FontWeight.bold)
+            ),
+            Text(
+              strengthText, 
+              style: TextStyle(color: strengthColor, fontSize: 12, fontWeight: FontWeight.bold)
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: List.generate(4, (index) {
+            final bool met = index < metCount;
+            return Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 4,
+                margin: EdgeInsets.only(right: index < 3 ? 8 : 0),
+                decoration: BoxDecoration(
+                  color: met ? strengthColor : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            _buildCheckItem('8+ Characters', checks[0], isDark),
+            _buildCheckItem('Uppercase', checks[1], isDark),
+            _buildCheckItem('Number', checks[2], isDark),
+            _buildCheckItem('Special', checks[3], isDark),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckItem(String label, bool met, bool isDark) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: met ? Colors.greenAccent.withValues(alpha: 0.1) : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+          ),
+          child: Icon(
+            met ? Icons.check : Icons.circle, 
+            size: 10, 
+            color: met ? Colors.greenAccent : (isDark ? Colors.white10 : Colors.black12)
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label, 
+          style: TextStyle(
+            color: met ? (isDark ? Colors.white70 : Colors.black87) : (isDark ? Colors.white12 : Colors.black26), 
+            fontSize: 11,
+            fontWeight: met ? FontWeight.bold : FontWeight.normal,
+          )
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTermsCheckbox(bool isDark) {
+    return InkWell(
+      onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+      borderRadius: BorderRadius.circular(12),
+      child: Row(
+        children: [
+          Checkbox(
+            value: _agreedToTerms,
+            onChanged: (val) => setState(() => _agreedToTerms = val ?? false),
+            activeColor: Colors.orange,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            side: BorderSide(color: isDark ? Colors.white24 : Colors.black26),
+          ),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13),
+                children: [
+                  const TextSpan(text: 'I agree to the '),
+                  TextSpan(
+                    text: 'Terms of Service', 
+                    style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.bold)
+                  ),
+                  const TextSpan(text: ' and '),
+                  TextSpan(
+                    text: 'Privacy Policy', 
+                    style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.bold)
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -298,13 +469,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildRegisterButton() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool canClick = !_isLoading && _agreedToTerms;
+
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _register,
+        onPressed: canClick ? _register : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: isDark ? Colors.white : Colors.black,
           foregroundColor: isDark ? Colors.black : Colors.white,
+          disabledBackgroundColor: isDark ? Colors.white10 : Colors.black12,
+          disabledForegroundColor: isDark ? Colors.white10 : Colors.black26,
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 0,

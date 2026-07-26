@@ -105,9 +105,14 @@ ${jsonEncode(candidateList)}
 
 Instructions:
 1. Select exactly 3 recipes from the list (one for Breakfast, one for Lunch, one for Dinner).
-2. The SUM of their nutrition should be as close as possible to the Daily Targets.
-3. Prioritize variety and user preferences (if any).
-4. For each selected recipe, provide a short "aiReasoning" (1 sentence) explaining why it fits this user's day.
+2. MATHEMATICAL ACCURACY IS CRITICAL: The SUM of the 3 selected recipes' calories MUST be as close as possible to the Total Calories ($targetCalories).
+3. MEAL DISTRIBUTION RULE:
+   - Breakfast: ~25% of target (${(targetCalories * 0.25).round()} kcal)
+   - Lunch: ~35% of target (${(targetCalories * 0.35).round()} kcal)
+   - Dinner: ~40% of target (${(targetCalories * 0.40).round()} kcal)
+4. BALANCE: If you pick one high-calorie meal, you MUST pick lower-calorie meals for the others to stay near the $targetCalories total.
+5. Match recipes to logical meal times (e.g., eggs/oats for breakfast, heavier meals for lunch/dinner).
+6. For each selected recipe, provide a short "aiReasoning" (1 sentence) explaining how it fits into the day's calorie budget and meal type.
 
 CRITICAL: Return RAW JSON only.
 
@@ -165,13 +170,19 @@ User Constraints:
 - Extra Requests: "${preferences ?? 'None'}"
 
 Instructions:
-1. Create 3 unique, healthy recipes that together hit the Daily Targets as closely as possible.
-2. For each recipe, provide:
+1. Create 3 unique, healthy recipes (Breakfast, Lunch, Dinner).
+2. MATHEMATICAL ACCURACY IS CRITICAL: The SUM of the calories for these 3 meals MUST be exactly $targetKcal.
+3. CALORIE DISTRIBUTION:
+   - Breakfast: ~25% (${(targetKcal * 0.25).round()} kcal)
+   - Lunch: ~35% (${(targetKcal * 0.35).round()} kcal)
+   - Dinner: ~40% (${(targetKcal * 0.40).round()} kcal)
+4. VARIETY: Do not use the same calorie value for every meal. Match the distribution above.
+5. For each recipe, provide:
    - "title": Clear descriptive name
    - "calories", "protein", "carbs", "fat": Accurate numeric estimates
    - "ingredients": A list of strings for the ingredients
-   - "aiReasoning": A short sentence explaining why this meal was created for this plan.
-3. Mark these as "source": "FoodGapp_Fallback" and "isVerified": false.
+   - "aiReasoning": A short sentence explaining how this meal contributes to the $targetKcal goal.
+5. Mark these as "source": "FoodGapp AI" and "isVerified": false.
 
 CRITICAL: Return RAW JSON only.
 
@@ -213,6 +224,73 @@ Expected Response Format:
     }
   }
 
+  Future<Map<String, dynamic>?> generateWeeklyPlanFromScratch({
+    required int targetCalories,
+    List<String>? diets,
+    String? preferences,
+  }) async {
+    if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
+      throw Exception('Gemini API Key not set');
+    }
+
+    final prompt = '''
+You are a master dietitian. Your goal is to generate a complete 7-day meal plan (Breakfast, Lunch, Dinner for each day) from scratch because the primary database is offline.
+
+Daily Target: $targetCalories kcal per day.
+User Constraints:
+- Diets/Preferences: ${diets?.join(', ') ?? 'Balanced'}
+- Extra Requests: "${preferences ?? 'None'}"
+
+Instructions:
+1. For each of the 7 days (Monday to Sunday), create 3 unique recipes.
+2. MATHEMATICAL ACCURACY IS CRITICAL: For EVERY SINGLE DAY, the SUM of calories for the 3 meals (Breakfast + Lunch + Dinner) MUST be within +/- 50kcal of $targetCalories.
+3. CALORIE DISTRIBUTION (Per Day):
+   - Breakfast: ~25% (${(targetCalories * 0.25).round()} kcal)
+   - Lunch: ~35% (${(targetCalories * 0.35).round()} kcal)
+   - Dinner: ~40% (${(targetCalories * 0.40).round()} kcal)
+4. VARIETY: Ensure each day has 3 unique meals and the calorie counts within each day match the 25/35/40 distribution.
+5. For each recipe, provide:
+   - "title": Descriptive name
+   - "calories", "protein", "carbs", "fat": Numeric estimates
+   - "ingredients": List of strings
+   - "aiReasoning": Short justification explaining why this meal fits the day's distribution.
+5. Mark these as "source": "FoodGapp AI" and "isVerified": false.
+
+CRITICAL: Return RAW JSON only.
+
+Expected Response Format:
+{
+  "week": {
+    "monday": {
+      "meals": [
+        { "id": "gemini:mon_b", "title": "...", "calories": 450, ... },
+        { "id": "gemini:mon_l", "title": "...", "calories": 650, ... },
+        { "id": "gemini:mon_d", "title": "...", "calories": 700, ... }
+      ]
+    },
+    "tuesday": { ... },
+    ... (up to sunday)
+  }
+}
+''';
+
+    try {
+      final content = [Content.text(prompt)];
+      final response = await _model.generateContent(content);
+      String? jsonString = response.text;
+      if (jsonString == null) return null;
+
+      if (jsonString.contains('```')) {
+        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+      }
+
+      return jsonDecode(jsonString);
+    } catch (e) {
+      print('Gemini Weekly Fallback Error: $e');
+      return null;
+    }
+  }
+
   Future<List<Map<String, dynamic>>?> searchRecipes({
     required String query,
     String? diet,
@@ -225,6 +303,11 @@ Expected Response Format:
     final prompt = '''
 You are a world-class chef and nutritionist. Generate a list of $number recipe ideas based on the query: "$query".
 Dietary constraint: ${diet ?? 'None'}.
+
+CRITICAL: Strictly adhere to the dietary constraint. 
+- If 'Vegetarian' is specified: DO NOT include any meat, poultry, or fish. 
+- If 'Vegan' is specified: DO NOT include any animal products (no meat, dairy, eggs, or honey).
+- If 'Keto' is specified: Focus on high-fat, moderate-protein, and extremely low-carb ingredients.
 
 For each recipe, provide:
 - "title": A catchy, professional recipe name.
@@ -269,6 +352,57 @@ Response Format:
       return (data['results'] as List?)?.cast<Map<String, dynamic>>();
     } catch (e) {
       print('Gemini Recipe Search Error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, String>?> provideReasoningForPlan({
+    required List<Recipe> selectedMeals,
+    required double targetCalories,
+    String? preferences,
+  }) async {
+    if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
+      return null;
+    }
+
+    final mealList = selectedMeals.map((r) => {
+      'id': r.apiMealId,
+      'title': r.name,
+      'calories': r.calories ?? 0,
+    }).toList();
+
+    final prompt = '''
+You are a Health Coach. I have already selected 3 meals for a user's daily plan that perfectly hit their $targetCalories kcal goal.
+Your task is to provide a single, encouraging sentence for each meal explaining why it's a great choice for their day.
+
+User Preferences: "${preferences ?? 'Balanced Nutrition'}"
+
+Meals:
+${jsonEncode(mealList)}
+
+Instructions:
+1. Return a JSON object where keys are the meal "id" and values are the "aiReasoning" string.
+2. Focus on health benefits and goal alignment.
+
+CRITICAL: Return RAW JSON only.
+''';
+
+    try {
+      final content = [Content.text(prompt)];
+      final response = await _model.generateContent(content);
+      String? jsonString = response.text;
+      if (jsonString == null) return null;
+
+      if (jsonString.contains('```')) {
+        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+      }
+
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! Map) return null;
+
+      return decoded.map((key, value) => MapEntry(key.toString(), value.toString()));
+    } catch (e) {
+      print('Gemini Reasoning Error: $e');
       return null;
     }
   }
@@ -365,8 +499,10 @@ CRITICAL: Return RAW JSON only.
         jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
       }
 
-      final Map<String, dynamic> data = jsonDecode(jsonString);
-      return data.map((key, value) => MapEntry(key, value.toString()));
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! Map) return null;
+
+      return decoded.map((key, value) => MapEntry(key.toString(), value.toString()));
     } catch (e) {
       print('Gemini Categorization Error: $e');
       return null;

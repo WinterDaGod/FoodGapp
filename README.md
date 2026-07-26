@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/icon.png" width="128" height="128" alt="FoodGapp Logo">
   <h1>FoodGapp</h1>
-  <p><strong>Eat Better, Track Smarter/strong></p>
+  <p><strong>Eat Better, Track Smarter</strong></p>
 
   [![Flutter](https://img.shields.io/badge/Flutter-v3.22+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
   [![Dart](https://img.shields.io/badge/Dart-v3.4+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
@@ -47,12 +47,12 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 
 | Module | Status | Highlights |
 | :--- | :---: | :--- |
-| **Authentication** | 🟢 | Firebase Auth, Custom Onboarding, Biometric Profiles. |
-| **AI Engine** | 🟢 | Smart Planning, Pantry Chef, NLP Meal Logging. |
-| **Data Layer** | 🟢 | v17 SQLite Schema, Aisle Caching, Nutritional Snapshotting. |
+| **Authentication** | 🟢 | Firebase Auth, Password Strength UX, Biometric Profiles. |
+| **AI Engine** | 🟢 | Unified Smart Planning, Pantry Chef, NLP Meal Logging. |
+| **Data Layer** | 🟢 | v19 SQLite Schema, High-Speed Indexing, Aisle Caching. |
 | **Analytics** | 🟢 | DOST-FNRI Feedback, Weight Journey, BMI Gauge. |
-| **UX/UI** | 🟢 | Liquid-Fluid Animations, Haptic Feedback, Multi-select Filtering. |
-| **Reliability** | 🟢 | 4-Tier Fallback Gateway, Offline Local Library. |
+| **UX/UI** | 🟢 | Fluid Animations, Haptic Feedback, Enhanced List Controls. |
+| **Reliability** | 🟢 | 4-Tier Fallback Gateway, Instant "Saved" Loading. |
 
 ---
 
@@ -64,7 +64,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 | **Framework** | Flutter (Android-Native Optimized) |
 | **Language** | Dart 3.4+ |
 | **AI Services** | FoodGapp AI Engine (NLP & Computer Vision ready) |
-| **Persistence** | SQLite (`sqflite`) - v17 Schema |
+| **Persistence** | SQLite (`sqflite`) - v19 Schema |
 | **Identity** | Firebase Authentication |
 | **API Sources** | Spoonacular, USDA FoodData Central, TheMealDB |
 
@@ -89,8 +89,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 .
 ├── lib/
 │   ├── config/
-│   │   ├── api_config.dart           # Real API keys (gitignored)
-│   │   └── api_config.example.dart   # Template for local setup
+│   │   └── api_config.dart           # Real API keys (gitignored)
 │   ├── models/
 │   │   ├── daily_nutrition.dart      # Aggregated daily intake data
 │   │   ├── fasting_session.dart      # Fasting tracking data
@@ -160,6 +159,9 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 ├── pubspec.yaml                      # Dependencies and configuration
 ├── README.md                         # This documentation
 ├── SETUP.md                          # Environment setup instructions
+├── RELEASE.md                        # Production deployment guide
+├── RELEASES.md                       # Historical release descriptions
+├── TESTING_GUIDE.md                  # QA and verification protocol
 └── changelog.md                      # History of premium upgrades
 ```
 
@@ -175,7 +177,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 ### 2. Deployment
 1.  **Install**: Run `flutter pub get`.
 2.  **Configuration**: 
-    - Copy `lib/config/api_config.example.dart` to `lib/config/api_config.dart`.
+    - Create `lib/config/api_config.dart`.
     - Populate `geminiApiKey` (from AI Studio) and `spoonacularApiKey`.
 3.  **Identity**: Run `flutterfire configure` to link your Firebase project.
 4.  **Launch**: Run `flutter run`.

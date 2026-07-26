@@ -9,6 +9,7 @@ All notable changes to the FoodGapp application, focusing on premium AI integrat
 ### 🧠 Artificial Intelligence (FoodGapp AI Engine)
 - **Gemini 3.6 Flash Integration**: Established Gemini 3.6 Flash as the primary "Brain" for nutritional parsing and recipe generation.
 - **Smart AI Meal Planner**: Implemented an intelligent daily planner that balances 3 meals (Breakfast, Lunch, Dinner) based on exact macro targets (P/C/F) and natural language user preferences.
+- **Precision AI Orchestration**: Re-engineered the calorie distribution logic (25/35/40 split) and implemented a mathematical self-audit for Gemini to ensure daily plans hit exact calorie targets.
 - **AI Pantry Chef**: Added a "Chef" mode that invents creative recipes based on the user's specific pantry ingredients.
 - **Natural Language Quick Paste**: Enabled logging of entire meals via natural text descriptions with dietitian-grade accuracy.
 - **AI-First Discovery**: Upgraded the recipe search to use semantic AI understanding for complex queries (e.g., *"Post-workout snack under 200 kcal"*).
@@ -35,11 +36,14 @@ All notable changes to the FoodGapp application, focusing on premium AI integrat
 - **Collapsible Filter Grid**: Added a smart toggle to the search bars to allow users to hide or show discovery categories on demand.
 - **Quick Add Expansion**: Added dedicated "Meal Planner" and "Shopping List" shortcuts to the global Quick Add menu.
 - **AI Reasoning Display**: Added a "Health Coach" reasoning box to every AI recipe explaining why it fits the user's current goals.
+- **Enhanced Shopping List Controls**: Added a "Clear All" feature with a professional, theme-aware confirmation dialog for better list management.
 
 ### ⚙️ Core Logic & Fixes
+- **Database Stability Fix**: Resolved a `no such table: aisle_cache` error by upgrading to SQLite v18 schema and synchronizing the initialization script.
 - **Starting Weight Persistence**: Fixed a bug where the journey baseline was not being logged; it is now captured during registration and is fully editable in the Profile.
 - **Journey Unit System**: Wired up the `UnitConverter` to the Progress dashboard for seamless Metric/Imperial switching of historical data.
 - **Ingredient Count Bug**: Resolved a display error where AI recipes showed "0 ingredients" in the list view.
+- **UX Polish**: Fixed a bug where discovery filters were expanded by default; screens now initialize with a clean, collapsed filter view.
 - **Documentation Excellence**: Comprehensive update to `README.md` and `SETUP.md`, providing a full file-by-file breakdown of the project architecture, database schema, and environment requirements.
 
 ---

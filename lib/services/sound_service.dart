@@ -42,4 +42,22 @@ class SoundService {
       await HapticFeedback.mediumImpact();
     }
   }
+
+  /// Plays a distinct vibration for errors or validation failures.
+  Future<void> playError() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      // For login/register where userId is null
+      await HapticFeedback.vibrate();
+      return;
+    }
+
+    final profile = await _db.getUserProfile(userId);
+    final bool enabled = profile?.mealLogSoundsEnabled ?? true;
+
+    if (enabled) {
+      print('❌ Playing error haptic...');
+      await HapticFeedback.vibrate();
+    }
+  }
 }
