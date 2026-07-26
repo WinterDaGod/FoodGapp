@@ -1,13 +1,27 @@
-<div style="text-align: center;">
+<p align="center">
   <img src="assets/icon.png" width="128" height="128" alt="FoodGapp Logo">
-  <h1>FoodGapp</h1>
-  <p><strong>Eat Better, Track Smarter</strong></p>
+</p>
 
-  [![Flutter](https://img.shields.io/badge/Flutter-v3.22+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-  [![Dart](https://img.shields.io/badge/Dart-v3.4+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-  [![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](https://www.android.com)
-  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-</div>
+<h1 align="center">FoodGapp</h1>
+
+<p align="center">
+  <strong>Eat Better, Track Smarter</strong>
+</p>
+
+<p align="center">
+  <a href="https://flutter.dev">
+    <img src="https://img.shields.io/badge/Flutter-v3.22+-02569B?logo=flutter&logoColor=white" alt="Flutter">
+  </a>
+  <a href="https://dart.dev">
+    <img src="https://img.shields.io/badge/Dart-v3.4+-0175C2?logo=dart&logoColor=white" alt="Dart">
+  </a>
+  <a href="https://www.android.com">
+    <img src="https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white" alt="Android">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+  </a>
+</p>
 
 ---
 
