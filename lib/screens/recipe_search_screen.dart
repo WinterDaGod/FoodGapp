@@ -8,7 +8,6 @@ import '../services/recipe_repository.dart';
 import '../services/shopping_list_service.dart';
 import 'recipe_detail_screen.dart';
 import 'add_meal_screen.dart';
-import 'widgets/app_loading.dart';
 import 'widgets/recipe_widgets.dart';
 import 'widgets/app_toast.dart';
 

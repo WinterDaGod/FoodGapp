@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../add_meal_screen.dart';
 import '../recipe_search_screen.dart';
-import '../meal_log_screen.dart';
 import '../meal_plan_screen.dart';
 import '../shopping_list_screen.dart';
 import 'describe_meal_modal.dart';

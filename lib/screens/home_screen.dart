@@ -17,7 +17,6 @@ import '../services/fasting_service.dart';
 import '../services/app_events.dart';
 import 'shopping_list_screen.dart';
 import 'widgets/app_toast.dart';
-import 'widgets/app_loading.dart';
 import 'widgets/water_tracker_widget.dart';
 import 'widgets/recipe_widgets.dart';
 

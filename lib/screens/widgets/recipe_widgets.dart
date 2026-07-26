@@ -3,7 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../models/recipe.dart';
 import 'app_logo.dart';
-import 'app_loading.dart';
 
 class RecipeDiscoveryCard extends StatelessWidget {
   final Recipe recipe;
