@@ -137,7 +137,7 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
         context,
         icon: Icons.favorite_outline,
         label: 'Saved',
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeSearchScreen())),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeSearchScreen(initialTabIndex: 0))),
       ),
       _buildActionItem(
         context,

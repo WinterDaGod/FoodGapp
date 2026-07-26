@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center;">
   <img src="assets/icon.png" width="128" height="128" alt="FoodGapp Logo">
   <h1>FoodGapp</h1>
   <p><strong>Eat Better, Track Smarter</strong></p>
@@ -23,7 +23,7 @@ FoodGapp is a high-fidelity Android application engineered for the Philippine co
 Powered by advanced **Natural Language Processing (NLP)**, the app acts as a 24/7 personal dietitian:
 *   **Precision AI Planner**: Generates calorie-matched daily and weekly schedules with high-accuracy 25/35/40 orchestration.
 *   **AI Pantry Chef**: Invent creative recipes using only the ingredients currently in your kitchen.
-*   **NLP Quick Paste**: Log entire meals by simply describing them (e.g., *"2 scrambled eggs and a cup of coffee"*).
+*   **Liquid Glass Quick Log**: A sophisticated, high-density interface for logging food via NLP, Photo, or Manual entry.
 *   **AI-First Discovery**: Semantic search capabilities for goal-specific discovery (e.g., *"Quick post-workout high-protein snack"*).
 
 ### 🥗 2. Precision Nutrition

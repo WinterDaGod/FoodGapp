@@ -4,6 +4,21 @@ This file tracks the high-level functional and technical evolution of FoodGapp, 
 
 ---
 
+## [v1.1.6] - Professional UX & Interaction Polish (2026-07-26)
+
+### 🎨 Visual & Interaction Overhaul
+- **Liquid Glass Quick Add**: Implemented a sophisticated 3x3 "Glassmorphism" grid with high-intensity background blurring and a centralized bottom alignment.
+- **Ergonomic interaction**: Integrated "Tap-Outside" dismissal for the Quick Add menu and aligned it precisely above the primary action button for superior one-handed usability.
+- **High-Density Shopping List**: Overhauled the Shopping List with a compact interface, reducing vertical margins and font sizes to increase information density on mobile screens.
+- **Fixed Navigation Logic**: Resolved a bug where the "Saved" button in the Quick Add menu was incorrectly redirecting to the Discover tab.
+- **Resolved UI Overflows**: Fixed a critical RenderFlex overflow error in the Shopping List for narrow device displays.
+
+### 🧹 Interface Cleanup
+- **Streamlined Customizations**: Removed redundant "Meal Logging" options from the Profile to maintain a focused, production-ready settings suite.
+- **Branding Alignment**: Updated all menu headers to engaging, user-centric copy (e.g., *"Add to your day"*).
+
+---
+
 ## [v1.1.5] - Performance Tracker & Data Patch (2026-07-26)
 
 ### 📊 Dashboard & Analytics

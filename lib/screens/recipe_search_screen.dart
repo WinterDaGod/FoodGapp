@@ -12,7 +12,8 @@ import 'widgets/recipe_widgets.dart';
 import 'widgets/app_toast.dart';
 
 class RecipeSearchScreen extends StatefulWidget {
-  const RecipeSearchScreen({super.key});
+  final int initialTabIndex;
+  const RecipeSearchScreen({super.key, this.initialTabIndex = 1});
 
   @override
   State<RecipeSearchScreen> createState() => _RecipeSearchScreenState();
@@ -32,7 +33,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
 
   bool _isLoading = false;
   String? _error;
-  int _activeTabIndex = 1; // 0: Saved, 1: Discover, 2: Pantry
+  late int _activeTabIndex; // 0: Saved, 1: Discover, 2: Pantry
   bool _isFallbackMode = false;
   bool _isQuotaExceeded = false;
   bool _isFiltersExpanded = false;
@@ -42,6 +43,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   @override
   void initState() {
     super.initState();
+    _activeTabIndex = widget.initialTabIndex;
     _loadUserRecipes();
     _loadInitialRecipes();
   }
