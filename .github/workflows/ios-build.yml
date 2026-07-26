@@ -22,8 +22,12 @@ jobs:
       - name: Create Config Files from Secrets
         run: |
           mkdir -p lib/config
-          echo "${{ secrets.FIREBASE_OPTIONS }}" > lib/firebase_options.dart
-          echo "${{ secrets.API_CONFIG }}" > lib/config/api_config.dart
+          cat << 'EOF' > lib/firebase_options.dart
+          ${{ secrets.FIREBASE_OPTIONS }}
+          EOF
+          cat << 'EOF' > lib/config/api_config.dart
+          ${{ secrets.API_CONFIG }}
+          EOF
           
       - name: Precache iOS
         run: flutter precache --ios
