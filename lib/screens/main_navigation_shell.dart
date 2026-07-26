@@ -24,6 +24,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     GlobalKey<NavigatorState>(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void _toggleQuickAdd() {
     setState(() => _isQuickAddOpen = !_isQuickAddOpen);
   }

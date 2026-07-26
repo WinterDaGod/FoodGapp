@@ -142,14 +142,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
   Widget _buildHeader(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Shopping List',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+          Expanded(
+            child: Text(
+              'Shopping List',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
+          const SizedBox(width: 8),
           Row(
             children: [
               IconButton(
@@ -177,12 +181,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
   Widget _buildManualInput(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
           boxShadow: !isDark ? [
             BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -190,13 +194,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         ),
         child: TextField(
           controller: _manualController,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
           decoration: InputDecoration(
             hintText: 'Add extra item...',
-            hintStyle: TextStyle(color: isDark ? Colors.white10 : Colors.black12),
+            hintStyle: TextStyle(color: isDark ? Colors.white10 : Colors.black12, fontSize: 14),
             border: InputBorder.none,
             suffixIcon: IconButton(
-              icon: const Icon(Icons.add_circle, color: Colors.orangeAccent),
+              icon: const Icon(Icons.add_circle, color: Colors.orangeAccent, size: 22),
               onPressed: _addManualItem,
             ),
           ),
@@ -220,7 +224,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     });
 
     return ListView.builder(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       itemCount: sortedCategories.length,
       itemBuilder: (context, index) {
         final category = sortedCategories[index];
@@ -230,24 +234,27 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, bottom: 16.0, top: 8.0),
+              padding: const EdgeInsets.only(left: 4.0, bottom: 12.0, top: 4.0),
               child: Row(
                 children: [
-                  Text(_getCategoryIcon(category), style: const TextStyle(fontSize: 20)),
-                  const SizedBox(width: 12),
-                  Text(
-                    category,
-                    style: TextStyle(
-                      fontSize: 18, 
-                      fontWeight: FontWeight.bold, 
-                      color: isDark ? Colors.white : Colors.black87
+                  Text(_getCategoryIcon(category), style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      category,
+                      style: TextStyle(
+                        fontSize: 17, 
+                        fontWeight: FontWeight.bold, 
+                        color: isDark ? Colors.white : Colors.black87
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
             ),
             ...groupItems.map((item) => _buildChecklistItem(item, isDark)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
           ],
         );
       },
@@ -270,29 +277,30 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
   Widget _buildChecklistItem(ShoppingItem item, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))
         ] : null,
       ),
       child: Material(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: ListTile(
           onTap: () => _toggleItem(item),
           onLongPress: () => _deleteItem(item.id!),
           leading: Icon(
             item.isChecked ? Icons.check_circle : Icons.circle_outlined,
             color: item.isChecked ? Colors.greenAccent : (isDark ? Colors.white24 : Colors.black12),
+            size: 22,
           ),
           title: Text(
             item.name,
             style: TextStyle(
               color: item.isChecked ? (isDark ? Colors.white24 : Colors.black26) : (isDark ? Colors.white : Colors.black87),
               decoration: item.isChecked ? TextDecoration.lineThrough : null,
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: item.isChecked ? FontWeight.normal : FontWeight.w500,
             ),
           ),
@@ -302,20 +310,20 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 Expanded(
                   child: Text(
                     item.recipeName!,
-                    style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 12),
+                    style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 11),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               if (item.quantity > 1)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                   decoration: BoxDecoration(
                     color: Colors.orangeAccent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'x${item.quantity}',
-                    style: const TextStyle(color: Colors.orangeAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
@@ -327,15 +335,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 _buildQtyBtn(Icons.remove, () => _updateQuantity(item, -1), isDark),
                 const SizedBox(width: 4),
                 _buildQtyBtn(Icons.add, () => _updateQuantity(item, 1), isDark),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
               ],
               IconButton(
-                icon: Icon(Icons.delete_outline, color: isDark ? Colors.white10 : Colors.black12, size: 20),
+                icon: Icon(Icons.delete_outline, color: isDark ? Colors.white10 : Colors.black12, size: 18),
                 onPressed: () => _deleteItem(item.id!),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
             ],
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          visualDensity: VisualDensity.compact,
         ),
       ),
     );
@@ -344,14 +355,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   Widget _buildQtyBtn(IconData icon, VoidCallback onTap, bool isDark) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
         ),
-        child: Icon(icon, size: 14, color: isDark ? Colors.white38 : Colors.black38),
+        child: Icon(icon, size: 13, color: isDark ? Colors.white38 : Colors.black38),
       ),
     );
   }

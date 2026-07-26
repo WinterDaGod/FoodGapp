@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../models/recipe.dart';
 import 'app_logo.dart';
+import 'app_loading.dart';
 
 class RecipeDiscoveryCard extends StatelessWidget {
   final Recipe recipe;
@@ -134,15 +137,15 @@ class RecipeDiscoveryCard extends StatelessWidget {
   Widget _buildRecipeImage(bool isDark) {
     if (recipe.imageUrl == null) {
       return Container(
-        height: 160,
+        height: 150, // Updated height from overhaul
         width: double.infinity,
         decoration: BoxDecoration(
           color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)), // Updated radius from overhaul
         ),
         child: Center(
           child: AppLogo(
-            size: 60,
+            size: 50,
             iconColor: isDark ? Colors.white10 : Colors.black12,
             showFrame: true,
           ),
@@ -151,22 +154,26 @@ class RecipeDiscoveryCard extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-      child: Image.network(
-        recipe.imageUrl!,
-        height: 180,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: CachedNetworkImage(
+        imageUrl: recipe.getResizedImageUrl(width: 480, height: 360)!,
+        height: 150,
         width: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _buildPlaceholder(isDark),
+        placeholder: (context, url) => _buildPlaceholder(isDark),
+        errorWidget: (context, url, error) => _buildPlaceholder(isDark),
+        fadeInDuration: const Duration(milliseconds: 300),
       ),
     );
   }
 
   Widget _buildPlaceholder(bool isDark) {
     return Container(
-      height: 180,
+      height: 150,
       color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
-      child: const Icon(Icons.broken_image_outlined),
+      child: Center(
+        child: Icon(Icons.restaurant, color: isDark ? Colors.white12 : Colors.black12, size: 40),
+      ),
     );
   }
 
@@ -319,6 +326,54 @@ class _MacroIconValue extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class RecipeCardShimmer extends StatelessWidget {
+  const RecipeCardShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05);
+    final highlightColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.02);
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        height: 380, // Height to match the real card approx
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+    );
+  }
+}
+
+class MealItemShimmer extends StatelessWidget {
+  const MealItemShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05);
+    final highlightColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.02);
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        height: 100,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
     );
   }
 }

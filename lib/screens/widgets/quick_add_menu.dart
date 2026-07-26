@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../add_meal_screen.dart';
 import '../recipe_search_screen.dart';
@@ -17,15 +18,6 @@ class QuickAddMenu extends StatefulWidget {
 }
 
 class _QuickAddMenuState extends State<QuickAddMenu> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -34,55 +26,70 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
       color: Colors.transparent,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Calculate proportioned width (max 550px for tablet, 92% for phone)
-          final double menuWidth = constraints.maxWidth > 600 ? 550 : constraints.maxWidth * 0.92;
-          
-          // Calculate item height based on childAspectRatio (0.8) and colCount (3)
-          // (Width per col) / aspect = height
-          final double colWidth = (menuWidth - 48) / 3; // Subtract internal padding
-          final double itemHeight = colWidth / 0.8;
-          final double pageViewHeight = (itemHeight * 2) + 48; // 2 rows + spacing
+          // Ultra-compact width for phone screens
+          final double menuWidth = constraints.maxWidth > 600 ? 420 : constraints.maxWidth * 0.86;
 
-          return Center(
-            child: Container(
-              width: menuWidth,
-              margin: const EdgeInsets.only(bottom: 120), // Clear the centered FAB
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF151518) : const Color(0xFFF2EFE4),
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+          return Stack(
+            children: [
+              // Tap outside to close (Invisible layer)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    if (widget.onClose != null) widget.onClose!();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(color: Colors.transparent),
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildHandle(isDark),
-                  const SizedBox(height: 16),
-                  _buildHeader(context, isDark),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: pageViewHeight,
-                    child: PageView(
-                      controller: _pageController,
-                      onPageChanged: (idx) => setState(() => _currentPage = idx),
-                      children: [
-                        _buildGridPage(context, isDark, 0),
-                        _buildGridPage(context, isDark, 1),
-                      ],
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 105), // Float precisely above the FAB
+                  child: GestureDetector(
+                    onTap: () {}, // Absorb taps on the menu itself
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                        child: Container(
+                          width: menuWidth,
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                          decoration: BoxDecoration(
+                            color: isDark 
+                                ? const Color(0xFF1A1A1E).withValues(alpha: 0.8) 
+                                : Colors.white.withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(
+                              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(child: _buildHandle(isDark)),
+                              const SizedBox(height: 12),
+                              _buildHeader(context, isDark),
+                              const SizedBox(height: 20),
+                              _buildUnifiedGrid(context, isDark),
+                              const SizedBox(height: 4),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildPageIndicator(isDark),
-                  const SizedBox(height: 8),
-                ],
+                ),
               ),
-            ),
+            ],
           );
         }
       ),
@@ -91,8 +98,8 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
 
   Widget _buildHandle(bool isDark) {
     return Container(
-      width: 40,
-      height: 4,
+      width: 32,
+      height: 3,
       decoration: BoxDecoration(
         color: isDark ? Colors.white10 : Colors.black12,
         borderRadius: BorderRadius.circular(2),
@@ -101,50 +108,49 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
   }
 
   Widget _buildHeader(BuildContext context, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'ADD',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-                color: isDark ? Colors.white30 : Colors.black38,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Quick Add',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-          ],
+        Text(
+          'Add to your day',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "Choose how you'd like to log food.",
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.white30 : Colors.black38,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildGridPage(BuildContext context, bool isDark, int pageIndex) {
+  Widget _buildUnifiedGrid(BuildContext context, bool isDark) {
     final List<Widget> items = [
       _buildActionItem(
         context,
-        icon: Icons.camera_alt_outlined,
-        label: 'Photo',
-        onTap: () => _showComingSoon(context, 'AI Photo Recognition'),
+        icon: Icons.favorite_outline,
+        label: 'Saved',
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeSearchScreen())),
       ),
       _buildActionItem(
         context,
-        icon: Icons.view_column_rounded,
-        label: 'Scan',
-        onTap: () => _showComingSoon(context, 'Barcode Scanner'),
+        icon: Icons.add_circle_outline,
+        label: 'Log meal',
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMealScreen())),
+      ),
+      _buildActionItem(
+        context,
+        icon: Icons.edit_outlined,
+        label: 'Manual',
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMealScreen())),
       ),
       _buildActionItem(
         context,
@@ -160,27 +166,15 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
       ),
       _buildActionItem(
         context,
-        icon: Icons.edit_outlined,
-        label: 'Manual',
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMealScreen())),
+        icon: Icons.camera_alt_outlined,
+        label: 'Photo',
+        onTap: () => _showComingSoon(context, 'AI Photo Recognition'),
       ),
       _buildActionItem(
         context,
-        icon: Icons.soup_kitchen_outlined,
-        label: 'Recipes',
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeSearchScreen())),
-      ),
-      _buildActionItem(
-        context,
-        icon: Icons.history,
-        label: 'Recent',
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MealLogScreen())),
-      ),
-      _buildActionItem(
-        context,
-        icon: Icons.favorite_outline,
-        label: 'Saved',
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeSearchScreen())),
+        icon: Icons.view_column_rounded,
+        label: 'Scan',
+        onTap: () => _showComingSoon(context, 'Barcode Scanner'),
       ),
       _buildActionItem(
         context,
@@ -190,24 +184,26 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
       ),
       _buildActionItem(
         context,
+        icon: Icons.soup_kitchen_outlined,
+        label: 'Recipes',
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecipeSearchScreen())),
+      ),
+      _buildActionItem(
+        context,
         icon: Icons.shopping_cart_outlined,
         label: 'List',
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShoppingListScreen())),
       ),
     ];
 
-    final start = pageIndex * 6;
-    final end = (start + 6).clamp(0, items.length);
-    final pageItems = items.sublist(start, end);
-
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 3,
-      mainAxisSpacing: 24, // More space between rows
-      crossAxisSpacing: 12,
-      childAspectRatio: 0.8, // Adjusted to fit label comfortably below circle
-      children: pageItems,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 10,
+      childAspectRatio: 0.9,
+      children: items,
     );
   }
 
@@ -227,53 +223,34 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
             if (widget.onClose != null) widget.onClose!();
             onTap();
           },
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
-            width: 64,
-            height: 64,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
               shape: BoxShape.circle,
               border: Border.all(
-                color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
+                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
                 width: 1,
               ),
             ),
             child: Center(
-              child: Icon(icon, color: isDark ? Colors.white : Colors.black87, size: 24),
+              child: Icon(icon, color: isDark ? Colors.white : Colors.black87, size: 18),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 9.5,
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white70 : Colors.black87,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildPageIndicator(bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(2, (index) {
-        final isSelected = _currentPage == index;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: isSelected ? 20 : 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.greenAccent : (isDark ? Colors.white10 : Colors.black12),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        );
-      }),
     );
   }
 

@@ -9,6 +9,7 @@ import '../services/database_helper.dart';
 import '../services/nutrition_feedback_service.dart';
 import '../services/shopping_list_service.dart';
 import 'recipe_detail_screen.dart';
+import 'widgets/recipe_widgets.dart';
 import 'widgets/app_loading.dart';
 import 'add_meal_screen.dart';
 import 'widgets/app_toast.dart';
@@ -223,9 +224,8 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                     _buildInputSection(isDark),
                     const SizedBox(height: 24),
                     if (_isLoading)
-                      const Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: AppLoading(),
+                      Column(
+                        children: List.generate(3, (index) => const RecipeCardShimmer()),
                       )
                     else if (_timeframe == 'Day' && _currentDailyPlan != null && _currentDailyPlan!.isNotEmpty)
                       ..._buildPlanList(isDark)

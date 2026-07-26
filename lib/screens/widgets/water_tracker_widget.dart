@@ -138,42 +138,44 @@ class _WaterTrackerWidgetState extends State<WaterTrackerWidget> {
   }
 
   Widget _buildWaterIcon(double progress, bool isDark) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.blueAccent.withValues(alpha: isDark ? 0.1 : 0.15),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
-      ),
-      child: Center(
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: progress),
-          duration: const Duration(milliseconds: 1000),
-          curve: Curves.easeInOutCubic,
-          builder: (context, val, child) {
-            return Transform.scale(
-              scale: 0.9 + (val * 0.3),
-              child: ShaderMask(
-                shaderCallback: (bounds) {
-                  return LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.blueAccent,
-                      Colors.blueAccent.withValues(alpha: 0.2),
-                    ],
-                    stops: [val, val],
-                  ).createShader(bounds);
-                },
-                child: const Icon(
-                  Icons.water_drop, 
-                  color: Colors.white, 
-                  size: 28
+    return RepaintBoundary(
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.blueAccent.withValues(alpha: isDark ? 0.1 : 0.15),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+        ),
+        child: Center(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: progress),
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.easeInOutCubic,
+            builder: (context, val, child) {
+              return Transform.scale(
+                scale: 0.9 + (val * 0.3),
+                child: ShaderMask(
+                  shaderCallback: (bounds) {
+                    return LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.blueAccent,
+                        Colors.blueAccent.withValues(alpha: 0.2),
+                      ],
+                      stops: [val, val],
+                    ).createShader(bounds);
+                  },
+                  child: const Icon(
+                    Icons.water_drop, 
+                    color: Colors.white, 
+                    size: 28
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

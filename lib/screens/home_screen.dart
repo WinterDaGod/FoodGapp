@@ -19,6 +19,7 @@ import 'shopping_list_screen.dart';
 import 'widgets/app_toast.dart';
 import 'widgets/app_loading.dart';
 import 'widgets/water_tracker_widget.dart';
+import 'widgets/recipe_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   FastingSession? _activeFast;
   UserProfile? _profile;
   List<MealLog> _todayLogs = [];
+  Map<String, double> _dailyProgress = {};
   bool _isLoading = true;
   DateTime _selectedDate = DateTime.now();
 
@@ -70,6 +72,25 @@ class _HomeScreenState extends State<HomeScreen> {
       final logs = await _db.getMealLogsForDate(userId, dateStr);
       final activeFast = await _fastingService.getActiveSession();
       final profile = await _db.getUserProfile(userId);
+
+      // Fetch 14-day history for the calendar strip
+      final now = DateTime.now();
+      final stripStart = now.subtract(const Duration(days: 3));
+      final stripEnd = stripStart.add(const Duration(days: 13));
+      
+      final history = await _db.getCalorieHistoryForRange(
+        userId, 
+        _formatDate(stripStart), 
+        _formatDate(stripEnd)
+      );
+
+      // Calculate progress percentage for each day in history
+      final Map<String, double> progressMap = {};
+      final double targetKcal = feedback.target.energyKcal > 0 ? feedback.target.energyKcal : 2000.0;
+      
+      history.forEach((date, consumed) {
+        progressMap[date] = consumed / targetKcal;
+      });
       
       if (mounted) {
         setState(() {
@@ -77,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _todayLogs = logs;
           _activeFast = activeFast;
           _profile = profile;
+          _dailyProgress = progressMap;
           _isLoading = false;
         });
       }
@@ -112,6 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildHeader(),
             CalendarStrip(
               selectedDate: _selectedDate,
+              dailyCalorieProgress: _dailyProgress,
               onDateSelected: (date) {
                 setState(() {
                   _selectedDate = date;
@@ -131,9 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const SizedBox(height: 12),
                       if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32.0),
-                          child: AppLoading(),
+                        Column(
+                          children: List.generate(4, (index) => const MealItemShimmer()),
                         )
                       else if (_latestFeedback != null) ...[
                         if (_activeFast != null) _buildActiveFastingWidget(),
@@ -578,51 +600,55 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         if (_todayLogs.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: !isDark ? [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
-              ] : null,
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.restaurant_menu_rounded, 
-                    size: 40, 
-                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No meals logged yet', 
-                  style: TextStyle(
-                    fontSize: 16, 
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Your personalized plan is ready.\nStart tracking to see your progress!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black45, fontSize: 12, height: 1.4),
-                ),
-              ],
-            ),
-          )
+          _buildEmptyState(isDark, cardColor)
         else
           ..._todayLogs.map((log) => _buildMealItem(log)),
       ],
+    );
+  }
+
+  Widget _buildEmptyState(bool isDark, Color cardColor) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
+        ] : null,
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.restaurant_menu_rounded, 
+              size: 40, 
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No meals logged yet', 
+            style: TextStyle(
+              fontSize: 16, 
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Your personalized plan is ready.\nStart tracking to see your progress!',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black45, fontSize: 12, height: 1.4),
+          ),
+        ],
+      ),
     );
   }
 

@@ -45,6 +45,23 @@ class Recipe {
   /// Robust ingredient count that falls back to the ingredients list length.
   int get displayIngredientCount => ingredientCount ?? ingredients?.length ?? 0;
 
+  /// Returns a URL for the image at a specific size (Spoonacular only).
+  /// Standard sizes: 90x90, 240x150, 312x231, 480x360, 556x370, 636x393.
+  String? getResizedImageUrl({int? width, int? height}) {
+    if (imageUrl == null) return null;
+    if (source != 'spoonacular') return imageUrl;
+
+    // Spoonacular URLs look like .../recipes/715538-312x231.jpg
+    // We can replace the size suffix.
+    final regex = RegExp(r'-\d+x\d+\.(jpg|jpeg|png)$');
+    if (regex.hasMatch(imageUrl!)) {
+      final ext = imageUrl!.split('.').last;
+      final size = width != null && height != null ? '${width}x$height' : '480x360';
+      return imageUrl!.replaceFirst(regex, '-$size.$ext');
+    }
+    return imageUrl;
+  }
+
   /// True when the four macro/energy figures are all present.
   bool get hasNutrition =>
       calories != null && protein != null && carbs != null && fat != null;

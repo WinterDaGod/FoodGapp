@@ -551,6 +551,26 @@ class DatabaseHelper {
     );
   }
 
+  /// Efficiently fetches total calories per day for a specific user within a 
+  /// date range (inclusive).
+  Future<Map<String, double>> getCalorieHistoryForRange(String userId, String startDate, String endDate) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+      '''
+      SELECT meal_date, SUM(calories) as total_calories
+      FROM meal_log
+      WHERE user_id = ? AND meal_date BETWEEN ? AND ?
+      GROUP BY meal_date
+      ''',
+      [userId, startDate, endDate],
+    );
+
+    return {
+      for (var row in results)
+        row['meal_date'] as String: (row['total_calories'] as num?)?.toDouble() ?? 0.0
+    };
+  }
+
   Future<List<DailyNutrition>> getNutritionHistory(String userId, int days) async {
     final List<DailyNutrition> history = [];
     final now = DateTime.now();

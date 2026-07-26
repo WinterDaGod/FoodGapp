@@ -21,17 +21,17 @@ class ExpandableFab extends StatelessWidget {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 40,
+      bottom: 36,
       child: Center(
         child: Container(
-          width: 76,
-          height: 76,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
             border: Border.all(
               color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.1), 
-              width: 4,
+              width: 3,
             ),
             boxShadow: [
               BoxShadow(
@@ -53,7 +53,7 @@ class ExpandableFab extends StatelessWidget {
                   child: Icon(
                     Icons.add, 
                     color: isDark ? Colors.white : Colors.black, 
-                    size: 40
+                    size: 32
                   ),
                 ),
               ),

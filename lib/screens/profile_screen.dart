@@ -1581,19 +1581,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildDivider(),
           _buildInfoTile(
-            icon: Icons.add_circle_outline,
-            iconColor: Colors.grey,
-            label: 'Meal Logging',
-            value: _profile?.mealLoggingStyle ?? 'Default',
-            onTap: () => _editField('Meal Logging', _profile?.mealLoggingStyle, [
-              const SelectionOption('Default', 'Standard logging experience'),
-              const SelectionOption('Manual', 'Direct numeric entry only'),
-            ], (val) {
-              _saveProfile(_profile!.copyWith(mealLoggingStyle: val));
-            }),
-          ),
-          _buildDivider(),
-          _buildInfoTile(
             icon: Icons.volume_up_outlined,
             iconColor: Colors.grey,
             label: 'Meal Log Sounds',

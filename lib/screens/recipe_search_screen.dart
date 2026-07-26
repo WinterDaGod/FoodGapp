@@ -328,43 +328,43 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
-    final alreadySaved = await _db.isSaved(userId, recipe.apiMealId);
+    final alreadySaved = _userRecipes.any((r) => r.apiMealId == recipe.apiMealId);
 
-    if (alreadySaved) {
-      await _db.deleteSavedMeal(userId, recipe.apiMealId);
-      if (mounted) {
-        AppToast.show(
-          context,
-          message: 'Removed from your recipes.',
-          title: 'Removed',
-          type: ToastType.info,
-        );
+    // Optimistic UI update
+    setState(() {
+      if (alreadySaved) {
+        _userRecipes.removeWhere((r) => r.apiMealId == recipe.apiMealId);
+      } else {
+        _userRecipes.insert(0, recipe);
       }
-    } else {
-      // Ensure nutrition is cached before saving the bookmark
-      if (recipe.hasNutrition) {
-        await _db.cacheRecipe(recipe);
-      }
+    });
 
-      final savedMeal = SavedMeal(
-        userId: userId,
-        apiMealId: recipe.apiMealId,
-        mealName: recipe.name,
-        imageUrl: recipe.imageUrl,
-      );
-
-      await _db.insertSavedMeal(savedMeal);
-      if (mounted) {
-        AppToast.show(
-          context,
-          message: 'Saved to your recipes tab.',
-          title: 'Recipe Saved',
-          type: ToastType.success,
+    try {
+      if (alreadySaved) {
+        await _db.deleteSavedMeal(userId, recipe.apiMealId);
+        if (mounted) {
+          AppToast.show(context, message: 'Removed from favorites', type: ToastType.info);
+        }
+      } else {
+        if (recipe.hasNutrition) await _db.cacheRecipe(recipe);
+        final savedMeal = SavedMeal(
+          userId: userId,
+          apiMealId: recipe.apiMealId,
+          mealName: recipe.name,
+          imageUrl: recipe.imageUrl,
         );
+        await _db.insertSavedMeal(savedMeal);
+        if (mounted) {
+          AppToast.show(context, message: 'Saved to favorites', type: ToastType.success);
+        }
+      }
+    } catch (e) {
+      // Rollback on error
+      _loadUserRecipes();
+      if (mounted) {
+        AppToast.show(context, message: 'Failed to update favorites', type: ToastType.error);
       }
     }
-
-    _loadUserRecipes();
   }
 
   Future<void> _addIngredientsToList(Recipe recipe) async {
@@ -823,7 +823,11 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return const AppLoading();
+      return ListView.builder(
+        itemCount: 4,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) => const RecipeCardShimmer(),
+      );
     }
 
     if (_error != null) {
