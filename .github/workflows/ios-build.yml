@@ -28,9 +28,10 @@ jobs:
       - name: Build iOS (No Codesign)
         # We migrate to Swift Package Manager (SPM) by ensuring Podfile is absent.
         # This resolves the 'podhelper.rb' error found on Windows.
+        # Explicitly disabling code signing requirements for the CI environment.
         run: |
           rm -rf ios/Podfile ios/Podfile.lock ios/Pods
-          flutter build ios --no-codesign --release
+          flutter build ios --release --no-codesign --build-name=1.1.6 --build-number=1 --extra-gen-snapshot-options=--obfuscate --extra-gen-snapshot-options=--split-debug-info=build/app/outputs/symbols
         
       - name: Package IPA
         run: |
