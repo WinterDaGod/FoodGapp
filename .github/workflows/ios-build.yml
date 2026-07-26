@@ -37,11 +37,12 @@ jobs:
         
       - name: Build iOS (No Codesign)
         # Using Swift Package Manager (SPM) and bypassing code signing for CI.
+        # Fixed obfuscation flags to use standard Flutter syntax.
         run: |
           rm -rf ios/Podfile ios/Podfile.lock ios/Pods
-          flutter build ios --release --no-codesign --build-name=1.1.6 --build-number=1 \
-            --extra-gen-snapshot-options=--obfuscate \
-            --extra-gen-snapshot-options=--split-debug-info=build/app/outputs/symbols
+          flutter build ios --release --no-codesign \
+            --build-name=1.1.6 --build-number=1 \
+            --obfuscate --split-debug-info=build/ios/symbols
         
       - name: Package IPA
         run: |
