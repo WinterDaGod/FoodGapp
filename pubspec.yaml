@@ -53,6 +53,7 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
+  ios: true
   image_path: "assets/icon.png"
   # This fixes the odd look by using a solid background layer
   adaptive_icon_background: "#FFFFFF" 

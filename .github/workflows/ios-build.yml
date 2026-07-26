@@ -1,0 +1,41 @@
+name: iOS Cloud Build
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build iOS App
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Get Dependencies
+        run: flutter pub get
+        
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install
+          
+      - name: Build iOS (No Codesign)
+        run: flutter build ios --no-codesign --release
+        
+      - name: Package App for Sideloading
+        run: |
+          mkdir -p Payload
+          mv build/ios/iphoneos/Runner.app Payload/
+          zip -r FoodGapp.ipa Payload
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoodGapp-iOS-IPA
+          path: FoodGapp.ipa
