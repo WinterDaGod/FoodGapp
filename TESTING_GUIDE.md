@@ -1,54 +1,50 @@
 # 🧪 FoodGapp Quality Assurance (QA) Guide
 
-This document outlines the professional testing procedures for the FoodGapp application. Testers should follow these steps to ensure functional reliability, AI accuracy, and UI/UX fidelity.
+This document outlines the professional testing procedures for the FoodGapp application. Testers should follow these steps to verify functional reliability, AI mathematical accuracy, and high-fidelity UX standards.
 
 ---
 
-## 🔑 1. Identity & Onboarding
-*   **Registration**: Create a new account. Verify that the biometric onboarding (Age, Height, Weight, etc.) correctly calculates the initial **DOST-FNRI** targets.
-*   **Persistence**: Close the app and reopen. Ensure you are automatically logged back into the dashboard.
-*   **Logout**: Log out and verify that the local session is cleared.
+## 🔑 1. Identity & Security
+*   **Password UX**: During registration, type a password. Verify the **Live Strength Checklist** turns green as you meet requirements. Test the **Visibility Toggle** (eye icon).
+*   **Onboarding**: Complete the biometric setup. Verify that **DOST-FNRI** targets are calculated and saved to the Profile.
+*   **Compliance**: Verify you cannot click "Create Account" until the **Terms & Privacy** checkbox is checked.
+*   **Error Haptics**: Intentionally mismatch passwords and tap Register. Verify the device triggers a **"Heavy" vibration** alert.
 
-## 🧠 2. FoodGapp AI Engine
-*   **Smart Planner**:
-    *   Select "Vegan" + "High Protein". Verify the AI generates a plant-based plan.
-    *   Use "Special Requests" (e.g., *"Italian mood"*). Verify the recipes reflect the requested cuisine.
+## 🧠 2. FoodGapp AI Engine (Primary)
+*   **AI-First Planning**:
+    *   Generate a **Daily Plan**. Verify the source label on cards says **"FoodGapp AI"**.
+    *   **Math Test**: Request a plan for **1358 kcal**. Sum the calories of the 3 meals. Verify the total is within +/- 50kcal and follows the **25/35/40 split**.
+    *   **Weekly Test**: Generate a 7-day plan. Verify all 21 meals are unique and diet-compliant.
+*   **Natural Language Logging (Describe)**:
+    *   Tap "Describe" in the Add menu. Type: *"I had 2 cups of white rice and a large chicken breast."*
+    *   Verify the AI correctly identifies items and pre-fills the manual entry screen.
 *   **Pantry Chef**:
-    *   Add 3 random ingredients (e.g., *"Egg, Tomato, Bread"*). Verify the AI invents a logical recipe using them.
-*   **Quick Paste**:
-    *   Enter a natural description: *"I had 2 cups of white rice and a large chicken breast."*
-    *   Verify the AI correctly identifies the ingredients and parses accurate macros.
+    *   Add random ingredients (e.g., *"Egg, Tomato, Bread"*). Verify the AI invents a creative, logical recipe.
 
-## 🍱 Discovery & Logging
-*   **Discovery Filters**:
-    *   Test "Mix & Match": Select "Low Carb" + "Keto". Verify the results update.
-    *   Test "Collapsible UI": Expand and collapse the filter grid using the icon in the search bar.
-*   **Meal Logging**:
-    *   Log a manual meal with multiple ingredients. Verify the "Total Weight" calculation.
-    *   **One-Tap Relog**: Go to "Recent Meals" and tap **Relog** on a past entry. Verify it appears on today's dashboard with the current time.
+## 🍱 Discovery & Saved Library
+*   **Multi-Select Filters**: Select "Vegetarian" + "High Protein". Verify results contain **zero meat** and prioritize high-protein plant options.
+*   **Saved Tab Performance**: Save 10+ recipes. Switch between "Discover" and "Saved". Verify the Saved tab **loads instantly** (sub-100ms) with full macro data.
+*   **AI Reasoning**: Open any AI recipe. Verify the **Health Coach Reasoning** box explains why the meal fits your specific goals.
 
-## 📊 Dashboard & Metrics
-*   **Surplus Tracking**:
-    *   Intentionally log a high-calorie meal to exceed your goal.
-    *   Verify the label switches to **"Calories over"** in Red with a **"+"** sign.
-*   **Hydration Tracker**:
-    *   Tap [+] multiple times. Verify the water drop icon **fills up** with a smooth liquid animation and the progress bar **glides** instead of snapping.
-*   **Progress Hub**:
-    *   Log a new weight. Verify the **Journey Chart** updates the "Current" marker and recalculates the **BMI Gauge**.
+## 📊 Dashboard & Tracking
+*   **Surplus Labels**: Log a meal exceeding your goal. Verify the label switches to **"Calories over"** in Red with a **"+"** sign.
+*   **Hydration Animation**: Tap [+] in the water tracker. Verify the water drop icon **fills up** with a smooth liquid animation.
+*   **BMI Gauge**: Update your weight. Verify the BMI needle moves and the **Journey Chart** marker updates accurately.
 
-## 🛌 Intermittent Fasting
-*   **Timer Logic**: Start a fast. Verify the "Time Remaining" countdown is accurate.
-*   **Stage Transition**: Let the timer run (or simulate time change). Verify the widget correctly displays biological stages (e.g., *"Stage 1: Blood Sugar Rising"*).
-*   **History**: End a fast manually. Verify it appears correctly in the Fasting Calendar.
+## 🛒 Shopping List Management
+*   **Multi-Serving Add**: Generate a meal plan. Tap **"Add all to List"**.
+    *   Verify the Meal Planner **does not reload/flash** (loading should be inside the button).
+    *   Tap it again. Verify ingredients in the list **increment quantity (x2)** instead of duplicating.
+*   **Aisle Grouping**: Verify ingredients are automatically categorized (e.g., Apple -> Produce).
+*   **Clear All**: Tap the trash icon in the header. Verify the **Confirmation Dialog** appears before the list is wiped.
 
-## 🛡️ Reliability & Offline Resilience
-*   **Offline Discovery**: Turn off Wi-Fi/Data and open the Recipes tab. Verify that the app displays **"Featured Recipes from Local Library"** instead of an empty screen.
-*   **API Fail-over**: Verify that if a search fails, the blue/orange warning bar appears, explaining which backup source (Spoonacular or TheMealDB) is currently active.
+## 🛡️ Resilience & Offline
+*   **Offline Mode**: Turn off data/Wi-Fi. Open Recipes. Verify **"Featured Recipes from Local Library"** are displayed.
+*   **API Fail-over**: Simulate a database limit. Verify the app automatically uses **FoodGapp AI** to generate your plan without erroring.
 
-## 🎨 Visual & Haptic Fidelity
-*   **Dark Mode**: Switch the device to Dark Mode. Audit all screens for high-contrast legibility and premium aesthetic consistency.
-*   **Haptic Audit**: Enable "Meal Log Sounds" in Profile. Log a meal and verify you feel a subtle vibration and hear a system click.
-*   **Link Verification**: Click on a recipe detail. Verify that the **AI Reasoning** box matches the specific goals selected.
+## 🎨 Visual Audit
+*   **Universal Themes**: Audit every screen in both **Cream Light** and **Premium Dark** modes for high-contrast legibility.
+*   **Meal Type Badges**: Verify that logged meals on the dashboard show color-coded badges (Breakfast: Orange, Lunch: Green, Dinner: Blue).
 
 ---
-*FoodGapp QA Protocol v1.1.0*
+*FoodGapp QA Protocol v1.1.0 — Production Release Ready*

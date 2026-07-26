@@ -13,8 +13,16 @@ import 'widgets/app_toast.dart';
 class AddMealScreen extends StatefulWidget {
   final Recipe? recipe;
   final MealLog? existingLog;
+  final String? initialName;
+  final List<Ingredient>? initialIngredients;
 
-  const AddMealScreen({super.key, this.recipe, this.existingLog});
+  const AddMealScreen({
+    super.key, 
+    this.recipe, 
+    this.existingLog,
+    this.initialName,
+    this.initialIngredients,
+  });
 
   @override
   State<AddMealScreen> createState() => _AddMealScreenState();
@@ -54,6 +62,12 @@ class _AddMealScreenState extends State<AddMealScreen> {
 
       _updateControllers();
       _isMacrosView = true; // Recipes already have macros
+    } else if (widget.initialIngredients != null) {
+      // AI Described meal pre-fill
+      _nameController.text = widget.initialName ?? '';
+      _ingredients.addAll(widget.initialIngredients!);
+      _calculateFromIngredients();
+      _isMacrosView = false; // Show ingredients list
     } else if (widget.existingLog != null) {
       final log = widget.existingLog!;
       _nameController.text = log.foodName;

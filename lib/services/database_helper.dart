@@ -806,6 +806,36 @@ class DatabaseHelper {
     );
   }
 
+  /// Saves multiple shopping items in a single high-speed transaction.
+  /// Handles both updates (if item exists for recipe) and new inserts.
+  Future<void> saveShoppingItemsBulk(String userId, List<ShoppingItem> newItems) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      for (var item in newItems) {
+        // Look for existing item with same name and recipe in this transaction
+        final List<Map<String, dynamic>> existing = await txn.query(
+          'shopping_list',
+          where: 'user_id = ? AND name = ? AND (recipe_name = ? OR (recipe_name IS NULL AND ? IS NULL))',
+          whereArgs: [userId, item.name, item.recipeName, item.recipeName],
+          limit: 1,
+        );
+
+        if (existing.isNotEmpty) {
+          final id = existing.first['id'] as int;
+          final currentQty = (existing.first['quantity'] as num).toInt();
+          await txn.update(
+            'shopping_list',
+            {'quantity': currentQty + item.quantity},
+            where: 'id = ?',
+            whereArgs: [id],
+          );
+        } else {
+          await txn.insert('shopping_list', item.toMap());
+        }
+      }
+    });
+  }
+
   Future<void> deleteShoppingItem(int id) async {
     final db = await database;
     await db.delete(

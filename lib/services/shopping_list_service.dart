@@ -2,7 +2,7 @@ import '../models/recipe.dart';
 import '../models/shopping_item.dart';
 import 'auth_service.dart';
 import 'database_helper.dart';
-import 'api/gemini_service.dart';
+import 'api/foodgapp_ai_service.dart';
 
 class ShoppingListService {
   ShoppingListService._internal();
@@ -10,7 +10,61 @@ class ShoppingListService {
 
   final _db = DatabaseHelper.instance;
   final _auth = AuthService();
-  final _gemini = GeminiService();
+  final _ai = FoodGappAiService();
+
+  /// Efficiently extracts and adds all ingredients from multiple recipes in a 
+  /// single batch operation using database transactions.
+  Future<void> addIngredientsFromRecipesBulk(List<Recipe> recipes) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null || recipes.isEmpty) return;
+
+    // 1. Extract and unify all ingredients
+    final List<String> allIngredientNames = [];
+    final List<Map<String, dynamic>> rawPairs = []; // {ing, recipeName}
+
+    for (var recipe in recipes) {
+      if (recipe.ingredients == null) continue;
+      for (var ing in recipe.ingredients!) {
+        final name = ing.trim();
+        if (name.isNotEmpty) {
+          allIngredientNames.add(name);
+          rawPairs.add({'name': name, 'recipe': recipe.name});
+        }
+      }
+    }
+
+    if (rawPairs.isEmpty) return;
+
+    // 2. Batch Categorization (Single AI pass for missing items)
+    final uniqueNames = allIngredientNames.toSet().toList();
+    final categoryMap = await _categorizeItems(uniqueNames);
+
+    // 3. Pre-merge in memory to reduce database operations
+    // Key: "Name|RecipeName"
+    final Map<String, ShoppingItem> merged = {};
+
+    for (var pair in rawPairs) {
+      final name = pair['name'];
+      final recipeName = pair['recipe'];
+      final key = "$name|$recipeName";
+
+      if (merged.containsKey(key)) {
+        final existing = merged[key]!;
+        merged[key] = existing.copyWith(quantity: existing.quantity + 1);
+      } else {
+        merged[key] = ShoppingItem(
+          userId: userId,
+          name: name,
+          recipeName: recipeName,
+          category: categoryMap[name] ?? 'Pantry',
+          quantity: 1,
+        );
+      }
+    }
+
+    // 4. Save to database in a single high-speed transaction
+    await _db.saveShoppingItemsBulk(userId, merged.values.toList());
+  }
 
   /// Extracts all ingredients from a recipe and adds them to the persistent 
   /// shopping list, intelligently grouped by store aisles.
@@ -96,7 +150,7 @@ class ShoppingListService {
 
     // 2. Batch AI Request (Smart, Low Frequency)
     try {
-      final aiMap = await _gemini.categorizeIngredients(missingFromCache);
+      final aiMap = await _ai.categorizeIngredients(missingFromCache);
       if (aiMap != null) {
         for (var entry in aiMap.entries) {
           results[entry.key] = entry.value;

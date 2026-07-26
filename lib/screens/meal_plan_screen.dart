@@ -216,15 +216,15 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             _buildHeader(isDark),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildInputSection(isDark),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     if (_isLoading)
                       const Padding(
-                        padding: EdgeInsets.all(48.0),
+                        padding: EdgeInsets.all(32.0),
                         child: AppLoading(),
                       )
                     else if (_timeframe == 'Day' && _currentDailyPlan != null && _currentDailyPlan!.isNotEmpty)
@@ -249,13 +249,16 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     return FloatingActionButton.extended(
       onPressed: _isAddingToList ? null : () async {
         final List<Recipe> allRecipes = _timeframe == 'Day' 
-          ? _currentDailyPlan! 
-          : _currentWeeklyPlan!.days.values.expand((x) => x).toList();
+          ? (_currentDailyPlan ?? []) 
+          : (_currentWeeklyPlan?.days.values.expand((x) => x).toList() ?? []);
           
+        if (allRecipes.isEmpty) return;
+
         setState(() => _isAddingToList = true);
-        for (var recipe in allRecipes) {
-          await ShoppingListService.instance.addIngredientsFromRecipe(recipe);
-        }
+        
+        // Optimized bulk addition
+        await ShoppingListService.instance.addIngredientsFromRecipesBulk(allRecipes);
+        
         if (mounted) {
           setState(() => _isAddingToList = false);
           Navigator.of(context, rootNavigator: true).push(
@@ -283,13 +286,13 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   Widget _buildHeader(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Meal Planner',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
           ),
           IconButton(
             onPressed: () => Navigator.pop(context),
@@ -303,10 +306,10 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   Widget _buildInputSection(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
         ] : null,
@@ -315,7 +318,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTimeframeToggle(isDark),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -324,28 +327,29 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(_timeframe == 'Day' ? 'Daily Calories' : 'Daily Average Calories', 
-                        style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
-                    const SizedBox(height: 8),
+                        style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 12)),
+                    const SizedBox(height: 6),
                     _buildNumericField(_caloriesController, 'e.g. 2000'),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               GestureDetector(
                 onTap: () => setState(() => _isPreferencesExpanded = !_isPreferencesExpanded),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: _isPreferencesExpanded 
                         ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05))
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     _isPreferencesExpanded ? Icons.filter_list_off : Icons.filter_list,
                     color: _isPreferencesExpanded 
                         ? (isDark ? Colors.greenAccent : Colors.orangeAccent)
                         : (isDark ? Colors.white38 : Colors.black38),
+                    size: 22,
                   ),
                 ),
               ),
@@ -355,22 +359,22 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             firstChild: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 Row(
                   children: [
-                    Text('Preferences', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
+                    Text('Preferences', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 12)),
                     const Spacer(),
                     if (_selectedDiets.isNotEmpty)
                       TextButton(
                         onPressed: () => setState(() => _selectedDiets.clear()),
-                        child: const Text('Clear All', style: TextStyle(fontSize: 12)),
+                        child: const Text('Clear All', style: TextStyle(fontSize: 11)),
                       ),
                   ],
                 ),
                 ..._dietGroups.entries.map((group) => _buildDietGroup(group.key, group.value, isDark)),
-                const SizedBox(height: 24),
-                Text('Special Requests (AI)', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                Text('Special Requests (AI)', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 12)),
+                const SizedBox(height: 10),
                 _buildTextField(_prefsController, 'e.g. No seafood, high fiber, Italian mood...'),
               ],
             ),
@@ -378,7 +382,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             crossFadeState: _isPreferencesExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
             duration: const Duration(milliseconds: 300),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -386,11 +390,11 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: isDark ? const Color(0xFF333333) : Colors.black,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
               ),
-              child: Text(_isLoading ? 'Generating...' : 'Generate Plan', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(_isLoading ? 'Generating...' : 'Generate Plan', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             ),
           ),
         ],
@@ -646,29 +650,29 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   Widget _buildMealCard(String label, Recipe recipe, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: !isDark ? [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))
         ] : null,
       ),
       child: InkWell(
         onTap: () => Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipe: recipe)),
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (recipe.imageUrl != null)
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                child: Image.network(recipe.imageUrl!, height: 180, width: double.infinity, fit: BoxFit.cover),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                child: Image.network(recipe.imageUrl!, height: 150, width: double.infinity, fit: BoxFit.cover),
               ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -676,50 +680,50 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.orangeAccent.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(label, style: const TextStyle(color: Colors.orangeAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text(label, style: const TextStyle(color: Colors.orangeAccent, fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
-                      Text('${recipe.calories?.round()} kcal', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontWeight: FontWeight.bold)),
+                      Text('${recipe.calories?.round()} kcal', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontWeight: FontWeight.bold, fontSize: 14)),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(recipe.name, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
                   const SizedBox(height: 12),
+                  Text(recipe.name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                  const SizedBox(height: 8),
                   _buildMacroRow(recipe, isDark),
                   if (recipe.aiReasoning != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Colors.blueAccent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.auto_awesome, color: Colors.blueAccent, size: 16),
+                          const Icon(Icons.auto_awesome, color: Colors.blueAccent, size: 14),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               recipe.aiReasoning!,
-                              style: const TextStyle(color: Colors.blueAccent, fontSize: 12, fontStyle: FontStyle.italic),
+                              style: const TextStyle(color: Colors.blueAccent, fontSize: 11, fontStyle: FontStyle.italic),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   if (recipe.ingredients != null)
                     Text(
                       recipe.ingredients!.take(3).join(', ') + (recipe.ingredients!.length > 3 ? '...' : ''),
-                      style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 13),
+                      style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 12),
                     ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -732,7 +736,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                           color: _savedRecipeIds.contains(recipe.apiMealId) ? Colors.orangeAccent : null,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: _buildQuickActionButton(
                           icon: Icons.add_circle_outline,

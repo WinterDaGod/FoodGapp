@@ -4,10 +4,10 @@ import '../../config/api_config.dart';
 import '../../models/ingredient.dart';
 import '../../models/recipe.dart';
 
-class GeminiService {
+class FoodGappAiService {
   final GenerativeModel _model;
 
-  GeminiService()
+  FoodGappAiService()
       : _model = GenerativeModel(
           model: 'gemini-3.6-flash',
           apiKey: ApiConfig.geminiApiKey,
@@ -62,7 +62,62 @@ Response MUST be a single JSON object with these keys:
       final Map<String, dynamic> data = jsonDecode(jsonString);
       return Ingredient.fromMap(data);
     } catch (e) {
-      print('Gemini Error: $e');
+      print('FoodGapp AI Error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> parseMealDescription(String text) async {
+    if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
+      throw Exception('Gemini API Key not set');
+    }
+
+    final prompt = '''
+You are a clinical dietitian. Parse this meal description into a structured JSON format.
+Description: "$text"
+
+Instructions:
+1. Identify all individual food items/ingredients.
+2. Estimate portions in grams (g) if not specified.
+3. Provide accurate Calories (kcal), Protein (g), Carbohydrates (g), and Fat (g) for each item.
+4. Suggest a clear, catchy "foodName" for the entire meal.
+5. If the input is not food, return an error or null equivalent.
+
+CRITICAL: Return RAW JSON only.
+
+Expected Response Format:
+{
+  "foodName": "...",
+  "ingredients": [
+    {
+      "name": "...",
+      "amount": 100.0,
+      "unit": "g",
+      "calories": 150.0,
+      "protein": 10.0,
+      "carbs": 5.0,
+      "fat": 5.0,
+      "isVerified": true,
+      "source": "FoodGapp"
+    },
+    ...
+  ]
+}
+''';
+
+    try {
+      final content = [Content.text(prompt)];
+      final response = await _model.generateContent(content);
+      String? jsonString = response.text;
+      if (jsonString == null) return null;
+
+      if (jsonString.contains('```')) {
+        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+      }
+
+      return jsonDecode(jsonString);
+    } catch (e) {
+      print('FoodGapp AI Parse Meal Error: $e');
       return null;
     }
   }
@@ -139,7 +194,7 @@ Expected Response Format:
 
       return jsonDecode(jsonString);
     } catch (e) {
-      print('Gemini Selection Error: $e');
+      print('FoodGapp AI Selection Error: $e');
       return null;
     }
   }
@@ -219,7 +274,7 @@ Expected Response Format:
 
       return jsonDecode(jsonString);
     } catch (e) {
-      print('Gemini Fallback Generation Error: $e');
+      print('FoodGapp AI Fallback Generation Error: $e');
       return null;
     }
   }
@@ -286,7 +341,7 @@ Expected Response Format:
 
       return jsonDecode(jsonString);
     } catch (e) {
-      print('Gemini Weekly Fallback Error: $e');
+      print('FoodGapp AI Weekly Fallback Error: $e');
       return null;
     }
   }
@@ -351,7 +406,7 @@ Response Format:
       final Map<String, dynamic> data = jsonDecode(jsonString);
       return (data['results'] as List?)?.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('Gemini Recipe Search Error: $e');
+      print('FoodGapp AI Recipe Search Error: $e');
       return null;
     }
   }
@@ -402,7 +457,7 @@ CRITICAL: Return RAW JSON only.
 
       return decoded.map((key, value) => MapEntry(key.toString(), value.toString()));
     } catch (e) {
-      print('Gemini Reasoning Error: $e');
+      print('FoodGapp AI Reasoning Error: $e');
       return null;
     }
   }
@@ -461,7 +516,7 @@ Response Format:
       final Map<String, dynamic> data = jsonDecode(jsonString);
       return (data['results'] as List?)?.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('Gemini Pantry Chef Error: $e');
+      print('FoodGapp AI Pantry Chef Error: $e');
       return null;
     }
   }
@@ -504,7 +559,7 @@ CRITICAL: Return RAW JSON only.
 
       return decoded.map((key, value) => MapEntry(key.toString(), value.toString()));
     } catch (e) {
-      print('Gemini Categorization Error: $e');
+      print('FoodGapp AI Categorization Error: $e');
       return null;
     }
   }

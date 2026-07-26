@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/ingredient.dart';
 import '../../services/api/usda_service.dart';
 import '../../services/api/spoonacular_service.dart';
-import '../../services/api/gemini_service.dart';
+import '../../services/api/foodgapp_ai_service.dart';
 import 'app_loading.dart';
 import 'app_toast.dart';
 
@@ -16,7 +16,7 @@ class AddIngredientModal extends StatefulWidget {
 class _AddIngredientModalState extends State<AddIngredientModal> {
   final _usda = UsdaService();
   final _spoonacular = SpoonacularService();
-  final _gemini = GeminiService();
+  final _ai = FoodGappAiService();
   
   int _activeTab = 0; // 0: USDA Search, 1: Quick Paste
   final _searchController = TextEditingController();
@@ -56,7 +56,7 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
 
     setState(() => _isSearching = true);
     try {
-      final result = await _gemini.parseIngredient(text);
+      final result = await _ai.parseIngredient(text);
 
       if (mounted) {
         if (result != null) {

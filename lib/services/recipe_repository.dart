@@ -3,7 +3,7 @@ import '../models/weekly_plan.dart';
 import 'api/api_exceptions.dart';
 import 'api/spoonacular_service.dart';
 import 'api/the_meal_db_service.dart';
-import 'api/gemini_service.dart';
+import 'api/foodgapp_ai_service.dart';
 import 'database_helper.dart';
 import 'nutrition_cache_store.dart';
 
@@ -11,23 +11,23 @@ import 'nutrition_cache_store.dart';
 /// data sources and the cache behind one API.
 ///
 /// Policy:
-///  * Gemini AI is primary for discovery and creativity.
+///  * FoodGapp AI is primary for discovery and creativity.
 ///  * Spoonacular is the reliable backup for traditional recipes.
 ///  * TheMealDB is the emergency backup.
 class RecipeRepository {
   RecipeRepository({
     SpoonacularService? spoonacular,
     TheMealDbService? theMealDb,
-    GeminiService? gemini,
+    FoodGappAiService? ai,
     NutritionCacheStore? cache,
   })  : _spoonacular = spoonacular ?? SpoonacularService(),
         _theMealDb = theMealDb ?? TheMealDbService(),
-        _gemini = gemini ?? GeminiService(),
+        _ai = ai ?? FoodGappAiService(),
         _cache = cache ?? DbNutritionCache();
 
   final SpoonacularService _spoonacular;
   final TheMealDbService _theMealDb;
-  final GeminiService _gemini;
+  final FoodGappAiService _ai;
   final NutritionCacheStore _cache;
 
   /// Searches recipes by name. Tries Gemini AI first for creative results, 
@@ -45,7 +45,7 @@ class RecipeRepository {
 
     // 1. Try Gemini AI as primary
     try {
-      final aiResults = await _gemini.searchRecipes(query: effectiveQuery, diet: diet);
+      final aiResults = await _ai.searchRecipes(query: effectiveQuery, diet: diet);
       if (aiResults != null && aiResults.isNotEmpty) {
         final recipes = aiResults.map((m) {
           final ings = (m['ingredients'] as List?)?.cast<String>();
@@ -114,7 +114,7 @@ class RecipeRepository {
         query = 'High protein recipes with at least $minProtein g protein';
       }
 
-      final aiResults = await _gemini.searchRecipes(
+      final aiResults = await _ai.searchRecipes(
         query: query, 
         diet: diet,
         number: number
@@ -179,7 +179,7 @@ class RecipeRepository {
   Future<List<Recipe>> searchByPantry(List<String> ingredients) async {
     // 1. Try Gemini AI
     try {
-      final aiResults = await _gemini.chefFromPantry(ingredients: ingredients);
+      final aiResults = await _ai.chefFromPantry(ingredients: ingredients);
       if (aiResults != null && aiResults.isNotEmpty) {
         final recipes = aiResults.map((m) {
           final ings = (m['ingredients'] as List?)?.cast<String>();

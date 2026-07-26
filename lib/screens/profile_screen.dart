@@ -783,60 +783,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Text(
                 'Personal Info', 
                 style: TextStyle(
-                  fontSize: 28, 
+                  fontSize: 24, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildPersonalInfoSection(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Text(
                 'Measurements', 
                 style: TextStyle(
-                  fontSize: 28, 
+                  fontSize: 24, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildMeasurementsSection(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Text(
                 'Daily Targets', 
                 style: TextStyle(
-                  fontSize: 28, 
+                  fontSize: 24, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildDailyTargetsSection(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildTargetManagementButtons(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Text(
                 'Customizations', 
                 style: TextStyle(
-                  fontSize: 28, 
+                  fontSize: 24, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildCustomizationsSection(),
-              const SizedBox(height: 48),
-              _buildMaintenanceSection(),
               const SizedBox(height: 32),
+              _buildMaintenanceSection(),
+              const SizedBox(height: 24),
               _buildSignOutButton(),
               const SizedBox(height: 100), // Space for FAB
             ],
@@ -854,22 +854,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'Maintenance', 
           style: TextStyle(
-            fontSize: 28, 
+            fontSize: 24, 
             fontWeight: FontWeight.bold, 
             color: isDark ? Colors.white : Colors.black,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: !isDark ? [
               BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
             ] : null,
           ),
           child: Material(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(24),
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
@@ -941,10 +941,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))
         ] : null,
@@ -954,24 +954,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             children: [
               Container(
-                width: 80,
-                height: 80,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Colors.orangeAccent, Colors.deepOrange],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
                   child: Text(
                     initial,
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -979,7 +979,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       name,
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white : Colors.black,
                         height: 1.1,
@@ -990,7 +990,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       email,
                       style: TextStyle(
                         color: isDark ? Colors.white38 : Colors.black45,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                     ),
                   ],
@@ -998,27 +998,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Row(
             children: [
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.verified_user_outlined, size: 14, color: isDark ? Colors.white38 : Colors.black38),
+                      Icon(Icons.verified_user_outlined, size: 12, color: isDark ? Colors.white38 : Colors.black38),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           memberSince,
                           style: TextStyle(
                             color: isDark ? Colors.white38 : Colors.black54,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -1028,19 +1028,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               if (_profile?.healthGoal != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.greenAccent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '🔥 ${_profile!.healthGoal}',
                     style: const TextStyle(
                       color: Colors.green,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1056,14 +1056,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
         ] : null,
       ),
       child: Material(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
@@ -1259,14 +1259,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
         ] : null,
       ),
       child: Material(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
@@ -1522,31 +1522,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         style: TextStyle(
           color: isDark ? Colors.white : Colors.black, 
           fontWeight: FontWeight.bold, 
-          fontSize: 18,
+          fontSize: 16,
         ),
       ),
-      trailing: Icon(Icons.chevron_right, color: isDark ? Colors.white24 : Colors.black12, size: 20),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      trailing: Icon(Icons.chevron_right, color: isDark ? Colors.white24 : Colors.black12, size: 18),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
     );
   }
 
   Widget _buildDivider() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05), height: 1, indent: 70);
+    return Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05), height: 1, indent: 64);
   }
 
   Widget _buildCustomizationsSection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
         ] : null,
       ),
       child: Material(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [

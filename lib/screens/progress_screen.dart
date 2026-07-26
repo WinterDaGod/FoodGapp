@@ -27,7 +27,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   UserProfile? _profile;
   List<DailyNutrition> _nutritionHistory = [];
-  List<WeightLog> _weightHistory = [];
   List<Map<String, dynamic>> _waterHistory = [];
   List<FastingSession> _fastingHistory = [];
   bool _isLoading = true;
@@ -60,7 +59,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
     final profile = await _db.getUserProfile(userId);
     final nutrition = await _db.getNutritionHistory(userId, days);
-    final weight = await _db.getWeightHistory(userId, days);
     final water = await _db.getWaterHistory(userId, days);
     final fasting = await _fastingService.getHistory();
 
@@ -68,7 +66,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
       setState(() {
         _profile = profile;
         _nutritionHistory = nutrition;
-        _weightHistory = weight;
         _waterHistory = water;
         _fastingHistory = fasting;
         _isLoading = false;

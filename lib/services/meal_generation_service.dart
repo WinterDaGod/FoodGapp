@@ -5,7 +5,7 @@ import '../services/auth_service.dart';
 import '../services/nutrition_feedback_service.dart';
 import '../services/recipe_repository.dart';
 import '../services/database_helper.dart';
-import '../services/api/gemini_service.dart';
+import '../services/api/foodgapp_ai_service.dart';
 import '../services/api/api_exceptions.dart';
 
 class MealGenerationService {
@@ -16,7 +16,7 @@ class MealGenerationService {
   final _recipeRepo = RecipeRepository();
   final _auth = AuthService();
   final _db = DatabaseHelper.instance;
-  final _gemini = GeminiService();
+  final _ai = FoodGappAiService();
 
   /// Suggests recipes that fit into the user's remaining calorie and macro
   /// budget for today.
@@ -72,7 +72,7 @@ class MealGenerationService {
   }) async {
     try {
       // 1. PRIMARY: Generate from FoodGapp AI (Scratch) for bespoke creative plans
-      final aiPlanData = await _gemini.generateDailyPlanFromScratch(
+      final aiPlanData = await _ai.generateDailyPlanFromScratch(
         targetKcal: targetKcal,
         targetProtein: targetProtein,
         targetCarbs: targetCarbs,
@@ -139,7 +139,7 @@ class MealGenerationService {
   Future<WeeklyMealPlan?> generateWeeklyPlan({int? targetCalories, List<String>? diets, String? preferences}) async {
     try {
       // 1. PRIMARY: Generate from FoodGapp AI (Scratch) for bespoke creative weeks
-      final aiPlanData = await _gemini.generateWeeklyPlanFromScratch(
+      final aiPlanData = await _ai.generateWeeklyPlanFromScratch(
         targetCalories: targetCalories ?? 2000,
         diets: diets,
         preferences: preferences,

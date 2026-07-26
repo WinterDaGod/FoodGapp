@@ -125,31 +125,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 onRefresh: _loadData,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       if (_isLoading)
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 48.0),
+                          padding: EdgeInsets.symmetric(vertical: 32.0),
                           child: AppLoading(),
                         )
                       else if (_latestFeedback != null) ...[
                         if (_activeFast != null) _buildActiveFastingWidget(),
                         _buildMainCalorieCard(_latestFeedback!),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         WaterTrackerWidget(
                           userId: _auth.currentUser?.uid ?? '',
                           date: _formatDate(_selectedDate),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildMacroRow(_latestFeedback!),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
                         _buildMealsSection(),
                       ] else
                         const Center(child: Text('Setup your profile to see data.')),
-                      const SizedBox(height: 20), // Reduced spacing
+                      const SizedBox(height: 16), // Reduced spacing
                     ],
                   ),
                 ),
@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final bool isExtraSmall = constraints.maxWidth < 420;
         
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -186,19 +186,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 '${_getGreeting()}, ${_profile?.name?.split(' ').first ?? 'User'}',
                 style: TextStyle(
                   color: isDark ? Colors.white38 : Colors.black38,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.1,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       _getMonthName(_selectedDate.month),
                       style: TextStyle(
-                        fontSize: isExtraSmall ? 24 : 28, 
+                        fontSize: isExtraSmall ? 22 : 26, 
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white : Colors.black87,
                       ),
@@ -324,11 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final stage = session.currentStage;
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.blueAccent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -338,32 +338,32 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.timer, color: Colors.blueAccent),
-              const SizedBox(width: 12),
-              const Text('Active Fast', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              const Icon(Icons.timer, color: Colors.blueAccent, size: 20),
+              const SizedBox(width: 8),
+              const Text('Active Fast', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const Spacer(),
-              Text(session.timeRemaining, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+              Text(session.timeRemaining, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 13)),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LinearProgressIndicator(
             value: session.progress,
             backgroundColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
             valueColor: const AlwaysStoppedAnimation(Colors.blueAccent),
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(4),
+            minHeight: 6,
+            borderRadius: BorderRadius.circular(3),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Stage ${stage.index}: ${stage.name}', 
-                style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)
+                style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)
               ),
               Text(
                 '${(session.progress * 100).round()}%', 
-                style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12)
+                style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 11)
               ),
             ],
           ),
@@ -399,10 +399,10 @@ class _HomeScreenState extends State<HomeScreen> {
         final bool isSmall = constraints.maxWidth < 350;
         
         return Container(
-          padding: EdgeInsets.all(isSmall ? 20 : 24),
+          padding: EdgeInsets.all(isSmall ? 16 : 20),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: !isDark ? [
               BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))
             ] : null,
@@ -422,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Text(
                             (diff < 0 && showSurplus) ? '+$displayValue' : '$displayValue',
                             style: TextStyle(
-                              fontSize: isSmall ? 48 : 64, 
+                              fontSize: isSmall ? 42 : 54, 
                               fontWeight: FontWeight.bold,
                               color: isDark ? Colors.white : Colors.black,
                             ),
@@ -432,48 +432,48 @@ class _HomeScreenState extends State<HomeScreen> {
                           label,
                           style: TextStyle(
                             color: diff < 0 && showSurplus ? Colors.redAccent : Colors.orangeAccent, 
-                            fontSize: isSmall ? 16 : 18,
+                            fontSize: isSmall ? 14 : 16,
                             fontWeight: isDark ? FontWeight.normal : FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
                           'Goal: $goal · Consumed: $consumed',
                           style: TextStyle(
                             color: isDark ? Colors.white24 : Colors.black26, 
-                            fontSize: isSmall ? 10 : 12,
+                            fontSize: isSmall ? 9 : 11,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   NutrientCircle(
                     progress: consumed / goal,
                     icon: Icons.local_fire_department,
                     color: Colors.orangeAccent,
-                    size: isSmall ? 90 : 110,
+                    size: isSmall ? 75 : 90,
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               Divider(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.show_chart, color: isDark ? Colors.white38 : Colors.black38, size: 18),
+                  Icon(Icons.show_chart, color: isDark ? Colors.white38 : Colors.black38, size: 16),
                   const SizedBox(width: 8),
                   Text(
                     'See burned calories', 
                     style: TextStyle(
                       color: isDark ? Colors.white38 : Colors.black45, 
                       fontWeight: FontWeight.w500,
-                      fontSize: isSmall ? 12 : 14,
+                      fontSize: isSmall ? 11 : 13,
                     ),
                   ),
                   const Spacer(),
-                  Icon(Icons.chevron_right, color: isDark ? Colors.white38 : Colors.black26, size: 18),
+                  Icon(Icons.chevron_right, color: isDark ? Colors.white38 : Colors.black26, size: 16),
                 ],
               ),
             ],
@@ -486,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMacroRow(NutritionFeedback feedback) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double height = constraints.maxWidth < 350 ? 150 : 180;
+        final double height = constraints.maxWidth < 350 ? 140 : 160;
         
         final bool showSurplus = _profile?.showSurplus ?? true;
 
@@ -564,26 +564,26 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'Meals', 
               style: TextStyle(
-                fontSize: 32, 
+                fontSize: 28, 
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
               )
             ),
             TextButton.icon(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MealLogScreen())),
-              icon: Text('See more', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45)),
-              label: Icon(Icons.chevron_right, color: isDark ? Colors.white38 : Colors.black26, size: 18),
+              icon: Text('See more', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
+              label: Icon(Icons.chevron_right, color: isDark ? Colors.white38 : Colors.black26, size: 16),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         if (_todayLogs.isEmpty)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: cardColor,
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: !isDark ? [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
               ] : null,
@@ -591,31 +591,31 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.restaurant_menu_rounded, 
-                    size: 48, 
+                    size: 40, 
                     color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 Text(
                   'No meals logged yet', 
                   style: TextStyle(
-                    fontSize: 18, 
+                    fontSize: 16, 
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
                   'Your personalized plan is ready.\nStart tracking to see your progress!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black45, fontSize: 13, height: 1.5),
+                  style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black45, fontSize: 12, height: 1.4),
                 ),
               ],
             ),
@@ -631,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final cardColor = Theme.of(context).cardColor;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Slidable(
         key: ValueKey(log.id),
         endActionPane: ActionPane(
@@ -683,13 +683,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: cardColor,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: !isDark ? [
               BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
             ] : null,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(24),
             child: IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -697,7 +697,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (log.imageUrl != null)
                     Image.network(
                       log.imageUrl!,
-                      width: 120,
+                      width: 100,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => _buildMealImagePlaceholder(),
                     )
@@ -705,7 +705,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _buildMealImagePlaceholder(),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -714,39 +714,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: _getMealTypeColor(log.mealType).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(6),
                                   border: Border.all(color: _getMealTypeColor(log.mealType).withValues(alpha: 0.2)),
                                 ),
                                 child: Text(
                                   log.mealType.toUpperCase(),
                                   style: TextStyle(
                                     color: _getMealTypeColor(log.mealType),
-                                    fontSize: 9,
+                                    fontSize: 8,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 1,
+                                    letterSpacing: 0.8,
                                   ),
                                 ),
                               ),
                               if (log.mealTime != null)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03), 
-                                    borderRadius: BorderRadius.circular(12)
+                                    borderRadius: BorderRadius.circular(10)
                                   ),
-                                  child: Text(log.mealTime!, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12)),
+                                  child: Text(log.mealTime!, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 11)),
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Expanded(
                             child: Text(
                               log.foodName,
                               style: TextStyle(
-                                fontSize: 20, 
+                                fontSize: 18, 
                                 fontWeight: FontWeight.bold, 
                                 color: isDark ? Colors.white : Colors.black,
                               ),
@@ -754,16 +754,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 20),
+                              const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 18),
                               const SizedBox(width: 4),
-                              Text('${log.calories?.round() ?? 0} calories', 
-                                  style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.w500, fontSize: 16)),
+                              Text('${log.calories?.round() ?? 0} cal', 
+                                  style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.w500, fontSize: 15)),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           _buildMealMacroRow(log),
                         ],
                       ),
@@ -778,21 +778,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Color _getMealTypeColor(String type) {
-    switch (type.toLowerCase()) {
-      case 'breakfast': return Colors.orangeAccent;
-      case 'lunch': return Colors.greenAccent;
-      case 'dinner': return Colors.blueAccent;
-      default: return Colors.purpleAccent;
-    }
-  }
-
   Widget _buildMealImagePlaceholder() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: 120,
+      width: 100,
       color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-      child: Icon(Icons.restaurant, color: isDark ? Colors.white12 : Colors.black12, size: 40),
+      child: Icon(Icons.restaurant, color: isDark ? Colors.white12 : Colors.black12, size: 32),
     );
   }
 
@@ -801,9 +792,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         _buildMealMacroItem(Icons.restaurant, format(log.protein), Colors.redAccent),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         _buildMealMacroItem(Icons.bakery_dining, format(log.carbs), Colors.blueAccent),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         _buildMealMacroItem(Icons.water_drop, format(log.fat), Colors.greenAccent),
       ],
     );
@@ -812,9 +803,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMealMacroItem(IconData icon, String value, Color color) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 16),
+        Icon(icon, color: color, size: 14),
         const SizedBox(width: 4),
-        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
       ],
     );
   }
@@ -836,5 +827,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Color _getMealTypeColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'breakfast': return Colors.orangeAccent;
+      case 'lunch': return Colors.greenAccent;
+      case 'dinner': return Colors.blueAccent;
+      default: return Colors.purpleAccent;
+    }
   }
 }

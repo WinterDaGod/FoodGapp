@@ -4,6 +4,7 @@ import '../recipe_search_screen.dart';
 import '../meal_log_screen.dart';
 import '../meal_plan_screen.dart';
 import '../shopping_list_screen.dart';
+import 'describe_meal_modal.dart';
 import 'app_toast.dart';
 
 class QuickAddMenu extends StatefulWidget {
@@ -46,10 +47,10 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
             child: Container(
               width: menuWidth,
               margin: const EdgeInsets.only(bottom: 120), // Clear the centered FAB
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF151518) : const Color(0xFFF2EFE4),
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.3),
@@ -62,9 +63,9 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildHandle(isDark),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   _buildHeader(context, isDark),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   SizedBox(
                     height: pageViewHeight,
                     child: PageView(
@@ -76,7 +77,7 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _buildPageIndicator(isDark),
                   const SizedBox(height: 8),
                 ],
@@ -120,7 +121,7 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
             Text(
               'Quick Add',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -149,7 +150,13 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
         context,
         icon: Icons.chat_bubble_outline,
         label: 'Describe',
-        onTap: () => _showComingSoon(context, 'AI Meal Description'),
+        onTap: () => showModalBottomSheet(
+          context: context,
+          useRootNavigator: true,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => const DescribeMealModal(),
+        ),
       ),
       _buildActionItem(
         context,
@@ -197,8 +204,8 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 3,
-      mainAxisSpacing: 32, // More space between rows
-      crossAxisSpacing: 16,
+      mainAxisSpacing: 24, // More space between rows
+      crossAxisSpacing: 12,
       childAspectRatio: 0.8, // Adjusted to fit label comfortably below circle
       children: pageItems,
     );
@@ -220,10 +227,10 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
             if (widget.onClose != null) widget.onClose!();
             onTap();
           },
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(32),
           child: Container(
-            width: 72,
-            height: 72,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
               shape: BoxShape.circle,
@@ -233,16 +240,16 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
               ),
             ),
             child: Center(
-              child: Icon(icon, color: isDark ? Colors.white : Colors.black87, size: 28),
+              child: Icon(icon, color: isDark ? Colors.white : Colors.black87, size: 24),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white70 : Colors.black87,
           ),

@@ -65,7 +65,7 @@ class CalendarStrip extends StatelessWidget {
     final start = now.subtract(const Duration(days: 3));
 
     return SizedBox(
-      height: 100,
+      height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: 14,
@@ -77,13 +77,13 @@ class CalendarStrip extends StatelessWidget {
           return GestureDetector(
             onTap: () => onDateSelected(date),
             child: Container(
-              width: 60,
+              width: 54,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 color: isSelected 
                     ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(25),
                 border: isSelected 
                     ? Border.all(color: isDark ? Colors.white24 : Colors.black.withValues(alpha: 0.05)) 
                     : null,
@@ -95,8 +95,8 @@ class CalendarStrip extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 45,
-                    height: 45,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -112,18 +112,19 @@ class CalendarStrip extends StatelessWidget {
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 13,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     dayName,
                     style: TextStyle(
                       color: isSelected 
                           ? (isDark ? Colors.white : Colors.black) 
                           : (isDark ? Colors.white38 : Colors.black38),
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                 ],
@@ -177,7 +178,7 @@ class MacroCardSmall extends StatelessWidget {
         final bool isExtraSmall = constraints.maxWidth < 100;
         
         return Container(
-          padding: EdgeInsets.all(isExtraSmall ? 12 : 16),
+          padding: EdgeInsets.all(isExtraSmall ? 10 : 14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -187,7 +188,7 @@ class MacroCardSmall extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: isDark ? activeColor.withValues(alpha: 0.1) : activeColor.withValues(alpha: 0.05)),
             boxShadow: !isDark ? [
               BoxShadow(color: activeColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
@@ -201,7 +202,7 @@ class MacroCardSmall extends StatelessWidget {
                 child: Text(
                   value, 
                   style: TextStyle(
-                    fontSize: isExtraSmall ? 18 : 22, 
+                    fontSize: isExtraSmall ? 16 : 20, 
                     fontWeight: FontWeight.bold, 
                     color: isDark ? Colors.white : Colors.black,
                   ),
@@ -210,7 +211,7 @@ class MacroCardSmall extends StatelessWidget {
               Text(
                 label, 
                 style: TextStyle(
-                  fontSize: isExtraSmall ? 10 : 12, 
+                  fontSize: isExtraSmall ? 9 : 11, 
                   color: isDark ? activeColor : activeColor.withValues(alpha: 0.8),
                   fontWeight: isDark ? FontWeight.normal : FontWeight.w600,
                 ),
@@ -223,7 +224,7 @@ class MacroCardSmall extends StatelessWidget {
                   progress: progress,
                   icon: icon,
                   color: activeColor,
-                  size: isExtraSmall ? 40 : 50,
+                  size: isExtraSmall ? 35 : 45,
                 ),
               ),
             ],
