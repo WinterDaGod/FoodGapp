@@ -10,28 +10,33 @@ jobs:
     name: Build iOS App
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
       
-      - name: Install Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
+          
+      - name: Precache iOS
+        run: flutter precache --ios
           
       - name: Get Dependencies
         run: flutter pub get
         
-      - name: Install Pods
+      - name: Install CocoaPods
         run: |
           cd ios
-          pod install
+          pod install --repo-update
           
       - name: Build iOS (No Codesign)
         run: flutter build ios --no-codesign --release
         
-      - name: Package App for Sideloading
+      - name: Package IPA
         run: |
           mkdir -p Payload
-          mv build/ios/iphoneos/Runner.app Payload/
+          cp -r build/ios/iphoneos/Runner.app Payload/
           zip -r FoodGapp.ipa Payload
           
       - name: Upload Artifact
@@ -39,3 +44,5 @@ jobs:
         with:
           name: FoodGapp-iOS-IPA
           path: FoodGapp.ipa
+          if-no-files-found: error
+          retention-days: 7
