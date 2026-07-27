@@ -22,6 +22,7 @@ This document provides high-fidelity technical explanations for the core feature
 *   **The "Dummy Team" Bypass**: To bypass Apple's $99/year requirement for initial builds, we injected a placeholder **Development Team ID** into the Xcode settings. This satisfies the compiler's readiness check, allowing the cloud build to proceed.
 *   **Secure Secret Injection**: We utilized **GitHub Secrets** to securely store and inject sensitive Firebase and API configurations during the build process, ensuring our private keys are never exposed in the source code.
 *   **High-Fidelity Packaging**: We configured the build script to use the **`-ry` flags** during IPA creation. This preserves critical symbolic links (shortcuts) required by the Flutter Engine, ensuring the installer is production-grade and fully functional.
+*   **Unified Versioning (Source of Truth)**: We re-engineered our CI/CD pipeline to automatically synchronize the application version from the **`pubspec.yaml`** file. This ensures that both Android and iOS platforms always reflect the same build version (e.g., v1.1.8) without requiring manual, hardcoded updates in the build scripts.
 *   **Signature Sideloading**: The resulting raw binary is installed via **Sideloadly** or **AltStore**, which "re-signs" the app with a personal Apple ID on the user's PC, bridging the gap between cloud compilation and physical hardware installation.
 
 ---
