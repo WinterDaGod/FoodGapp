@@ -112,10 +112,13 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 ├── lib/
 │   ├── config/
 │   │   └── api_config.dart           # Real API keys (gitignored)
+│   ├── constants/
+│   │   └── dost_fnri_guidelines.dart # Official Philippine nutritional standards
 │   ├── models/
 │   │   ├── daily_nutrition.dart      # Aggregated daily intake data
 │   │   ├── fasting_session.dart      # Fasting tracking data
 │   │   ├── fasting_stage.dart        # Biological fasting stage definitions
+│   │   ├── food_library_item.dart    # Titan Library data model
 │   │   ├── ingredient.dart           # Nutritional ingredient model
 │   │   ├── meal_log.dart             # Logged meal entries
 │   │   ├── nutrition_feedback.dart   # Formatted feedback data
@@ -177,6 +180,8 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 │   │   └── unit_converter.dart       # Metric/Imperial math engine
 │   └── main.dart                     # Application bootstrap
 ├── assets/                           # High-resolution media and branding
+│   └── data/
+│       └── food_library_titan.db     # Massive 50,000-item pre-indexed database
 ├── android/                          # Native Gradle and Android Manifest
 ├── test/                             # Comprehensive unit/widget test suite
 ├── pubspec.yaml                      # Dependencies and configuration

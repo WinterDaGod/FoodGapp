@@ -20,7 +20,8 @@ This document provides a comprehensive overview of the FoodGapp application feat
 *   **Weight Journey & BMI**: Dynamic progress charts and BMI gauge with Metric/Imperial support.
 
 ### 🍱 Discovery & Resource Management
-*   **4-Layer Data Gateway**: Resilient search architecture (AI primary -> Spoonacular -> TheMealDB -> Local Cache).
+*   **Titan Offline Library**: A massive 50,000-item pre-indexed local database for instant discovery.
+*   **4-Layer Data Gateway**: Resilient search architecture (Titan Local -> AI primary -> Spoonacular -> Local Snapshot).
 *   **Saved Recipe Library**: High-performance personal bookmark system with instant bulk loading.
 *   **Smart Shopping List**: Transactions-optimized list with quantity merging and aisle grouping.
 *   **Quick Add Interface**: Modern 3x3 Liquid Glass menu for high-speed logging and navigation.
@@ -28,7 +29,8 @@ This document provides a comprehensive overview of the FoodGapp application feat
 ---
 
 ## 🔑 1. Identity, Security & Onboarding
-*   **Password UX**: During registration, type a password. Verify the **Live Strength Checklist** turns green as requirements are met. Test the **Visibility Toggle**.
+*   **Birthdate Selector**: During onboarding, tap the Birthday field. Verify the professional **Wheel-based Selector** (Cupertino-style) appears. Test rapid year scrolling to ensure kinetic smoothness.
+*   **Password UX**: During registration, type a password. Verify the **Live Strength Checklist** turns green as requirements are met. Test the **Visibility Toggle** and verify **Precision Alignment** of icons and text.
 *   **Onboarding**: Complete the biometric setup. Verify that **DOST-FNRI** targets are accurately calculated and persisted to the profile.
 *   **Compliance**: Verify that the "Create Account" action is locked until the **Terms & Privacy** checkbox is engaged.
 *   **Error Haptics**: intentionally mismatch passwords. Verify the device triggers a **"Heavy" vibration** alert.
@@ -55,17 +57,27 @@ This document provides a comprehensive overview of the FoodGapp application feat
     *   Exceed your calorie goal. Verify the dashboard label switches to **"Calories over"** in Red with a **"+"** prefix.
 
 ## 👤 Profile & Technical Integrity
-*   **App Version Verification**: Navigate to Profile. Scroll to the bottom and verify the **App Version** (e.g., 1.1.6+1) is visible and matches the official release.
-*   **Functional Cleanup**: Verify that only active, functional settings are visible in the **Customizations** section (Theme, Surplus, Macro Presets, Sounds).
+*   **App Version Verification**: Navigate to Profile. Scroll to the bottom and verify the **App Version** (e.g., 1.1.8+1) is visible and matches the official release.
+*   **Self-Healing Database Test**:
+    *   (Advanced) Trigger a structural audit by restarting the app.
+    *   **Verification**: Ensure no `no such table` errors occur when adding items to the Shopping List or logging weight, confirming the app successfully validated its schema on startup.
+*   **Functional Cleanup**: Verify that only active, functional settings are visible in the **Customizations** section (Theme, Surplus, Macro Presets).
 *   **Logout Lifecycle**: Sign out and sign back in. Verify all data (Saved recipes, meal logs, water) persists correctly from the local SQLite database.
 
 ## ⚡ Performance & Resilience
+*   **Titan Offline Search Test**:
+    *   Put the device in **Airplane Mode**.
+    *   Search for "Chickenjoy" or "Ala King" in the Manual Entry screen.
+    *   **Verification**: results must appear in **<10ms** with accurate **PH Branded** or **PhilFCT** badges.
 *   **Instant-Load Test**: Save 20+ recipes. Navigate to the "Saved" tab. Verify the list loads in **sub-200ms** without a spinner.
 *   **Bulk Shopping Test**: Add a 7-day plan (21 meals) to the list. Verify the "Adding to List" state appears on the button and the process completes in **under 1 second**.
 *   **Offline Discovery**: Enable Airplane Mode. Open the Recipes tab. Verify **"Featured Recipes from Local Library"** are displayed instead of an empty state.
 
 ## 🎨 Visual & Haptic Fidelity
-*   **Universal Themes**: Switch between **Cream Light** and **Premium Dark**. Audit all modals (Describe, Add Ingredient) for high-contrast legibility.
+*   **Universal Themes**: Switch between **Cream Light** and **Premium Dark**. Audit all modals (Describe, Add Ingredient) for high-contrast legibility and **High-Density Compact Layouts**.
+*   **Splash Screen Audit**:
+    *   Restart the app on an Android 12+ device.
+    *   **Verification**: Ensure the logo appears as a clean, solid circle with **no white rings** or jaggy edges, confirming the Adaptive Inset fix.
 *   **Liquid Glass Menu**: Open the Quick Add menu. Verify the **Frosted Glass** background blurs the underlying dashboard content at 60fps.
 *   **Dismissal Logic**: Tap the blurred area outside the Quick Add menu. Verify it closes intuitively without needing a close button.
 
