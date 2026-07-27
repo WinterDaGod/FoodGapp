@@ -52,11 +52,12 @@ A commitment to data accuracy and local relevance:
 *   **Fluid Bio-Tracking**: Premium interactive tracking for hydration, intermittent fasting stages, and weight journey milestones.
 
 ### 🛡️ 3. Architectural Resilience
-Engineered for "Zero-Downtime" discovery through a proprietary 4-layer data gateway and self-healing systems:
+Engineered for "Zero-Downtime" discovery through a proprietary 5-layer data gateway and self-healing systems:
 1.  **Primary**: FoodGapp AI for bespoke creativity.
 2.  **Verified Database**: Spoonacular (USDA-linked) for clinical standards.
-3.  **Local Titan Library**: 50,000+ pre-indexed items for instant offline discovery.
-4.  **Local Snapshot**: Personal on-device library for instant offline access.
+3.  **Backup Source**: TheMealDB for rapid, basic discovery.
+4.  **Local Titan Library**: 50,000+ pre-indexed items for instant offline discovery.
+5.  **Local Snapshot**: Personal on-device library for instant offline access.
 
 ---
 
@@ -206,7 +207,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 1.  **Install**: Run `flutter pub get`.
 2.  **Configuration**: 
     - Create `lib/config/api_config.dart`.
-    - Populate `geminiApiKey` (from AI Studio) and `spoonacularApiKey`.
+    - Populate `geminiApiKey` (from Google AI Studio) and `spoonacularApiKey`.
 3.  **Identity**: Run `flutterfire configure` to link your Firebase project.
 4.  **Launch**: Run `flutter run`.
 

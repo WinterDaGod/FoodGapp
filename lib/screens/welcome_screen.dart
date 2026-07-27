@@ -224,13 +224,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       },
       child: RichText(
         text: TextSpan(
-          style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14),
+          style: TextStyle(color: isDark ? Colors.white60 : Colors.black45, fontSize: 14),
           children: [
             const TextSpan(text: 'Already have an account? '),
             TextSpan(
               text: 'Sign In',
               style: TextStyle(
-                color: isDark ? Theme.of(context).primaryColor : Colors.green,
+                color: isDark ? Colors.orangeAccent : Colors.green,
                 fontWeight: FontWeight.bold,
               ),
             ),

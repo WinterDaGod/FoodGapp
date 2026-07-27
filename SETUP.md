@@ -65,7 +65,7 @@ Verify the core flow:
 The app requires two primary API keys to function fully. These are kept in a local file that is gitignored to protect your keys.
 
 1.  Copy `lib/config/api_config.example.dart` to `lib/config/api_config.dart`.
-2.  **Gemini AI (Free)**: Go to [aistudio.google.com](https://aistudio.google.com), create a free API key, and paste it into `geminiApiKey`.
+2.  **FoodGapp AI (Free)**: Go to [aistudio.google.com](https://aistudio.google.com), create a free API key, and paste it into `geminiApiKey`.
 3.  **Spoonacular**: Go to [spoonacular.com](https://spoonacular.com/food-api), create a key, and paste it into `spoonacularApiKey`.
 
 ## 6. Daily Development

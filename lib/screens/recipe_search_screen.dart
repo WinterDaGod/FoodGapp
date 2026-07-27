@@ -156,7 +156,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
         setState(() {
           _communityResults = results;
           _isLoading = false;
-          // In AI-First, "Fallback" means Gemini failed and we used a DB
+          // In AI-First, "Fallback" means FoodGapp AI failed and we used a DB
           _isFallbackMode = results.isNotEmpty && results.first.source != 'FoodGapp';
         });
       }

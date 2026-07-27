@@ -199,12 +199,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
                     child: RichText(
                       text: TextSpan(
-                        style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14),
+                        style: TextStyle(color: isDark ? Colors.white60 : Colors.black38, fontSize: 14),
                         children: [
                           const TextSpan(text: 'Already have an account? '),
                           const TextSpan(
                             text: 'Login',
-                            style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

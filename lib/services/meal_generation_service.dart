@@ -61,7 +61,7 @@ class MealGenerationService {
     return plan;
   }
 
-  /// Generates an AI-optimized 3-meal plan using Gemini to balance macros and variety.
+  /// Generates an AI-optimized 3-meal plan using FoodGapp AI to balance macros and variety.
   Future<List<Recipe>> generateSmartDailyPlan({
     required int targetKcal,
     required double targetProtein,

@@ -143,12 +143,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextButton.styleFrom(foregroundColor: isDark ? Colors.white70 : Colors.black87),
                     child: RichText(
                       text: TextSpan(
-                        style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14),
+                        style: TextStyle(color: isDark ? Colors.white60 : Colors.black38, fontSize: 14),
                         children: [
                           const TextSpan(text: "Don't have an account? "),
                           TextSpan(
                             text: 'Register',
-                            style: TextStyle(color: isDark ? Colors.green : Colors.green[700], fontWeight: FontWeight.bold),
+                            style: TextStyle(color: isDark ? Colors.greenAccent : Colors.green[700], fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

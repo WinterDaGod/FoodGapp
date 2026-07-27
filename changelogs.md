@@ -7,7 +7,7 @@ This file tracks the high-level functional and technical evolution of FoodGapp, 
 ### 🛡️ System Stability & Self-Healing
 - **Self-Healing Database Engine (v5)**: Implemented an aggressive auto-recovery system that restores missing critical tables (Shopping List, User Profile, etc.) on every startup.
 - **Forced Data Sync**: Transitioned to `foodgapp_v5.db` to ensure a 100% clean, production-grade environment.
-- **AI Stability Protocol**: Enforced strict clinical JSON rules and implemented a strong sanitization layer to prevent formatting crashes (`FormatException`) during meal generation.
+- **AI Stability Protocol**: Enforced strict clinical JSON rules and implemented a strong sanitization layer to prevent formatting crashes (`FormatException`) during meal generation from **FoodGapp AI**.
 
 ### 🇵🇭 Titan v2 Accuracy Engine
 - **Authentic PH Catalog**: Injected a curated menu library for major Philippine chains including Jollibee, McDonald's PH, Chowking, and Mang Inasal with real-world macro data.

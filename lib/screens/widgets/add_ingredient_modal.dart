@@ -92,7 +92,7 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
       if (mounted) {
         setState(() => _isSearching = false);
         final msg = e.toString().contains('Key not set') 
-          ? 'Gemini API Key missing in config.' 
+          ? 'FoodGapp AI Key missing in config.' 
           : 'AI processing failed. Try again.';
         AppToast.show(context, message: msg, title: 'AI Error', type: ToastType.error);
       }

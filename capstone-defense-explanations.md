@@ -18,9 +18,11 @@ This document provides high-fidelity technical explanations for the core feature
 
 **Question: "How did you manage to build a native iOS version without a Mac?"**
 
-*   **Cloud Build Pipeline (CI/CD)**: We implemented a professional **DevOps workflow** using **GitHub Actions**. By utilizing cloud-based macOS virtual machines, we can compile a native iOS binary (`.ipa`) directly from our repository. This eliminates the need for physical Mac hardware while maintaining 100% feature parity.
-*   **Secure Secret Injection**: To maintain security during cloud compilation, we utilized **GitHub Secrets** to securely inject sensitive Firebase and API configurations into the build environment at runtime.
-*   **Modern Dependency Architecture**: We migrated the iOS platform from legacy CocoaPods to the modern **Swift Package Manager (SPM)**, ensuring faster, more reliable cloud builds and alignment with Apple's 2026 technical standards.
+*   **Cloud Build Pipeline (CI/CD)**: We implemented a professional **DevOps workflow** using **GitHub Actions**. By utilizing cloud-based macOS virtual machines, we compile a native iOS binary (`.ipa`) directly from our repository. This eliminates the need for physical Mac hardware.
+*   **The "Dummy Team" Bypass**: To bypass Apple's $99/year requirement for initial builds, we injected a placeholder **Development Team ID** into the Xcode settings. This satisfies the compiler's readiness check, allowing the cloud build to proceed.
+*   **Secure Secret Injection**: We utilized **GitHub Secrets** to securely store and inject sensitive Firebase and API configurations during the build process, ensuring our private keys are never exposed in the source code.
+*   **High-Fidelity Packaging**: We configured the build script to use the **`-ry` flags** during IPA creation. This preserves critical symbolic links (shortcuts) required by the Flutter Engine, ensuring the installer is production-grade and fully functional.
+*   **Signature Sideloading**: The resulting raw binary is installed via **Sideloadly** or **AltStore**, which "re-signs" the app with a personal Apple ID on the user's PC, bridging the gap between cloud compilation and physical hardware installation.
 
 ---
 
@@ -44,15 +46,16 @@ This document provides high-fidelity technical explanations for the core feature
 
 ---
 
-## 🏛️ 5. 4-Layer Reliability Architecture
+## 🏛️ 5. 5-Layer Reliability Architecture
 
 **Question: "What happens if your AI or the internet goes offline?"**
 
-FoodGapp is built with a **"Zero-Downtime" Fail-over Strategy**:
+FoodGapp is built with a **"Zero-Downtime" Fail-over Strategy** utilizing a 5-layer data gateway:
 1.  **Tier 1 (FoodGapp AI)**: Bespoke generation for total personalization.
 2.  **Tier 2 (Spoonacular)**: A verified clinical database used if the AI is busy.
-3.  **Tier 3 (Titan Library)**: 50,000+ pre-indexed items for instant offline discovery during manual logging.
-4.  **Tier 4 (Local Snapshot)**: Resurfaces high-quality cached recipes if the device is completely offline.
+3.  **Tier 3 (TheMealDB)**: An emergency backup for basic recipe retrieval.
+4.  **Tier 4 (Titan Library)**: 50,000+ pre-indexed items for instant offline discovery during manual logging.
+5.  **Tier 5 (Local Snapshot)**: Resurfaces high-quality cached recipes if the device is completely offline.
 
 ---
 
@@ -61,6 +64,7 @@ FoodGapp is built with a **"Zero-Downtime" Fail-over Strategy**:
 **Question: "How do you ensure the app remains fast and reliable with thousands of logs?"**
 
 *   **Self-Healing Engine (v5)**: We implemented a pro-active "Self-Healing" logic in our database layer. Every time the application starts, it performs a **Structural Audit**. If any critical table is missing, the app **automatically restores it** instantly without user intervention.
+*   **Massive Local Encyclopedia**: We've integrated a high-performance 50,000-item library (The "Titan" Engine) directly into the app. We utilized **Binary Database Bundling**, where the pre-indexed database is copied from assets on first launch, ensuring instant setup without a long "loading" phase.
 *   **Bulk Transaction Engine**: We re-engineered the data layer to use **SQLite Transactions**. Instead of saving items individually, we open a single high-speed "Transaction" to save them all at once—increasing saving speed by **50x**.
 *   **High-Speed Indexing**: We migrated to **v25 Schema**, adding professional-grade indexes on `user_id` and `meal_date`. This allows the app to find your logs in O(log n) time, making the dashboard load instantly.
 

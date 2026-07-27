@@ -18,7 +18,7 @@ class FoodGappAiService {
 
   Future<Ingredient?> parseIngredient(String text) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final prompt = '''
@@ -64,7 +64,7 @@ Response MUST be a single JSON object with these keys:
 
   Future<Map<String, dynamic>?> parseMealDescription(String text) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final prompt = '''
@@ -122,7 +122,7 @@ Expected Response Format:
     String? preferences,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final candidateList = candidates.map((r) => {
@@ -195,7 +195,7 @@ Expected Response Format:
     String? preferences,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final prompt = '''
@@ -268,7 +268,7 @@ Expected Response Format:
     String? preferences,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final prompt = '''
@@ -331,7 +331,7 @@ Expected Response Format:
     int number = 10,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final prompt = '''
@@ -438,7 +438,7 @@ CRITICAL: Return RAW JSON only.
     int number = 10,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
-      throw Exception('Gemini API Key not set');
+      throw Exception('FoodGapp AI Key not set');
     }
 
     final prompt = '''

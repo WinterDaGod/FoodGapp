@@ -7,7 +7,7 @@ This document provides a comprehensive overview of the FoodGapp application feat
 ## 📱 Core Application Features
 
 ### 🧠 FoodGapp AI Engine (Generative Intelligence)
-*   **Bespoke Daily/Weekly Planner**: Generates complete, calorie-balanced meal schedules from scratch using Gemini AI.
+*   **Bespoke Daily/Weekly Planner**: Generates complete, calorie-balanced meal schedules from scratch using **FoodGapp AI**.
 *   **NLP "Describe" Modal**: Parses natural language meal descriptions into structured nutritional data (Magic Log).
 *   **AI Pantry Chef**: Invents creative recipes based on user-provided ingredients to reduce food waste.
 *   **Heuristic Aisle Sorter**: Automatically categorizes shopping items into grocery departments (Produce, Dairy, etc.).

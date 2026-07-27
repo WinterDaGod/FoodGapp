@@ -30,7 +30,7 @@ class RecipeRepository {
   final FoodGappAiService _ai;
   final NutritionCacheStore _cache;
 
-  /// Searches recipes by name. Tries Gemini AI first for creative results, 
+  /// Searches recipes by name. Tries FoodGapp AI first for creative results, 
   /// falls back to Spoonacular/TheMealDB if AI fails.
   Future<List<Recipe>> searchByName(String query, {String? diet}) async {
     final trimmed = query.trim();
@@ -43,7 +43,7 @@ class RecipeRepository {
     // Use diet as the query if the search text is empty (AI semantic search)
     final effectiveQuery = trimmed.isNotEmpty ? trimmed : (diet ?? '');
 
-    // 1. Try Gemini AI as primary
+    // 1. Try FoodGapp AI as primary
     try {
       final aiResults = await _ai.searchRecipes(query: effectiveQuery, diet: diet);
       if (aiResults != null && aiResults.isNotEmpty) {
@@ -68,7 +68,7 @@ class RecipeRepository {
         return recipes;
       }
     } catch (e) {
-      print('Gemini primary search failed: $e. Falling back...');
+      print('FoodGapp AI primary search failed: $e. Falling back...');
     }
 
     // 2. Fallback to Spoonacular
@@ -104,7 +104,7 @@ class RecipeRepository {
     String? diet,
     int number = 10,
   }) async {
-    // 1. Try Gemini AI
+    // 1. Try FoodGapp AI
     try {
       // Build a descriptive query for the AI to ensure a diverse range of results
       String query = 'Recipes';
@@ -177,7 +177,7 @@ class RecipeRepository {
   /// Searches recipes by ingredients in your pantry. Prioritizes AI for
   /// "Chef" style creative suggestions.
   Future<List<Recipe>> searchByPantry(List<String> ingredients) async {
-    // 1. Try Gemini AI
+    // 1. Try FoodGapp AI
     try {
       final aiResults = await _ai.chefFromPantry(ingredients: ingredients);
       if (aiResults != null && aiResults.isNotEmpty) {
