@@ -4,6 +4,23 @@ This document provides formal descriptions for each major release of the FoodGap
 
 ---
 
+## [v1.1.7] — The Cross-Platform Milestone (2026-07-27)
+
+**"FoodGapp Anywhere: Native iOS and DevOps Excellence"**
+
+FoodGapp v1.1.7 marks a significant expansion of the application ecosystem, introducing full native support for iOS devices. This release achieves a truly cross-platform architecture, utilizing modern cloud automation (DevOps) to ensure seamless delivery to iPhone users, including optimization for the iPhone 16e.
+
+### iOS Platform & Ecosystem
+*   **Native iOS Integration**: Completion of the iOS platform implementation, ensuring identical performance and feature access between Android and iPhone builds.
+*   **iOS 15.0 Deployment Standard**: Elevated the minimum OS requirement to support modern security protocols and Swift Package Manager (SPM) dependency management.
+
+### DevOps & Build Automation
+*   **Automated Cloud Build Pipeline**: Implementation of a GitHub Actions CI/CD workflow, allowing for the generation of production-ready iOS installers (.ipa) without requiring a physical Mac.
+*   **Secure Secret Management**: Integration of GitHub Repository Secrets to maintain the integrity and privacy of critical Firebase and AI Engine API keys during cloud compilation.
+*   **Swift Package Manager (SPM) Migration**: Transitioned to the latest Apple-standard package manager for improved build stability and dependency resolution.
+
+---
+
 ## [v1.1.6] — The Professional Interaction Update (2026-07-26)
 
 **"Ergonomic Excellence and High Density"**

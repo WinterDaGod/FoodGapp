@@ -234,22 +234,23 @@ class _AddMealScreenState extends State<AddMealScreen> {
             _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Meal name', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
                       const SizedBox(height: 12),
+                      Text('Meal name', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
+                      const SizedBox(height: 8),
                       _buildTextField(_nameController, 'Meal name'),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       _buildToggle(),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       if (_isMacrosView) _buildMacrosGrid() else _buildIngredientsView(),
-                      const SizedBox(height: 48),
-                      Text('Photo (optional)', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 32),
+                      Text('Photo (optional)', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -259,7 +260,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
                               child: _buildActionButton(Icons.camera_alt_outlined, 'Take Photo'),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: InkWell(
                               onTap: () => _showComingSoon('Upload Photo'),
@@ -269,11 +270,11 @@ class _AddMealScreenState extends State<AddMealScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       Row(
                         children: [
                           Expanded(child: _buildInfoTile('Date', DateFormat('MMMM d, yyyy').format(_selectedDate), Icons.calendar_today, _pickDate)),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Expanded(child: _buildInfoTile('Time', _selectedTime.format(context), Icons.access_time, _pickTime)),
                         ],
                       ),
@@ -292,14 +293,14 @@ class _AddMealScreenState extends State<AddMealScreen> {
   Widget _buildHeader() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Manual Entry', 
             style: TextStyle(
-              fontSize: 32, 
+              fontSize: 28, 
               fontWeight: FontWeight.bold, 
               color: isDark ? Colors.white : Colors.black
             )
@@ -344,10 +345,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
   Widget _buildToggle() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
@@ -355,10 +356,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
             child: GestureDetector(
               onTap: () => setState(() => _isMacrosView = false),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: !_isMacrosView ? (isDark ? const Color(0xFF333333) : Colors.white) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: !_isMacrosView && !isDark ? [
                     BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))
                   ] : null,
@@ -369,6 +370,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
                     style: TextStyle(
                       color: !_isMacrosView ? (isDark ? Colors.white : Colors.black) : (isDark ? Colors.white38 : Colors.black38),
                       fontWeight: !_isMacrosView ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 14,
                     )
                   )
                 ),
@@ -379,10 +381,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
             child: GestureDetector(
               onTap: () => setState(() => _isMacrosView = true),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _isMacrosView ? (isDark ? const Color(0xFF333333) : Colors.white) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: _isMacrosView && !isDark ? [
                     BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))
                   ] : null,
@@ -393,6 +395,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
                     style: TextStyle(
                       color: _isMacrosView ? (isDark ? Colors.white : Colors.black) : (isDark ? Colors.white38 : Colors.black38),
                       fontWeight: _isMacrosView ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 14,
                     )
                   )
                 ),
@@ -418,26 +421,26 @@ class _AddMealScreenState extends State<AddMealScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Total servings', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14)),
-            Text('Total weight: ${totalWeight.round()} g', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14)),
+            Text('Total servings', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
+            Text('Total weight: ${totalWeight.round()} g', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildServingsSelector(),
-        const SizedBox(height: 32),
-        Text('Ingredients', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
-        const SizedBox(height: 16),
-        ..._ingredients.asMap().entries.map((entry) => _buildIngredientItem(entry.value, entry.key)),
+        const SizedBox(height: 24),
+        Text('Ingredients', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
         const SizedBox(height: 12),
+        ..._ingredients.asMap().entries.map((entry) => _buildIngredientItem(entry.value, entry.key)),
+        const SizedBox(height: 8),
         InkWell(
           onTap: _showAddIngredientModal,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: isDark ? Colors.white24 : Colors.black12, width: 1.5),
               boxShadow: !isDark ? [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -446,14 +449,14 @@ class _AddMealScreenState extends State<AddMealScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add, color: isDark ? Colors.white : Colors.black, size: 24),
-                const SizedBox(width: 12),
+                Icon(Icons.add, color: isDark ? Colors.white : Colors.black, size: 22),
+                const SizedBox(width: 10),
                 Text(
                   'Add ingredients', 
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black, 
                     fontWeight: FontWeight.bold, 
-                    fontSize: 16
+                    fontSize: 15
                   )
                 ),
               ],
@@ -469,7 +472,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -485,13 +488,13 @@ class _AddMealScreenState extends State<AddMealScreen> {
                 _calculateFromIngredients();
               }
             },
-            icon: Icon(Icons.remove, color: isDark ? Colors.white70 : Colors.black54),
+            icon: Icon(Icons.remove, color: isDark ? Colors.white70 : Colors.black54, size: 20),
           ),
           Text(
             '$_servings', 
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black, 
-              fontSize: 24, 
+              fontSize: 20, 
               fontWeight: FontWeight.bold
             )
           ),
@@ -500,7 +503,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
               setState(() => _servings++);
               _calculateFromIngredients();
             },
-            icon: Icon(Icons.add, color: isDark ? Colors.white70 : Colors.black54),
+            icon: Icon(Icons.add, color: isDark ? Colors.white70 : Colors.black54, size: 20),
           ),
         ],
       ),
@@ -510,11 +513,11 @@ class _AddMealScreenState extends State<AddMealScreen> {
   Widget _buildIngredientItem(Ingredient ing, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 12, offset: const Offset(0, 4))
@@ -523,21 +526,21 @@ class _AddMealScreenState extends State<AddMealScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${ing.amount.round()}', 
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black, 
                 fontWeight: FontWeight.bold,
-                fontSize: 18
+                fontSize: 16
               )
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -550,29 +553,29 @@ class _AddMealScreenState extends State<AddMealScreen> {
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black, 
                           fontWeight: FontWeight.bold, 
-                          fontSize: 17
+                          fontSize: 16
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (ing.isVerified || ing.source == 'FoodGapp') ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
                           color: Colors.greenAccent.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
+                          border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.verified, color: Colors.greenAccent, size: 10),
-                            const SizedBox(width: 4),
+                            const Icon(Icons.verified, color: Colors.greenAccent, size: 8),
+                            const SizedBox(width: 3),
                             Text(
-                              ing.source == 'USDA' ? 'USDA Verified' : 'Verified', 
-                              style: const TextStyle(color: Colors.greenAccent, fontSize: 9, fontWeight: FontWeight.bold),
+                              ing.source == 'USDA' ? 'USDA' : 'Verified', 
+                              style: const TextStyle(color: Colors.greenAccent, fontSize: 8, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -582,7 +585,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
                 ),
                 Text(
                   '${ing.unit} · ${ing.calories.round()} kcal', 
-                  style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)
+                  style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12)
                 ),
               ],
             ),
@@ -594,7 +597,9 @@ class _AddMealScreenState extends State<AddMealScreen> {
                 _calculateFromIngredients();
               });
             },
-            icon: Icon(Icons.delete_outline, color: isDark ? Colors.white24 : Colors.black26),
+            icon: Icon(Icons.delete_outline, color: isDark ? Colors.white24 : Colors.black26, size: 20),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           ),
         ],
       ),
@@ -607,15 +612,15 @@ class _AddMealScreenState extends State<AddMealScreen> {
         Row(
           children: [
             Expanded(child: _buildMacroInput('Calories (kcal)', _caloriesController, 'Calories')),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(child: _buildMacroInput('Protein (g)', _proteinController, 'Protein')),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(child: _buildMacroInput('Carbs (g)', _carbsController, 'Carbs')),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(child: _buildMacroInput('Fats (g)', _fatController, 'Fats')),
           ],
         ),
@@ -628,13 +633,13 @@ class _AddMealScreenState extends State<AddMealScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
-        const SizedBox(height: 12),
+        Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 12)),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
             boxShadow: !isDark ? [
               BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -643,7 +648,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
           child: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
-            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black12),
@@ -658,10 +663,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
   Widget _buildActionButton(IconData icon, String label) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
         boxShadow: !isDark ? [
           BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -670,14 +675,14 @@ class _AddMealScreenState extends State<AddMealScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: isDark ? Colors.white70 : Colors.black54, size: 22),
-          const SizedBox(width: 12),
+          Icon(icon, color: isDark ? Colors.white70 : Colors.black54, size: 20),
+          const SizedBox(width: 10),
           Text(
             label, 
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black, 
               fontWeight: FontWeight.bold,
-              fontSize: 15
+              fontSize: 14
             )
           ),
         ],
@@ -691,15 +696,15 @@ class _AddMealScreenState extends State<AddMealScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 13)),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
               boxShadow: !isDark ? [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -714,12 +719,12 @@ class _AddMealScreenState extends State<AddMealScreen> {
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.black, 
                       fontWeight: FontWeight.bold,
-                      fontSize: 17
+                      fontSize: 15
                     ), 
                     overflow: TextOverflow.ellipsis
                   )
                 ),
-                Icon(Icons.chevron_right, color: isDark ? Colors.white24 : Colors.black26, size: 22),
+                Icon(Icons.chevron_right, color: isDark ? Colors.white24 : Colors.black26, size: 18),
               ],
             ),
           ),
@@ -731,7 +736,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
   Widget _buildBottomBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       decoration: BoxDecoration(
         color: isDark ? Colors.transparent : Colors.white,
         border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05))),
@@ -747,27 +752,27 @@ class _AddMealScreenState extends State<AddMealScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: isDark ? Colors.white : Colors.black,
                 side: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton(
               onPressed: _save,
               style: ElevatedButton.styleFrom(
                 backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.black,
                 foregroundColor: isDark ? Colors.white : Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), 
+                  borderRadius: BorderRadius.circular(16), 
                   side: isDark ? const BorderSide(color: Colors.white24, width: 1.5) : BorderSide.none
                 ),
                 elevation: 0,
               ),
-              child: const Text('Add meal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: const Text('Add meal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             ),
           ),
         ],

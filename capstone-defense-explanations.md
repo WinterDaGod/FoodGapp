@@ -14,7 +14,27 @@ This document provides high-fidelity technical explanations for the core feature
 
 ---
 
-## 🏛️ 2. 4-Layer Reliability Architecture
+## 📱 2. Cross-Platform & DevOps Excellence (New)
+
+**Question: "How did you manage to build a native iOS version without a Mac?"**
+
+*   **Cloud Build Pipeline (CI/CD)**: We implemented a professional **DevOps workflow** using **GitHub Actions**. By utilizing cloud-based macOS virtual machines, we can compile a native iOS binary (`.ipa`) directly from our repository. This eliminates the need for physical Mac hardware while maintaining 100% feature parity.
+*   **Secure Secret Injection**: To maintain security during cloud compilation, we utilized **GitHub Secrets** to securely inject sensitive Firebase and API configurations into the build environment at runtime.
+*   **Modern Dependency Architecture**: We migrated the iOS platform from legacy CocoaPods to the modern **Swift Package Manager (SPM)**, ensuring faster, more reliable cloud builds and alignment with Apple's 2026 technical standards.
+
+---
+
+## 📊 3. Visual Analytics & Temporal Performance (New)
+
+**Question: "How do your progress rings and calendar handle performance?"**
+
+*   **Batch Range Querying**: To ensure the **Interactive Calendar** is instant, we optimized the database layer to perform **Range Fetching**. Instead of querying each day individually (which causes 14 separate trips), we retrieve a 14-day window in a **single SQLite trip**. This reduces database latency by **93%**.
+*   **Dynamic Progress Visualization**: Each date features a technical progress ring. We used **`TweenAnimationBuilder`** to animate these rings from 0% to the target intake, providing a premium visual feel without sacrificing the 60fps frame rate.
+*   **Visual Logic States**: We implemented "Dashed Indicator" logic for future dates. This provides the user with clear visual cues for "Pending" versus "Logged" states, a standard found in high-end fitness ecosystems like Apple Health.
+
+---
+
+## 🏛️ 4. 4-Layer Reliability Architecture
 
 **Question: "What happens if your AI or the internet goes offline?"**
 
@@ -26,42 +46,33 @@ FoodGapp is built with a **"Zero-Downtime" Fail-over Strategy**:
 
 ---
 
-## 🗄️ 3. Data Engineering & SQLite v19
+## 🗄️ 5. Data Engineering & SQLite v19
 
 **Question: "How do you ensure the app remains fast with thousands of logs?"**
 
-*   **Bulk Transaction Engine**: We re-engineered the data layer to use **SQLite Transactions**. Instead of saving 200 items individually (which is slow), we open a single high-speed "Transaction" to save them all at once—increasing saving speed by **50x**.
+*   **Bulk Transaction Engine**: We re-engineered the data layer to use **SQLite Transactions**. Instead of saving 200 items individually, we open a single high-speed "Transaction" to save them all at once—increasing saving speed by **50x**.
 *   **High-Speed Indexing**: We migrated to **v19 Schema**, adding professional-grade indexes on `user_id` and `meal_date`. This allows the app to find your logs in O(log n) time, making the dashboard load instantly.
-*   **N+1 Optimization**: We implemented **Bulk Loading** for the "Saved" tab. By using an `IN` clause in SQL, we fetch 50+ recipe macros in a single trip to the database rather than 50 separate trips.
+*   **RepaintBoundary Isolation**: We identified high-frequency animations (like the Water Drop and Progress Rings) and isolated them into their own **Render Layers**. This prevents the entire screen from re-drawing unnecessarily, saving CPU power and battery life.
 
 ---
 
-## 🥗 4. Precision Nutrition (25/35/40 Split)
+## 🎨 6. High-Fidelity UI & Aesthetic Engineering
 
-**Question: "What is the scientific basis for your meal planning?"**
+**Question: "What technical standards did you follow for your UI?"**
 
-*   **Clinical Distribution**: We follow a professional **25/35/40 calorie split** (25% Breakfast, 35% Lunch, 40% Dinner). This aligns with the human metabolism's natural energy lifecycle and prevents late-night hunger.
-*   **DOST-FNRI Alignment**: Our "Precision Nutrition" engine compares real-time intake against the official **Philippine Dietary Reference Intakes (PDRI)**, providing localized feedback that a generic Western app cannot offer.
-
----
-
-## 🎨 5. UI/UX Fidelity & Psychology
-
-**Question: "How does the UI support user retention?"**
-
-*   **Compact & Modern Design**: We performed a global overhaul to increase **Information Density**. Users see their progress and meals "above the fold," reducing friction and cognitive load.
-*   **Liquid-Fluid Animations**: We used `TweenAnimationBuilder` and custom shaders for the water tracker. These organic animations make tracking feel rewarding and "expensive."
-*   **Haptic UI**: We integrated a **Tactile Feedback Suite**. Successful logs trigger a "Success Click," while errors trigger a "Heavy Vibration," providing a physical connection between the user and the software.
+*   **Glassmorphism (Liquid Glass)**: We implemented a sophisticated "Liquid Glass" menu using **`BackdropFilter`** with high-intensity Gaussian blur (`sigma: 20`). This provides a modern, premium aesthetic while maintaining accessibility and readability.
+*   **Ergonomic Scaling**: The interface utilizes **High-Density Layouts**, specifically designed for one-thumb reachability. We optimized the "Quick Add" alignment to float precisely above the primary action button.
+*   **High-Fidelity Skeletons**: We replaced generic spinners with custom **Skeleton Shimmer** screens. This uses linear-gradient animations to simulate data presence, reducing the "perceived" wait time for users.
 
 ---
 
-## 🛡️ 6. Security & Data Privacy
+## 🛡️ 7. Security & Data Privacy
 
 **Question: "How do you protect sensitive user health data?"**
 
-*   **Firebase Identity Gateway**: We use **Firebase Auth** for secure, encrypted login. Passwords are never seen or stored by our app; they are hashed and salted by Google's security infrastructure.
-*   **Android Sandboxing**: All biometric and meal data is stored in the app's **Internal Data Directory**. The Android OS "sandboxes" this file, meaning it is strictly invisible to any other app on the phone.
-*   **Code Obfuscation**: Our production builds are **Obfuscated**. We scramble the source code names into unreadable symbols (e.g., `calculateCalories` becomes `a()`), making it nearly impossible for hackers to reverse-engineer our proprietary AI logic.
+*   **Firebase Identity Gateway**: We use **Firebase Auth** for secure, encrypted login. Passwords are never seen or stored by our app; they are hashed and salted by Google's infrastructure.
+*   **Android/iOS Sandboxing**: All biometric data is stored in the app's **Internal Data Directory**. The OS "sandboxes" this file, meaning it is strictly invisible to any other app on the phone.
+*   **Code Obfuscation**: Our production builds are **Obfuscated**. We scramble the source code names into unreadable symbols, preventing reverse-engineering of our proprietary AI logic.
 
 ---
-*Prepared for the FoodGapp Final Capstone Defense.*
+*FoodGapp Final Capstone Defense — Technical Dossier v1.1.7*

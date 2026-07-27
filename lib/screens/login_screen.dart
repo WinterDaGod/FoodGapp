@@ -92,16 +92,16 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF2EFE4),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(),
-                const SizedBox(height: 48),
-                Text('Email Address', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
-                const SizedBox(height: 12),
+                const SizedBox(height: 32),
+                Text('Email Address', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
+                const SizedBox(height: 8),
                 _buildTextField(
                   controller: _emailController,
                   hint: 'Enter your email',
@@ -109,9 +109,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) => (value == null || value.trim().isEmpty) ? 'Enter your email' : null,
                 ),
-                const SizedBox(height: 24),
-                Text('Password', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+                Text('Password', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
+                const SizedBox(height: 8),
                 _buildTextField(
                   controller: _passwordController,
                   hint: 'Enter your password',
@@ -129,14 +129,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading ? null : _forgotPassword,
                     child: Text(
                       'Forgot Password?',
-                      style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13),
+                      style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
                     ),
                   ),
                 ),
                 if (_error != null) _buildErrorBanner(),
-                const SizedBox(height: 48),
-                _buildLoginButton(),
                 const SizedBox(height: 24),
+                _buildLoginButton(),
+                const SizedBox(height: 20),
                 Center(
                   child: TextButton(
                     onPressed: _isLoading ? null : _goToRegister,
@@ -214,7 +214,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
@@ -227,13 +226,19 @@ class _LoginScreenState extends State<LoginScreen> {
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        textAlignVertical: TextAlignVertical.center,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black26),
+          hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black26, fontSize: 15),
           border: InputBorder.none,
-          icon: Icon(icon, color: isDark ? Colors.white38 : Colors.black38, size: 22),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 12),
+            child: Icon(icon, color: isDark ? Colors.white38 : Colors.black38, size: 20),
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
           suffixIcon: suffixIcon,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
         validator: validator,
       ),

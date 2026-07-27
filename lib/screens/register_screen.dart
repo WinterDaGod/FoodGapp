@@ -123,14 +123,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF2EFE4),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
                 _buildLabel('Full Name'),
                 _buildTextField(
                   controller: _nameController,
@@ -139,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   textCapitalization: TextCapitalization.words,
                   validator: (value) => (value == null || value.trim().isEmpty) ? 'Enter your name' : null,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _buildLabel('Email Address'),
                 _buildTextField(
                   controller: _emailController,
@@ -152,7 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _buildLabel('Password'),
                 _buildTextField(
                   controller: _passwordController,
@@ -173,9 +173,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 _buildPasswordStrengthIndicator(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _buildLabel('Confirm Password'),
                 _buildTextField(
                   controller: _confirmController,
@@ -189,11 +189,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: (value) => (value != _passwordController.text) ? 'Passwords do not match' : null,
                 ),
                 if (_error != null) _buildErrorBanner(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 _buildTermsCheckbox(isDark),
-                const SizedBox(height: 32),
-                _buildRegisterButton(),
                 const SizedBox(height: 24),
+                _buildRegisterButton(),
+                const SizedBox(height: 20),
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
@@ -263,8 +263,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildLabel(String label) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 14)),
+      padding: const EdgeInsets.only(left: 4, bottom: 6),
+      child: Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
     );
   }
 
@@ -280,7 +280,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
@@ -294,13 +293,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         obscureText: obscureText,
         keyboardType: keyboardType,
         textCapitalization: textCapitalization,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        textAlignVertical: TextAlignVertical.center,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black26),
+          hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black26, fontSize: 15),
           border: InputBorder.none,
-          icon: Icon(icon, color: isDark ? Colors.white38 : Colors.black38, size: 22),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 12),
+            child: Icon(icon, color: isDark ? Colors.white38 : Colors.black38, size: 20),
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
           suffixIcon: suffixIcon,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
         validator: validator,
       ),
@@ -341,23 +346,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
           children: [
             Text(
               'Password Strength', 
-              style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 12, fontWeight: FontWeight.bold)
+              style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 11, fontWeight: FontWeight.bold)
             ),
             Text(
               strengthText, 
-              style: TextStyle(color: strengthColor, fontSize: 12, fontWeight: FontWeight.bold)
+              style: TextStyle(color: strengthColor, fontSize: 11, fontWeight: FontWeight.bold)
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Row(
           children: List.generate(4, (index) {
             final bool met = index < metCount;
             return Expanded(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                height: 4,
-                margin: EdgeInsets.only(right: index < 3 ? 8 : 0),
+                height: 3,
+                margin: EdgeInsets.only(right: index < 3 ? 6 : 0),
                 decoration: BoxDecoration(
                   color: met ? strengthColor : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
                   borderRadius: BorderRadius.circular(2),
@@ -366,10 +371,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             );
           }),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Wrap(
           spacing: 12,
-          runSpacing: 8,
+          runSpacing: 6,
           children: [
             _buildCheckItem('8+ Characters', checks[0], isDark),
             _buildCheckItem('Uppercase', checks[1], isDark),
@@ -387,23 +392,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(1.5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: met ? Colors.greenAccent.withValues(alpha: 0.1) : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
           ),
           child: Icon(
             met ? Icons.check : Icons.circle, 
-            size: 10, 
+            size: 8, 
             color: met ? Colors.greenAccent : (isDark ? Colors.white10 : Colors.black12)
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 4),
         Text(
           label, 
           style: TextStyle(
             color: met ? (isDark ? Colors.white70 : Colors.black87) : (isDark ? Colors.white12 : Colors.black26), 
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: met ? FontWeight.bold : FontWeight.normal,
           )
         ),

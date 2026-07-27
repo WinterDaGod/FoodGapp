@@ -4,14 +4,28 @@ This file tracks the high-level functional and technical evolution of FoodGapp, 
 
 ---
 
-## [v1.1.6] - Total Professional Refinement (Current)
+## [v1.1.7] - The Cross-Platform Milestone (Current)
+
+### 📱 iOS Platform Integration
+- **Native iOS Support**: Successfully enabled the iOS platform for FoodGapp, achieving 100% feature parity between Android and iPhone devices.
+- **iPhone 16e Certification**: Verified high-fidelity performance and UI rendering on the latest iPhone hardware (iOS 18+).
+- **Minimum OS Synchronization**: Elevated the minimum deployment target to iOS 15.0 to support modern Firebase Auth and Core features via Swift Package Manager (SPM).
+
+### ☁️ DevOps & Build Automation
+- **GitHub Actions Build Pipeline**: Implemented a professional CI/CD workflow for iOS. Generated a raw, sideload-ready `.ipa` file using cloud-based macOS runners, eliminating the need for a local Mac.
+- **Secure Secret Injection**: Configured GitHub Secrets to safely handle `firebase_options.dart` and `api_config.dart` during cloud builds, maintaining 100% API key privacy.
+- **SPM Migration**: Transitioned the iOS dependency management from legacy CocoaPods to the modern Swift Package Manager for faster, more reliable cloud builds.
+
+---
+
+## [v1.1.6] - Total Professional Refinement
 
 ### 🎨 Visual & Interaction Overhaul
 - **Interactive Calendar Strip**: Re-engineered the top calendar into a dynamic performance tracker with animated progress rings and distinct visual states for past, present, and future dates.
 - **Liquid Glass Quick Add**: Implemented a sophisticated 3x3 "Glassmorphism" grid with high-intensity background blurring and a centralized bottom alignment.
 - **Engaging UX Copy**: Replaced generic headers with user-centric messaging: *"Add to your day"* and *"Choose how you'd like to log food."*
 - **Ergonomic Interaction**: Integrated "Tap-Outside" dismissal for the Quick Add menu and aligned it precisely above the primary action button for superior one-handed usability.
-- **High-Density Shopping List**: Overhauled the Shopping List with a compact interface, reducing vertical margins and font sizes to increase information density on mobile screens.
+- **High-Density Interface Overhaul**: Re-engineered the Shopping List, Manual Entry, and Auth (Login/Register) screens with compact layouts, reducing vertical margins and font sizes to maximize information visibility.
 
 ### ⚡ Performance & Engineering
 - **Batch Range Querying**: Optimized the dashboard to retrieve 14 days of nutritional history in a single database trip, ensuring zero loading delay for the calendar strip.

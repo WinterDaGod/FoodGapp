@@ -47,6 +47,8 @@ This document provides a comprehensive list of all functional and technical feat
 
 ## 🛡️ Identity, Security & Performance
 *   **Firebase Identity Gateway**: Secure, encrypted account management via Firebase Authentication.
+*   **Native iOS Support**: 100% feature parity on iPhone devices with automated cloud-based compilation.
+*   **Cloud Build Pipeline (CI/CD)**: Automated generation of iOS installers via GitHub Actions, bypassing the need for a physical Mac.
 *   **Advanced Password Security**: Live strength checklist with animated feedback and visibility toggles.
 *   **Android Data Sandboxing**: Military-grade isolation of local health data within the app's private internal directory.
 *   **Code Obfuscation**: Scrambled production binaries to prevent reverse-engineering of proprietary logic.

@@ -69,5 +69,10 @@ This document provides a comprehensive overview of the FoodGapp application feat
 *   **Liquid Glass Menu**: Open the Quick Add menu. Verify the **Frosted Glass** background blurs the underlying dashboard content at 60fps.
 *   **Dismissal Logic**: Tap the blurred area outside the Quick Add menu. Verify it closes intuitively without needing a close button.
 
+## 🍎 iOS-Specific Verification
+*   **Cloud Build Download**: Push code to GitHub. Verify the **`FoodGapp-iOS-IPA`** artifact is generated and downloadable.
+*   **Sideloading Audit**: Install the IPA on iPhone using Sideloadly or AltStore. Verify the app opens and passes the Apple "Trust" verification.
+*   **iPhone 16e Layout**: Verify that the "Liquid Glass" menu and "Interactive Calendar" are perfectly aligned on the iPhone 16e display (iOS 18+).
+
 ---
 *FoodGapp QA Protocol v1.2.0 — Production Release Certified*

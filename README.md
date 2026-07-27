@@ -18,6 +18,9 @@
   <a href="https://www.android.com">
     <img src="https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white" alt="Android">
   </a>
+  <a href="https://www.apple.com/ios">
+    <img src="https://img.shields.io/badge/Platform-iOS-000000?logo=apple&logoColor=white" alt="iOS">
+  </a>
   <a href="https://opensource.org/licenses/MIT">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
   </a>
@@ -27,7 +30,7 @@
 
 ## 📖 Overview
 
-FoodGapp is a high-fidelity Android application engineered for the Philippine context, integrating the **FoodGapp AI Engine** to deliver a personalized, resilient, and data-driven nutrition experience. By combining official **DOST-FNRI** standards with modern Generative AI, FoodGapp transforms complex nutritional data into actionable daily habits.
+FoodGapp is a high-fidelity, cross-platform nutrition application engineered for the Philippine context, integrating the **FoodGapp AI Engine** to deliver a personalized, resilient, and data-driven experience on both Android and iOS. By combining official **DOST-FNRI** standards with modern Generative AI, FoodGapp transforms complex nutritional data into actionable daily habits.
 
 ---
 
@@ -68,6 +71,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 | **Analytics** | 🟢 | DOST-FNRI Feedback, Weight Journey, BMI Gauge. |
 | **UX/UI** | 🟢 | Fluid Animations, Haptic Feedback, Enhanced List Controls. |
 | **Reliability** | 🟢 | 4-Tier Fallback Gateway, Instant "Saved" Loading. |
+| **Cross-Platform**| 🟢 | Cloud-built iOS support (iPhone 16e certified). |
 
 ---
 
