@@ -85,7 +85,7 @@ class MealGenerationService {
         final List<dynamic> meals = aiPlanData['meals'];
         final List<Recipe> plan = meals.map((m) {
           final ings = (m['ingredients'] as List?)?.cast<String>();
-          return Recipe(
+          final recipe = Recipe(
             apiMealId: m['id'] ?? 'gemini:${DateTime.now().millisecondsSinceEpoch}',
             name: m['title'] ?? 'AI Generated Meal',
             source: 'FoodGapp AI',
@@ -98,6 +98,13 @@ class MealGenerationService {
             aiReasoning: m['aiReasoning'],
             isVerified: false,
           );
+          
+          // Cache the AI recipe so details are available later
+          if (recipe.hasNutrition) {
+            _db.cacheRecipe(recipe);
+          }
+          
+          return recipe;
         }).toList();
 
         _savePlan(plan);
@@ -153,7 +160,7 @@ class MealGenerationService {
           final List<dynamic> meals = (dayData['meals'] as List?) ?? [];
           dayMap[dayName] = meals.map((m) {
             final ings = (m['ingredients'] as List?)?.cast<String>();
-            return Recipe(
+            final recipe = Recipe(
               apiMealId: m['id'] ?? 'gemini:week_${dayName}_${DateTime.now().millisecondsSinceEpoch}',
               name: m['title'] ?? 'AI Generated Meal',
               source: 'FoodGapp AI',
@@ -166,6 +173,13 @@ class MealGenerationService {
               aiReasoning: m['aiReasoning'],
               isVerified: false,
             );
+            
+            // Cache the AI recipe so details are available later
+            if (recipe.hasNutrition) {
+              _db.cacheRecipe(recipe);
+            }
+            
+            return recipe;
           }).toList();
         });
 

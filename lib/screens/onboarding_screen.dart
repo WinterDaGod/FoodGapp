@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'register_screen.dart';
 import '../services/unit_converter.dart';
@@ -443,23 +444,74 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    DateTime tempDate = _data.birthday;
+
+    await showModalBottomSheet(
       context: context,
-      initialDate: _data.birthday,
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.greenAccent,
-            onPrimary: Colors.black,
-            surface: Color(0xFF1E1E1E),
-            onSurface: Colors.white,
-          ),
-        ),
-        child: child!,
+      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
+      builder: (BuildContext context) {
+        return Container(
+          height: 350,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Select Birthday',
+                    style: TextStyle(
+                      fontSize: 18, 
+                      fontWeight: FontWeight.bold, 
+                      color: isDark ? Colors.white : Colors.black
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Done', 
+                      style: TextStyle(
+                        color: Colors.greenAccent, 
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16
+                      )
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: CupertinoTheme(
+                  data: CupertinoThemeData(
+                    brightness: isDark ? Brightness.dark : Brightness.light,
+                    textTheme: CupertinoTextThemeData(
+                      dateTimePickerTextStyle: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: _data.birthday,
+                    minimumYear: 1900,
+                    maximumDate: DateTime.now(),
+                    onDateTimeChanged: (DateTime newDate) {
+                      tempDate = newDate;
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    if (picked != null) setState(() => _data.birthday = picked);
+
+    setState(() => _data.birthday = tempDate);
   }
 }

@@ -38,6 +38,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   bool _isQuotaExceeded = false;
   bool _isFiltersExpanded = false;
   bool _isShowingLocalLibrary = false;
+  bool _isTitanSearching = false;
   final Set<String> _selectedFilters = {};
 
   @override
@@ -757,10 +758,12 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
             child: TextField(
               controller: _pantryController,
               style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
+              textAlignVertical: TextAlignVertical.center,
               decoration: InputDecoration(
                 hintText: 'e.g. Chicken, Broccoli',
-                hintStyle: TextStyle(color: isDark ? Colors.white10 : Colors.black12),
+                hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black12),
                 border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.add_circle, color: Colors.orangeAccent),
                   onPressed: () {

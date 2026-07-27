@@ -34,7 +34,17 @@ This document provides high-fidelity technical explanations for the core feature
 
 ---
 
-## 🏛️ 4. 4-Layer Reliability Architecture
+## 🛡️ 4. System Stability & Self-Healing Architecture (New)
+
+**Question: "How does the app handle potential data corruption or missing tables?"**
+
+*   **Self-Healing Engine (v5)**: We implemented a pro-active "Self-Healing" logic in our database layer. Every time the application starts, it performs a **Structural Audit**. If any critical table (like the Shopping List or User Profile) is detected as missing—whether due to a failed update or local storage issue—the app **automatically restores it** instantly without user intervention.
+*   **Clinical AI Protocol**: To ensure 100% stable communication with our Generative AI models, we enforced a **Strict JSON Protocol**. We utilize regular-expression-based **Sanitization** to clean AI responses before parsing, preventing application crashes from minor text hallucinations (like unexpected symbols or markdown).
+*   **Binary Engine Sync**: We utilize **Pre-built SQLite Binaries** to ensure that new users start with a perfectly initialized, high-performance 50,000-item library from the very first second of installation.
+
+---
+
+## 🏛️ 5. 4-Layer Reliability Architecture
 
 **Question: "What happens if your AI or the internet goes offline?"**
 

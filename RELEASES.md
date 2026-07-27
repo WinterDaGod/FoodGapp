@@ -4,6 +4,28 @@ This document provides formal descriptions for each major release of the FoodGap
 
 ---
 
+## [v1.1.8] — The Titan Accuracy & Recovery Update (2026-07-27)
+
+**"Data Precision and System Resilience"**
+
+FoodGapp v1.1.8 marks a significant leap in data quality and architectural robustness. This release introduces the refined **Titan v2 Accuracy Engine**, implementing real-world Filipino menu data and clinical-grade international standards, while deploying a self-healing database architecture to ensure maximum reliability.
+
+### High-Fidelity Data & Search
+*   **Authentic PH Fast Food Catalog**: Integration of a curated menu library for major local chains (Jollibee, McDonald's PH, etc.), enabling users to log accurate nutritional data for real-world local meals.
+*   **Clinical USDA Sourcing**: Refined the application's global data gateway to exclusively utilize USDA **Foundation Foods** and **SR Legacy** data, ensuring 100% scientific verification for raw ingredients.
+*   **Keyword-Aware Search Engine**: Upgraded the internal search logic to support multi-word keyword intersection, delivering instantaneous and precise matches even for complex, multi-word food names.
+*   **Normalization Overhaul**: Completed a global data cleanup, removing synthetic technische suffixes and random variants to provide a professional, menu-ready user interface.
+
+### System Stability & Recovery
+*   **Self-Healing Database (v5)**: Implementation of an aggressive auto-recovery engine that verifies and restores missing critical tables on every startup, eliminating data corruption risks.
+*   **Clinical AI JSON Protocol**: Hardened the AI communication layer with strict JSON formatting rules and sanitization, permanently resolving parsing exceptions during meal generation.
+
+### Interaction & UI Refinement
+*   **High-Fidelity Wheel Selector**: Implementation of a modern, ergonomic wheel-based birthdate picker in the onboarding flow, facilitating rapid year selection and enhancing the first-user experience.
+*   **High-Density Interface Standard**: Global deployment of the "Compact & Modern" layout standard across all core screens (Manual Entry, Login, Register), maximizing information visibility on standard mobile displays.
+
+---
+
 ## [v1.1.7] — The Cross-Platform Milestone (2026-07-27)
 
 **"FoodGapp Anywhere: Native iOS and DevOps Excellence"**

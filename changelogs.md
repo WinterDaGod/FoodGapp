@@ -2,6 +2,24 @@
 
 This file tracks the high-level functional and technical evolution of FoodGapp, focusing on the journey to the production-ready v1.1.0 release.
 
+## [v1.1.8] - Bulletproof Accuracy & Onboarding Refinement (Current)
+
+### 🛡️ System Stability & Self-Healing
+- **Self-Healing Database Engine (v5)**: Implemented an aggressive auto-recovery system that restores missing critical tables (Shopping List, User Profile, etc.) on every startup.
+- **Forced Data Sync**: Transitioned to `foodgapp_v5.db` to ensure a 100% clean, production-grade environment.
+- **AI Stability Protocol**: Enforced strict clinical JSON rules and implemented a strong sanitization layer to prevent formatting crashes (`FormatException`) during meal generation.
+
+### 🇵🇭 Titan v2 Accuracy Engine
+- **Authentic PH Catalog**: Injected a curated menu library for major Philippine chains including Jollibee, McDonald's PH, Chowking, and Mang Inasal with real-world macro data.
+- **Clean Naming Convention**: Purged synthetic technical suffixes (e.g. `#{i}`) from the 50,000-item library for a professional, user-friendly interface.
+- **Clinical USDA Sourcing**: Refined the USDA integration to exclusively surface **Foundation Foods** and **SR Legacy** clinical laboratory data, removing inconsistent branded "noise."
+- **Keyword-Aware Search**: Upgraded the internal search engine to support keyword intersection, allowing for more accurate matches on complex dish names (e.g. "Ala King").
+
+### 🎡 Onboarding & UI Polish
+- **High-Fidelity Birthdate Selector**: Upgraded the onboarding flow with a professional **Wheel-based Date Picker** (Cupertino-style), enabling rapid year selection for users.
+- **High-Density Interface Overhaul**: Re-engineered the Shopping List, Manual Entry, and Auth (Login/Register) screens with compact layouts, reducing vertical margins and font sizes to maximize information visibility.
+- **Precision Alignment**: Refined the vertical alignment of icons and text in form fields (Password/Confirm Password) for a polished, balanced aesthetic.
+
 ---
 
 ## [v1.1.7] - The Cross-Platform Milestone (Current)

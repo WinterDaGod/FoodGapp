@@ -17,7 +17,7 @@ class UsdaService {
       'api_key': _apiKey,
       'query': query,
       'pageSize': '15',
-      'dataType': 'Foundation,SR Legacy,Branded',
+      'dataType': 'Foundation,SR Legacy',
     });
 
     final response = await _client.get(uri);

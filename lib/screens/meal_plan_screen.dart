@@ -255,14 +255,27 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
         setState(() => _isAddingToList = true);
         
-        // Optimized bulk addition
-        await ShoppingListService.instance.addIngredientsFromRecipesBulk(allRecipes);
-        
-        if (mounted) {
-          setState(() => _isAddingToList = false);
-          Navigator.of(context, rootNavigator: true).push(
-            MaterialPageRoute(builder: (_) => const ShoppingListScreen()),
-          );
+        try {
+          // Optimized bulk addition
+          await ShoppingListService.instance.addIngredientsFromRecipesBulk(allRecipes);
+          
+          if (mounted) {
+            setState(() => _isAddingToList = false);
+            AppToast.show(
+              context, 
+              message: 'All ingredients added to your shopping list.',
+              title: 'Ingredients Added',
+              type: ToastType.success
+            );
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const ShoppingListScreen()),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() => _isAddingToList = false);
+            AppToast.show(context, message: 'Failed to add items to list.', type: ToastType.error);
+          }
         }
       },
       backgroundColor: isDark ? Colors.white : Colors.black,

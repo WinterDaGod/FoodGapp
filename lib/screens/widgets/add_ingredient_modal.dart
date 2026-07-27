@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../models/ingredient.dart';
+import '../../models/food_library_item.dart';
 import '../../services/api/usda_service.dart';
 import '../../services/api/spoonacular_service.dart';
 import '../../services/api/foodgapp_ai_service.dart';
+import '../../services/database_helper.dart';
 import 'app_loading.dart';
 import 'app_toast.dart';
 
@@ -17,12 +19,13 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
   final _usda = UsdaService();
   final _spoonacular = SpoonacularService();
   final _ai = FoodGappAiService();
+  final _db = DatabaseHelper.instance;
   
-  int _activeTab = 0; // 0: USDA Search, 1: Quick Paste
+  int _activeTab = 0; // 0: Search, 1: Quick Paste
   final _searchController = TextEditingController();
   final _pasteController = TextEditingController();
   
-  List<Map<String, dynamic>> _searchResults = [];
+  List<dynamic> _searchResults = [];
   bool _isSearching = false;
 
   @override
@@ -35,15 +38,34 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
   }
 
   Future<void> _performSearch(String query) async {
-    if (query.isEmpty) return;
+    if (query.length < 2) return;
     setState(() => _isSearching = true);
+    
     try {
-      final results = await _usda.searchFoods(query);
+      // 1. Search Titan Library first (Instant)
+      final localResults = await _db.searchFoodLibrary(query);
+      
       if (mounted) {
         setState(() {
-          _searchResults = results;
-          _isSearching = false;
+          _searchResults = localResults;
+          // If we have strong local results, stop searching cloud to save quota/latency
+          if (localResults.length >= 10) {
+            _isSearching = false;
+          }
         });
+      }
+
+      if (_isSearching) {
+        // 2. Fetch from USDA (Cloud backup)
+        final usdaResults = await _usda.searchFoods(query);
+        
+        if (mounted) {
+          setState(() {
+            // Merge results, keeping local matches at the top
+            _searchResults = [...localResults, ...usdaResults];
+            _isSearching = false;
+          });
+        }
       }
     } catch (_) {
       if (mounted) setState(() => _isSearching = false);
@@ -77,8 +99,12 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
     }
   }
 
-  Future<void> _showAmountDialog(Map<String, dynamic> food) async {
-    final controller = TextEditingController(text: '100');
+  Future<void> _showAmountDialog(dynamic food) async {
+    final isLibraryItem = food is FoodLibraryItem;
+    final String description = isLibraryItem ? food.name : food['description'];
+    final String unit = isLibraryItem ? food.unit.split(' ').first : 'g';
+    
+    final controller = TextEditingController(text: isLibraryItem ? food.servingSize.round().toString() : '100');
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final result = await showDialog<double>(
@@ -86,7 +112,7 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
       builder: (context) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(food['description'], style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18)),
+        title: Text(description, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -105,7 +131,7 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
                 style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
                   border: InputBorder.none, 
-                  suffixText: 'g', 
+                  suffixText: unit, 
                   suffixStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38)
                 ),
               ),
@@ -124,7 +150,12 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
     );
 
     if (result != null && mounted) {
-      final ingredient = Ingredient.fromUsda(food, result);
+      final Ingredient ingredient;
+      if (isLibraryItem) {
+        ingredient = Ingredient.fromLibrary(food, result);
+      } else {
+        ingredient = Ingredient.fromUsda(food, result);
+      }
       Navigator.pop(context, ingredient);
     }
   }
@@ -336,7 +367,13 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
     );
   }
 
-  Widget _buildFoodResultCard(Map<String, dynamic> food, bool isDark) {
+  Widget _buildFoodResultCard(dynamic food, bool isDark) {
+    final bool isLibraryItem = food is FoodLibraryItem;
+    final String title = isLibraryItem ? food.name : (food['description'] ?? 'Unknown');
+    final String subtitle = isLibraryItem ? food.category : (food['brandOwner'] ?? food['dataType'] ?? '');
+    final String source = isLibraryItem ? food.source : 'USDA Foundation';
+    final bool isClinical = isLibraryItem && (food.source == 'PhilFCT' || food.source.contains('Foundation'));
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -355,9 +392,9 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
             children: [
               Expanded(
                 child: Text(
-                  food['description'] ?? 'Unknown', 
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
-                  maxLines: 1,
+                  title, 
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -365,18 +402,18 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.greenAccent.withValues(alpha: 0.1),
+                  color: isClinical ? Colors.greenAccent.withValues(alpha: 0.1) : Colors.blueAccent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
+                  border: Border.all(color: isClinical ? Colors.greenAccent.withValues(alpha: 0.3) : Colors.blueAccent.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.verified, color: Colors.greenAccent, size: 8),
+                    Icon(isClinical ? Icons.verified : Icons.restaurant, color: isClinical ? Colors.greenAccent : Colors.blueAccent, size: 8),
                     const SizedBox(width: 4),
                     Text(
-                      'USDA Verified', 
-                      style: TextStyle(color: Colors.greenAccent, fontSize: 8, fontWeight: FontWeight.bold),
+                      source, 
+                      style: TextStyle(color: isClinical ? Colors.greenAccent : Colors.blueAccent, fontSize: 8, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -384,7 +421,7 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
             ],
           ),
           subtitle: Text(
-            food['brandOwner'] ?? food['dataType'] ?? '', 
+            subtitle, 
             style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12)
           ),
           trailing: Container(
@@ -409,7 +446,7 @@ class _AddIngredientModalState extends State<AddIngredientModal> {
             Icon(Icons.search_off, size: 64, color: isDark ? Colors.white10 : Colors.black12),
             const SizedBox(height: 16),
             Text(
-              'No matches found in USDA database', 
+              'No matches found in library or cloud', 
               style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)
             ),
           ],

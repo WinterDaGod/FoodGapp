@@ -1,3 +1,5 @@
+import 'food_library_item.dart';
+
 class Ingredient {
   final String name;
   final double amount;
@@ -82,6 +84,21 @@ class Ingredient {
       fat: findNutrientValue([1004]),
       isVerified: true,
       source: 'USDA',
+    );
+  }
+
+  factory Ingredient.fromLibrary(FoodLibraryItem item, double amount) {
+    final ratio = amount / item.servingSize;
+    return Ingredient(
+      name: item.name,
+      amount: amount,
+      unit: item.unit.split(' ').first, // e.g. "g" from "g (1 cup)"
+      calories: item.calories * ratio,
+      protein: item.protein * ratio,
+      carbs: item.carbs * ratio,
+      fat: item.fat * ratio,
+      isVerified: true,
+      source: item.source,
     );
   }
 

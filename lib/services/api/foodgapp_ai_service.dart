@@ -51,13 +51,8 @@ Response MUST be a single JSON object with these keys:
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
       
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      // Sanitization: Remove markdown code blocks if present
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       final Map<String, dynamic> data = jsonDecode(jsonString);
       return Ingredient.fromMap(data);
@@ -108,12 +103,8 @@ Expected Response Format:
     try {
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       return jsonDecode(jsonString);
     } catch (e) {
@@ -185,12 +176,8 @@ Expected Response Format:
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
       
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       return jsonDecode(jsonString);
     } catch (e) {
@@ -253,7 +240,7 @@ Expected Response Format:
       "fat": 12,
       "ingredients": ["...", "..."],
       "aiReasoning": "...",
-      "source": "FoodGapp_Fallback",
+      "source": "FoodGapp AI",
       "isVerified": false
     },
     ... (2 more meals)
@@ -265,12 +252,8 @@ Expected Response Format:
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
       
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       return jsonDecode(jsonString);
     } catch (e) {
@@ -332,12 +315,8 @@ Expected Response Format:
     try {
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       return jsonDecode(jsonString);
     } catch (e) {
@@ -396,12 +375,8 @@ Response Format:
     try {
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       final Map<String, dynamic> data = jsonDecode(jsonString);
       return (data['results'] as List?)?.cast<Map<String, dynamic>>();
@@ -445,12 +420,8 @@ CRITICAL: Return RAW JSON only.
     try {
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       final decoded = jsonDecode(jsonString);
       if (decoded is! Map) return null;
@@ -506,12 +477,8 @@ Response Format:
     try {
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       final Map<String, dynamic> data = jsonDecode(jsonString);
       return (data['results'] as List?)?.cast<Map<String, dynamic>>();
@@ -537,22 +504,14 @@ Instructions:
 1. Return a single JSON object where keys are the ingredients and values are the aisle names.
 2. Be precise but prioritize standard categories.
 
-Example:
-Input: ["Milk", "Apple", "Chicken"]
-Output: {"Milk": "Dairy/Eggs", "Apple": "Produce", "Chicken": "Meat/Seafood"}
-
 CRITICAL: Return RAW JSON only.
 ''';
 
     try {
       final content = [Content.text(prompt)];
       final response = await _model.generateContent(content);
-      String? jsonString = response.text;
+      String? jsonString = _sanitizeJson(response.text);
       if (jsonString == null) return null;
-
-      if (jsonString.contains('```')) {
-        jsonString = jsonString.replaceAll(RegExp(r'```(?:json)?'), '').trim();
-      }
 
       final decoded = jsonDecode(jsonString);
       if (decoded is! Map) return null;
@@ -562,5 +521,21 @@ CRITICAL: Return RAW JSON only.
       print('FoodGapp AI Categorization Error: $e');
       return null;
     }
+  }
+
+  /// Strong sanitization to remove markdown and illegal AI list formatting.
+  String? _sanitizeJson(String? input) {
+    if (input == null) return null;
+    String clean = input;
+    // Remove markdown code blocks
+    if (clean.contains('```')) {
+      clean = clean.replaceAll(RegExp(r'```(?:json)?'), '').trim();
+    }
+    // Remove illegal leading "=" from array elements (The specific crash culprit)
+    clean = clean.replaceAll(RegExp(r'":\s*='), '": '); // Fixes "key": = "val"
+    clean = clean.replaceAll(RegExp(r'\[\s*='), '[');   // Fixes [= "val"]
+    clean = clean.replaceAll(RegExp(r',\s*='), ', ');  // Fixes [, = "val"]
+    
+    return clean.trim();
   }
 }

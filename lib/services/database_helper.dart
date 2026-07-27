@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
@@ -10,6 +12,7 @@ import '../models/user_profile.dart';
 import '../models/fasting_session.dart';
 import '../models/weight_log.dart';
 import '../models/shopping_item.dart';
+import '../models/food_library_item.dart';
 
 /// Single point of access to the on-device SQLite database.
 class DatabaseHelper {
@@ -19,8 +22,8 @@ class DatabaseHelper {
   @visibleForTesting
   DatabaseHelper.forTesting(Database database) : _database = database;
 
-  static const _databaseName = 'foodgapp.db';
-  static const _databaseVersion = 19;
+  static const _databaseName = 'foodgapp_v5.db';
+  static const _databaseVersion = 25;
 
   Database? _database;
 
@@ -29,344 +32,184 @@ class DatabaseHelper {
   Future<Database> _open() async {
     final databasesDir = await getDatabasesPath();
     final path = p.join(databasesDir, _databaseName);
-    return openDatabase(
+
+    // Check if the database exists
+    final exists = await databaseExists(path);
+
+    if (!exists) {
+      debugPrint("Creating new high-fidelity database copy (v5)...");
+      try {
+        await Directory(p.dirname(path)).create(recursive: true);
+        ByteData data = await rootBundle.load(p.join("assets", "data", "food_library_titan.db"));
+        List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        await File(path).writeAsBytes(bytes, flush: true);
+      } catch (e) {
+        debugPrint("Asset copy failed: $e. Falling back to local init.");
+      }
+    }
+
+    final db = await openDatabase(
       path,
       version: _databaseVersion,
       onConfigure: onConfigure,
       onCreate: onCreate,
       onUpgrade: onUpgrade,
     );
+
+    // CRITICAL: Self-Healing Logic - Ensure all tables exist regardless of source
+    await _ensureAllTablesExist(db);
+    
+    return db;
   }
 
   static Future<void> onConfigure(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
   }
 
-  static Future<void> onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE user_profile (
-        user_id TEXT PRIMARY KEY,
-        name TEXT,
-        email TEXT,
-        contact_number TEXT,
-        age INTEGER,
-        gender TEXT,
-        height_cm REAL,
-        weight_kg REAL,
-        target_weight_kg REAL,
-        activity_level TEXT,
-        dietary_preferences TEXT,
-        health_goal TEXT,
-        goal_pace TEXT,
-        custom_calories REAL,
-        custom_protein REAL,
-        custom_carbs REAL,
-        custom_fat REAL,
-        auto_adjust INTEGER DEFAULT 1,
-        birthday TEXT,
-        unit_system TEXT DEFAULT 'Metric',
-        theme_mode TEXT DEFAULT 'System',
-        show_surplus INTEGER DEFAULT 1,
-        macro_preset TEXT DEFAULT 'Default',
-        meal_logging_style TEXT DEFAULT 'Default',
-        meal_log_sounds_enabled INTEGER DEFAULT 1,
-        day_reset_time TEXT DEFAULT '00:00',
-        week_start_day TEXT DEFAULT 'Monday',
-        timezone TEXT DEFAULT 'Manila',
-        custom_macro_protein REAL DEFAULT 33.3,
-        custom_macro_carbs REAL DEFAULT 33.3,
-        custom_macro_fat REAL DEFAULT 33.4,
-        created_at TEXT
-      )
-    ''');
+  /// Self-Healing Engine: Restores any missing critical tables on startup.
+  static Future<void> _ensureAllTablesExist(Database db) async {
+    final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
+    final tableNames = tables.map((row) => row['name'] as String).toSet();
 
-    await db.execute('''
-      CREATE TABLE meal_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        meal_date TEXT NOT NULL,
-        meal_type TEXT NOT NULL,
-        food_name TEXT NOT NULL,
-        serving_size TEXT,
-        calories REAL,
-        protein REAL,
-        carbs REAL,
-        fat REAL,
-        meal_time TEXT,
-        image_url TEXT,
-        is_pinned INTEGER DEFAULT 0,
-        api_meal_id TEXT,
-        ingredients_json TEXT,
-        base_calories REAL,
-        base_protein REAL,
-        base_carbs REAL,
-        base_fat REAL,
-        FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE saved_meals (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        api_meal_id TEXT,
-        meal_name TEXT,
-        image_url TEXT,
-        FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE nutrition_cache (
-        api_meal_id TEXT PRIMARY KEY,
-        meal_name TEXT,
-        calories REAL,
-        protein REAL,
-        carbs REAL,
-        fat REAL,
-        raw_json TEXT,
-        cached_at INTEGER
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE weight_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        date TEXT NOT NULL,
-        weight_kg REAL NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE fasting_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        start_time TEXT NOT NULL,
-        target_hours INTEGER NOT NULL,
-        end_time TEXT,
-        repeat_mode TEXT NOT NULL,
-        is_completed INTEGER DEFAULT 0,
-        FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE active_meal_plan (
-        id INTEGER PRIMARY KEY,
-        plan_type TEXT NOT NULL,
-        data_json TEXT NOT NULL
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE water_log (
-        user_id TEXT NOT NULL,
-        date TEXT NOT NULL,
-        amount_ml INTEGER NOT NULL,
-        PRIMARY KEY (user_id, date),
-        FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE shopping_list (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        name TEXT NOT NULL,
-        recipe_name TEXT,
-        category TEXT,
-        quantity INTEGER DEFAULT 1,
-        is_checked INTEGER DEFAULT 0,
-        FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE aisle_cache (
-        ingredient_name TEXT PRIMARY KEY,
-        category TEXT NOT NULL
-      )
-    ''');
-
-    // Add indexes for performance
-    await db.execute('CREATE INDEX idx_saved_meals_user ON saved_meals (user_id)');
-    await db.execute('CREATE INDEX idx_meal_log_user_date ON meal_log (user_id, meal_date)');
-    await db.execute('CREATE INDEX idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
-  }
-
-  static Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      if (!columns.any((c) => c['name'] == 'target_weight_kg')) {
-        await db.execute('ALTER TABLE user_profile ADD COLUMN target_weight_kg REAL');
-      }
-      final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='weight_log'");
-      if (tables.isEmpty) {
-        await db.execute('''
-          CREATE TABLE weight_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            date TEXT NOT NULL,
-            weight_kg REAL NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-          )
-        ''');
-      }
-    }
-    if (oldVersion < 3) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      if (!columns.any((c) => c['name'] == 'goal_pace')) {
-        await db.execute('ALTER TABLE user_profile ADD COLUMN goal_pace TEXT');
-      }
-    }
-    if (oldVersion < 4) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('custom_calories')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_calories REAL');
-      if (!names.contains('custom_protein')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_protein REAL');
-      if (!names.contains('custom_carbs')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_carbs REAL');
-      if (!names.contains('custom_fat')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_fat REAL');
-      if (!names.contains('auto_adjust')) await db.execute('ALTER TABLE user_profile ADD COLUMN auto_adjust INTEGER DEFAULT 1');
-    }
-    if (oldVersion < 5) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('birthday')) await db.execute('ALTER TABLE user_profile ADD COLUMN birthday TEXT');
-      if (!names.contains('unit_system')) await db.execute("ALTER TABLE user_profile ADD COLUMN unit_system TEXT DEFAULT 'Metric'");
-    }
-    if (oldVersion < 6) {
-      final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='fasting_log'");
-      if (tables.isEmpty) {
-        await db.execute('''
-          CREATE TABLE fasting_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            start_time TEXT NOT NULL,
-            target_hours INTEGER NOT NULL,
-            end_time TEXT,
-            repeat_mode TEXT NOT NULL,
-            is_completed INTEGER DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-          )
-        ''');
-      }
-    }
-    if (oldVersion < 7) {
-      final columns = await db.rawQuery('PRAGMA table_info(meal_log)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('image_url')) await db.execute('ALTER TABLE meal_log ADD COLUMN image_url TEXT');
-      if (!names.contains('is_pinned')) await db.execute('ALTER TABLE meal_log ADD COLUMN is_pinned INTEGER DEFAULT 0');
-    }
-    if (oldVersion < 8) {
-      final columns = await db.rawQuery('PRAGMA table_info(meal_log)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('meal_time')) await db.execute('ALTER TABLE meal_log ADD COLUMN meal_time TEXT');
-    }
-    if (oldVersion < 9) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('theme_mode')) await db.execute("ALTER TABLE user_profile ADD COLUMN theme_mode TEXT DEFAULT 'System'");
-      if (!names.contains('show_surplus')) await db.execute('ALTER TABLE user_profile ADD COLUMN show_surplus INTEGER DEFAULT 1');
-      if (!names.contains('macro_preset')) await db.execute("ALTER TABLE user_profile ADD COLUMN macro_preset TEXT DEFAULT 'Default'");
-      if (!names.contains('meal_logging_style')) await db.execute("ALTER TABLE user_profile ADD COLUMN meal_logging_style TEXT DEFAULT 'Default'");
-      if (!names.contains('meal_log_sounds_enabled')) await db.execute('ALTER TABLE user_profile ADD COLUMN meal_log_sounds_enabled INTEGER DEFAULT 1');
-      if (!names.contains('day_reset_time')) await db.execute("ALTER TABLE user_profile ADD COLUMN day_reset_time TEXT DEFAULT '00:00'");
-      if (!names.contains('week_start_day')) await db.execute("ALTER TABLE user_profile ADD COLUMN week_start_day TEXT DEFAULT 'Monday'");
-      if (!names.contains('timezone')) await db.execute("ALTER TABLE user_profile ADD COLUMN timezone TEXT DEFAULT 'Manila'");
-    }
-    if (oldVersion < 10) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('custom_macro_protein')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_macro_protein REAL DEFAULT 33.3');
-      if (!names.contains('custom_macro_carbs')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_macro_carbs REAL DEFAULT 33.3');
-      if (!names.contains('custom_macro_fat')) await db.execute('ALTER TABLE user_profile ADD COLUMN custom_macro_fat REAL DEFAULT 33.4');
-    }
-    if (oldVersion < 11) {
-      await db.execute('''
-        CREATE TABLE active_meal_plan (
-          id INTEGER PRIMARY KEY,
-          plan_type TEXT NOT NULL,
-          data_json TEXT NOT NULL
-        )
-      ''');
-    }
-    if (oldVersion < 12) {
-      await db.execute('''
-        CREATE TABLE water_log (
+    final schema = {
+      'user_profile': '''
+        CREATE TABLE IF NOT EXISTS user_profile (
+          user_id TEXT PRIMARY KEY,
+          name TEXT,
+          email TEXT,
+          contact_number TEXT,
+          age INTEGER,
+          gender TEXT,
+          height_cm REAL,
+          weight_kg REAL,
+          target_weight_kg REAL,
+          activity_level TEXT,
+          dietary_preferences TEXT,
+          health_goal TEXT,
+          goal_pace TEXT,
+          custom_calories REAL,
+          custom_protein REAL,
+          custom_carbs REAL,
+          custom_fat REAL,
+          auto_adjust INTEGER DEFAULT 1,
+          birthday TEXT,
+          unit_system TEXT DEFAULT 'Metric',
+          theme_mode TEXT DEFAULT 'System',
+          show_surplus INTEGER DEFAULT 1,
+          macro_preset TEXT DEFAULT 'Default',
+          meal_logging_style TEXT DEFAULT 'Default',
+          meal_log_sounds_enabled INTEGER DEFAULT 1,
+          day_reset_time TEXT DEFAULT '00:00',
+          week_start_day TEXT DEFAULT 'Monday',
+          timezone TEXT DEFAULT 'Manila',
+          custom_macro_protein REAL DEFAULT 33.3,
+          custom_macro_carbs REAL DEFAULT 33.3,
+          custom_macro_fat REAL DEFAULT 33.4,
+          created_at TEXT
+        )''',
+      'meal_log': '''
+        CREATE TABLE IF NOT EXISTS meal_log (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL,
+          meal_date TEXT NOT NULL,
+          meal_type TEXT NOT NULL,
+          food_name TEXT NOT NULL,
+          serving_size TEXT,
+          calories REAL,
+          protein REAL,
+          carbs REAL,
+          fat REAL,
+          meal_time TEXT,
+          image_url TEXT,
+          is_pinned INTEGER DEFAULT 0,
+          api_meal_id TEXT,
+          ingredients_json TEXT,
+          base_calories REAL,
+          base_protein REAL,
+          base_carbs REAL,
+          base_fat REAL,
+          FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
+        )''',
+      'shopping_list': '''
+        CREATE TABLE IF NOT EXISTS shopping_list (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          recipe_name TEXT,
+          category TEXT,
+          quantity INTEGER DEFAULT 1,
+          is_checked INTEGER DEFAULT 0,
+          FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
+        )''',
+      'water_log': '''
+        CREATE TABLE IF NOT EXISTS water_log (
           user_id TEXT NOT NULL,
           date TEXT NOT NULL,
           amount_ml INTEGER NOT NULL,
           PRIMARY KEY (user_id, date),
           FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-        )
-      ''');
-    }
-    if (oldVersion < 13) {
-      await db.execute('''
-        CREATE TABLE shopping_list (
+        )''',
+      'saved_meals': '''
+        CREATE TABLE IF NOT EXISTS saved_meals (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          recipe_name TEXT,
-          is_checked INTEGER DEFAULT 0,
+          api_meal_id TEXT,
+          meal_name TEXT,
+          image_url TEXT,
           FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
-        )
-      ''');
-    }
-    if (oldVersion < 14) {
-      final columns = await db.rawQuery('PRAGMA table_info(user_profile)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('created_at')) {
-        await db.execute('ALTER TABLE user_profile ADD COLUMN created_at TEXT');
-      }
-    }
-    if (oldVersion < 15) {
-      final columns = await db.rawQuery('PRAGMA table_info(meal_log)');
-      final names = columns.map((c) => c['name'] as String).toList();
-      if (!names.contains('ingredients_json')) await db.execute('ALTER TABLE meal_log ADD COLUMN ingredients_json TEXT');
-      if (!names.contains('base_calories')) await db.execute('ALTER TABLE meal_log ADD COLUMN base_calories REAL');
-      if (!names.contains('base_protein')) await db.execute('ALTER TABLE meal_log ADD COLUMN base_protein REAL');
-      if (!names.contains('base_carbs')) await db.execute('ALTER TABLE meal_log ADD COLUMN base_carbs REAL');
-      if (!names.contains('base_fat')) await db.execute('ALTER TABLE meal_log ADD COLUMN base_fat REAL');
-    }
-    if (oldVersion < 16) {
-      // Add category to shopping_list
-      final columns = await db.rawQuery('PRAGMA table_info(shopping_list)');
-      if (!columns.any((c) => c['name'] == 'category')) {
-        await db.execute('ALTER TABLE shopping_list ADD COLUMN category TEXT');
-      }
-      
-      // Create aisle_cache table
-      await db.execute('''
+        )''',
+      'nutrition_cache': '''
+        CREATE TABLE IF NOT EXISTS nutrition_cache (
+          api_meal_id TEXT PRIMARY KEY,
+          meal_name TEXT,
+          calories REAL,
+          protein REAL,
+          carbs REAL,
+          fat REAL,
+          raw_json TEXT,
+          cached_at INTEGER
+        )''',
+      'aisle_cache': '''
         CREATE TABLE IF NOT EXISTS aisle_cache (
           ingredient_name TEXT PRIMARY KEY,
           category TEXT NOT NULL
-        )
-      ''');
-    }
-    if (oldVersion < 17) {
-      final columns = await db.rawQuery('PRAGMA table_info(shopping_list)');
-      if (!columns.any((c) => c['name'] == 'quantity')) {
-        await db.execute('ALTER TABLE shopping_list ADD COLUMN quantity INTEGER DEFAULT 1');
+        )''',
+      'food_library': '''
+        CREATE TABLE IF NOT EXISTS food_library (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          serving_size REAL NOT NULL,
+          unit TEXT NOT NULL,
+          calories REAL NOT NULL,
+          protein REAL NOT NULL,
+          carbs REAL NOT NULL,
+          fat REAL NOT NULL,
+          source TEXT NOT NULL
+        )''',
+    };
+
+    for (var entry in schema.entries) {
+      if (!tableNames.contains(entry.key)) {
+        debugPrint("Self-Healing Engine: Restoring table: ${entry.key}");
+        await db.execute(entry.value);
       }
     }
-    if (oldVersion < 18) {
-      // Ensure aisle_cache exists (Fix for missing table bug)
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS aisle_cache (
-          ingredient_name TEXT PRIMARY KEY,
-          category TEXT NOT NULL
-        )
-      ''');
-    }
-    if (oldVersion < 19) {
-      // Add indexes for performance (Saved tab optimization)
-      await db.execute('CREATE INDEX IF NOT EXISTS idx_saved_meals_user ON saved_meals (user_id)');
-      await db.execute('CREATE INDEX IF NOT EXISTS idx_meal_log_user_date ON meal_log (user_id, meal_date)');
-      await db.execute('CREATE INDEX IF NOT EXISTS idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
-    }
+
+    // Add indexes if missing
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_saved_meals_user ON saved_meals (user_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_meal_log_user_date ON meal_log (user_id, meal_date)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_food_library_name ON food_library (name)');
+  }
+
+  static Future<void> onCreate(Database db, int version) async {
+    await _ensureAllTablesExist(db);
+  }
+
+  static Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Migration logic is now dynamically handled by _ensureAllTablesExist
+    await _ensureAllTablesExist(db);
   }
 
   Future<void> clearAllMealLogs() async {
@@ -430,8 +273,6 @@ class DatabaseHelper {
     final db = await database;
     final map = profile.toMap();
     
-    // Attempt to update first to avoid ConflictAlgorithm.replace 
-    // which triggers a DELETE (and thus cascaded deletes on logs)
     final count = await db.update(
       'user_profile',
       map,
@@ -440,7 +281,6 @@ class DatabaseHelper {
     );
 
     if (count == 0) {
-      // User doesn't exist, safe to insert
       await db.insert('user_profile', map);
     }
   }
@@ -551,8 +391,6 @@ class DatabaseHelper {
     );
   }
 
-  /// Efficiently fetches total calories per day for a specific user within a 
-  /// date range (inclusive).
   Future<Map<String, double>> getCalorieHistoryForRange(String userId, String startDate, String endDate) async {
     final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
@@ -676,10 +514,8 @@ class DatabaseHelper {
     if (ids.isEmpty) return {};
     final db = await database;
     
-    // Split into chunks if there are many IDs (SQLite limit is usually 999 parameters)
     final Map<String, Recipe> results = {};
     
-    // Using simple IN clause with placeholders
     final placeholders = List.filled(ids.length, '?').join(',');
     final rows = await db.query(
       'nutrition_cache',
@@ -717,7 +553,6 @@ class DatabaseHelper {
 
   Future<void> saveActiveMealPlan(String planType, String dataJson) async {
     final db = await database;
-    // We use id 1 for daily, 2 for weekly to keep them separate
     final id = planType == 'day' ? 1 : 2;
     await db.insert(
       'active_meal_plan',
@@ -826,13 +661,10 @@ class DatabaseHelper {
     );
   }
 
-  /// Saves multiple shopping items in a single high-speed transaction.
-  /// Handles both updates (if item exists for recipe) and new inserts.
   Future<void> saveShoppingItemsBulk(String userId, List<ShoppingItem> newItems) async {
     final db = await database;
     await db.transaction((txn) async {
       for (var item in newItems) {
-        // Look for existing item with same name and recipe in this transaction
         final List<Map<String, dynamic>> existing = await txn.query(
           'shopping_list',
           where: 'user_id = ? AND name = ? AND (recipe_name = ? OR (recipe_name IS NULL AND ? IS NULL))',
@@ -919,5 +751,46 @@ class DatabaseHelper {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  // --- food_library --------------------------------------------------------
+
+  Future<List<FoodLibraryItem>> searchFoodLibrary(String query) async {
+    final db = await database;
+    
+    final List<String> keywords = query.trim().split(RegExp(r'\s+'));
+    if (keywords.isEmpty) return [];
+
+    final String whereClause = keywords.map((_) => 'name LIKE ?').join(' AND ');
+    final List<String> whereArgs = keywords.map((k) => '%$k%').toList();
+
+    final rows = await db.query(
+      'food_library',
+      where: whereClause,
+      whereArgs: whereArgs,
+      limit: 50,
+    );
+    
+    return rows.map(FoodLibraryItem.fromMap).toList();
+  }
+
+  Future<List<FoodLibraryItem>> getRandomTitanFoods({int limit = 20, String? category}) async {
+    final db = await database;
+    String? where;
+    List<Object?>? whereArgs;
+    
+    if (category != null) {
+      where = 'category = ?';
+      whereArgs = [category];
+    }
+
+    final rows = await db.query(
+      'food_library',
+      where: where,
+      whereArgs: whereArgs,
+      orderBy: 'RANDOM()',
+      limit: limit,
+    );
+    return rows.map(FoodLibraryItem.fromMap).toList();
   }
 }

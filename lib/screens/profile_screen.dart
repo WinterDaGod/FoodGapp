@@ -1594,19 +1594,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             value: _profile?.macroPreset ?? 'Default',
             onTap: _showMacroPresetModal,
           ),
-          _buildDivider(),
-          _buildInfoTile(
-            icon: Icons.volume_up_outlined,
-            iconColor: Colors.grey,
-            label: 'Meal Log Sounds',
-            value: (_profile?.mealLogSoundsEnabled ?? true) ? 'Enabled' : 'Disabled',
-            onTap: () => _editField('Meal Log Sounds', (_profile?.mealLogSoundsEnabled ?? true) ? 'Enabled' : 'Disabled', [
-              const SelectionOption('Enabled', 'Play sound when logging meals'),
-              const SelectionOption('Disabled', 'Quiet logging experience'),
-            ], (val) {
-              _saveProfile(_profile!.copyWith(mealLogSoundsEnabled: val == 'Enabled'));
-            }),
-          ),
         ],
       ),
     ),
