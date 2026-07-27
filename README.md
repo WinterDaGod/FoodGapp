@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/icon.png" width="128" height="128" alt="FoodGapp Logo">
+  <img src="assets/app_icon_v2.png" width="128" height="128" alt="FoodGapp Logo">
 </p>
 
-<h1 align="center">FoodGapp</h1>
+<h1 align="center">FoodGapp v1.1.8</h1>
 
 <p align="center">
   <strong>Eat Better, Track Smarter</strong>
@@ -38,6 +38,7 @@ FoodGapp is a high-fidelity, cross-platform nutrition application engineered for
 
 ### 🧠 1. Intelligent Orchestration
 Powered by advanced **Natural Language Processing (NLP)**, the app acts as a 24/7 personal dietitian:
+*   **Titan Offline Library**: Instant access to a massive **50,000-item** local database featuring PhilFCT (DOST-FNRI) and USDA clinical data.
 *   **Precision AI Planner**: Generates calorie-matched daily and weekly schedules with high-accuracy 25/35/40 orchestration.
 *   **Interactive Performance Strip**: A dynamic calendar tracker that visualizes daily goal compliance via technical progress rings.
 *   **AI Pantry Chef**: Invent creative recipes using only the ingredients currently in your kitchen.
@@ -51,10 +52,10 @@ A commitment to data accuracy and local relevance:
 *   **Fluid Bio-Tracking**: Premium interactive tracking for hydration, intermittent fasting stages, and weight journey milestones.
 
 ### 🛡️ 3. Architectural Resilience
-Engineered for "Zero-Downtime" discovery through a proprietary 4-layer data gateway:
+Engineered for "Zero-Downtime" discovery through a proprietary 4-layer data gateway and self-healing systems:
 1.  **Primary**: FoodGapp AI for bespoke creativity.
 2.  **Verified Database**: Spoonacular (USDA-linked) for clinical standards.
-3.  **Backup Source**: TheMealDB for rapid, basic discovery.
+3.  **Local Titan Library**: 50,000+ pre-indexed items for instant offline discovery.
 4.  **Local Snapshot**: Personal on-device library for instant offline access.
 
 ---
@@ -67,7 +68,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 | :--- | :---: | :--- |
 | **Authentication** | 🟢 | Firebase Auth, Password Strength UX, Biometric Profiles. |
 | **AI Engine** | 🟢 | AI-First Orchestration, Pantry Chef, NLP Quick Paste. |
-| **Data Layer** | 🟢 | v19 Schema, High-Speed Indexing, Bulk Data Processing. |
+| **Data Layer** | 🟢 | v25 Self-Healing Schema, 50k Titan Library, Bulk Processing. |
 | **Analytics** | 🟢 | DOST-FNRI Feedback, Weight Journey, BMI Gauge. |
 | **UX/UI** | 🟢 | Fluid Animations, Haptic Feedback, Enhanced List Controls. |
 | **Reliability** | 🟢 | 4-Tier Fallback Gateway, Instant "Saved" Loading. |
@@ -83,7 +84,7 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 | **Framework** | Flutter (Android-Native Optimized) |
 | **Language** | Dart 3.4+ |
 | **AI Services** | FoodGapp AI Engine (NLP & Computer Vision ready) |
-| **Persistence** | SQLite (`sqflite`) - v19 Schema |
+| **Persistence** | SQLite (`sqflite`) - v25 Self-Healing Schema |
 | **Identity** | Firebase Authentication |
 | **API Sources** | Spoonacular, USDA FoodData Central, TheMealDB |
 
@@ -99,6 +100,8 @@ FoodGapp is currently in a **Feature-Complete, High-Fidelity state** for its ini
 | `fasting_log` | Session management and biological stage tracking. |
 | `water_log` | Persistent daily hydration metrics. |
 | `shopping_list` | Dynamic checklist with quantity support and recipe merging. |
+| `food_library` | Massive 50,000-item pre-indexed high-fidelity food database. |
+| `active_meal_plan` | Persistent storage for currently active daily and weekly plans. |
 
 ---
 
