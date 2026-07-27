@@ -55,8 +55,8 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/app_icon_v2.png"
-  # This fixes the odd look by using a solid background layer
-  adaptive_icon_background: "#FFFFFF" 
+  # Match the background of the logo to avoid "weird" rings on Android 12+
+  adaptive_icon_background: "#1E1E1E" 
   adaptive_icon_foreground: "assets/app_icon_v2.png"
 
 flutter:
