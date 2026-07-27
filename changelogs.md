@@ -2,7 +2,7 @@
 
 This file tracks the high-level functional and technical evolution of FoodGapp, focusing on the journey to the production-ready v1.1.0 release.
 
-## [v1.1.8] - Bulletproof Accuracy & Onboarding Refinement (Current)
+## [v1.1.8] - Bulletproof Accuracy & Professional Compliance (Current)
 
 ### 🛡️ System Stability & Self-Healing
 - **Self-Healing Database Engine (v5)**: Implemented an aggressive auto-recovery system that restores missing critical tables (Shopping List, User Profile, etc.) on every startup.
@@ -15,10 +15,22 @@ This file tracks the high-level functional and technical evolution of FoodGapp, 
 - **Clinical USDA Sourcing**: Refined the USDA integration to exclusively surface **Foundation Foods** and **SR Legacy** clinical laboratory data, removing inconsistent branded "noise."
 - **Keyword-Aware Search**: Upgraded the internal search engine to support keyword intersection, allowing for more accurate matches on complex dish names (e.g. "Ala King").
 
+### ⚖️ Legal Compliance & Security
+- **Functional Legal Framework**: Implemented interactive **Terms of Use** and **Privacy Policy** screens, replacing visual placeholders with professional, actionable legal documentation.
+- **Enhanced Dark Mode Contrast**: Optimized the visibility of authentication links ("Sign In", "Register", "Login") across all entry screens for superior high-contrast legibility in dark environments.
+
+### 🍱 AI Data Integrity & Persistence
+- **Weekly Plan Reinforcement**: Upgraded the AI orchestration logic to mandate full ingredient lists and macro breakdowns for all 21 meals in a weekly cycle, eliminating "0 ingredient" states.
+- **Automatic Recipe Caching**: Implemented a pro-active caching layer that persists AI-generated recipes to the local SQLite storage instantly, ensuring high-fidelity detail views even during offline sessions.
+
 ### 🎡 Onboarding & UI Polish
 - **High-Fidelity Birthdate Selector**: Upgraded the onboarding flow with a professional **Wheel-based Date Picker** (Cupertino-style), enabling rapid year selection for users.
-- **High-Density Interface Overhaul**: Re-engineered the Shopping List, Manual Entry, and Auth (Login/Register) screens with compact layouts, reducing vertical margins and font sizes to maximize information visibility.
+- **Splash Screen Perfection**: Resolved the "white ring" visual defect on Android 12+ by synchronizing the adaptive background layer with the brand's charcoal aesthetic.
+- **Icon Inset Optimization**: Implemented a 16% technical inset for the Android launcher foreground to ensure the logo remains perfectly centered and unclipped by system masks.
 - **Precision Alignment**: Refined the vertical alignment of icons and text in form fields (Password/Confirm Password) for a polished, balanced aesthetic.
+
+### ☁️ Automated DevOps
+- **CI/CD Version Sync**: Re-engineered the GitHub Actions workflow to automatically pull versioning data from the project's `pubspec.yaml`, ensuring 100% build consistency between Android and iOS releases.
 
 ---
 

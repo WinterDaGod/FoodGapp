@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
+import 'legal_content_screen.dart';
 import 'widgets/dashboard_widgets.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -253,11 +255,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               TextSpan(
                 text: 'Terms of Use',
                 style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, decoration: TextDecoration.underline),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LegalContentScreen(contentType: LegalContentType.terms)),
+                  ),
               ),
               const TextSpan(text: ' and '),
               TextSpan(
                 text: 'Privacy Policy',
                 style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, decoration: TextDecoration.underline),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LegalContentScreen(contentType: LegalContentType.privacy)),
+                  ),
               ),
               const TextSpan(text: '.'),
             ],

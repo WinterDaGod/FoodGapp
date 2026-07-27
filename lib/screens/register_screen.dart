@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,6 +10,7 @@ import '../services/app_events.dart';
 
 import '../services/sound_service.dart';
 import 'onboarding_screen.dart';
+import 'legal_content_screen.dart';
 import 'widgets/app_loading.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -437,12 +439,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const TextSpan(text: 'I agree to the '),
                   TextSpan(
                     text: 'Terms of Service', 
-                    style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.bold)
+                    style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.bold),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LegalContentScreen(contentType: LegalContentType.terms)),
+                      ),
                   ),
                   const TextSpan(text: ' and '),
                   TextSpan(
                     text: 'Privacy Policy', 
-                    style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.bold)
+                    style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.bold),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LegalContentScreen(contentType: LegalContentType.privacy)),
+                      ),
                   ),
                 ],
               ),
