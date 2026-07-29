@@ -8,10 +8,11 @@ This document prepares the proponents for technical and functional questioning b
 
 **Q: Your paper mentions a "3-Layer Architecture." How is this implemented in the code?**
 > [!NOTE]
-> **Answer**: We strictly follow the **Presentation**, **Application Logic**, and **Data** layers.
-> 1. **Presentation**: Built with Flutter, using a "Liquid Glass" design system for high-density information display.
-> 2. **Logic**: Services like `MealGenerationService` and `ShoppingListService` act as the brain, orchestrating data between the UI and APIs.
-> 3. **Data**: We use a **v25 Self-Healing SQLite schema**. This layer is unique because it combines a massive 50,000-item local library (Titan Engine) with cloud-based caching.
+> **Answer**: We strictly follow a **Presentation**, **Application Logic**, and **Data** layer separation: 
+> 1. **Presentation**: All Flutter widgets and screens (the UI).
+> 2. **Application Logic**: The "Brain" (Services like `MealGenerationService`) that processes business rules and API handshakes.
+> 3. **Data**: Our v25 Self-Healing SQLite core which persists all user history.
+> This ensures that our code is modular, easy to maintain, and academically sound.
 
 **Q: What do you mean by a "Self-Healing Database"?**
 > [!IMPORTANT]
@@ -50,7 +51,7 @@ This document prepares the proponents for technical and functional questioning b
 
 **Q: You mention "RENI" in your paper. How is it displayed in the app?**
 > [!NOTE]
-> **Answer**: In the **Nutrition Dashboard**, we compare the user's actual intake against their calculated targets. We use the **Pinggang Pinoy** philosophy—visualizing the balance between "Go, Grow, and Glow" foods via our macro progress rings and real-time feedback messages.
+> **Answer**: In the **Nutrition Dashboard**, we compare the user's actual intake against their calculated targets. We follow the **Pinggang Pinoy** philosophy—the "healthy food plate" standard for Filipinos. We visualize the balance between "Go, Grow, and Glow" foods via our macro progress rings and real-time feedback messages, making complex RENI guidelines easy for the user to understand at a glance.
 
 ---
 
@@ -74,7 +75,25 @@ This document prepares the proponents for technical and functional questioning b
 
 ---
 
-## 📋 Tier 6: Methodology & Compliance
+## 🧪 Tier 6: Scientific Deep-Dive (The Math)
+
+**Q: What exactly is the math behind the integration of the DOST-FNRI RENI and the Food Composition Table?**
+> [!IMPORTANT]
+> **Answer**: Our scientific engine uses a three-stage mathematical model based on the **2015 PDRI (Philippine Dietary Reference Intakes)**:
+> 
+> 1. **BMR Calculation**: We utilize the **Mifflin-St Jeor Equation**, which is the gold standard for metabolic estimation. 
+>    *   *Formula*: `(10 × weight_kg) + (6.25 × height_cm) - (5 × age) + s` (where `s` is +5 for males and -161 for females).
+> 2. **Energy Adjustment (PAL)**: We multiply the BMR by FNRI-specific **Physical Activity Level (PAL)** factors. We implemented 5 levels: Sedentary (1.2), Lightly Active (1.375), Moderately Active (1.55), Very Active (1.725), and Extra Active (1.9).
+> 3. **Macro Distribution (AMDR)**: We apply the **Acceptable Macronutrient Distribution Ranges** from DOST-FNRI:
+>    *   **Carbohydrates**: 55–75% of total energy.
+>    *   **Protein**: 10–15% of total energy.
+>    *   **Fat**: 15–30% of total energy.
+>
+> For the **Food Composition Table**, we mapped 50,000 items from the **PhilFCT** and **USDA Foundation** datasets into a relational structure. Every search result the user sees is a direct laboratory-verified lookup, not an estimation.
+
+---
+
+## 📋 Tier 7: Methodology & Compliance
 
 **Q: Why did you choose the Waterfall Model for your development process?**
 > [!NOTE]
@@ -82,7 +101,7 @@ This document prepares the proponents for technical and functional questioning b
 
 **Q: How does FoodGapp comply with the Data Privacy Act of 2012 (RA 10173)?**
 > [!IMPORTANT]
-> **Answer**: Security is baked into our architecture. We follow the principle of **Data Minimization**. 
+> **Answer**: Security is baked into our architecture following the principles set by the **National Privacy Commission (NPC)**. We utilize **Data Minimization**:
 > 1. **Authentication**: Handled securely via Firebase (encrypted and salted).
 > 2. **Local Storage**: Sensitive biometric and health data are stored in a **sandboxed SQLite database** on the device, not on a public cloud server.
 > 3. **Transparency**: We've implemented functional **Privacy Policy** and **Terms of Use** screens that clearly inform the user about how their data is used.
@@ -120,7 +139,11 @@ This document prepares the proponents for technical and functional questioning b
 
 **Q: If you had more time, how would you further improve the application?**
 > [!IMPORTANT]
-> **Answer**: We would focus on **Computer Vision (Image Recognition)** to allow users to log meals simply by taking a photo. We also plan to expand the **Micronutrient Tracking** (Vitamins and Minerals) to fully match all 21 essential nutrients defined in the DOST-FNRI RENI standards.
+> **Answer**: We have four primary areas for future expansion:
+> 1. **AI Photo Recognition**: Implementing computer vision to identify meals directly from images.
+> 2. **Community Progress Module**: A social layer for sharing achievements and meal logs.
+> 3. **QR/Barcode Scanner**: For rapid logging of packaged products.
+> 4. **Ecosystem Sync**: Synchronizing data with wearable health devices and other fitness platforms.
 
 **Q: How would FoodGapp handle a massive increase in users (Scalability)?**
 > [!NOTE]
