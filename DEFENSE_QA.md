@@ -91,6 +91,12 @@ This document prepares the proponents for technical and functional questioning b
 >
 > For the **Food Composition Table**, we mapped 50,000 items from the **PhilFCT** and **USDA Foundation** datasets into a relational structure. Every search result the user sees is a direct laboratory-verified lookup, not an estimation.
 
+**Q: How do you calculate BMI and what standard do you use for its status?**
+> [!TIP]
+> **Answer**: We calculate BMI using the standard metric formula: `weight_kg / (height_m²)`. However, for the status classification (Underweight, Healthy, etc.), we specifically adopted the **WHO Asian-Pacific Guidelines**. 
+> *   **Justification**: This standard is more accurate for the Philippine context because Asian populations often face higher risks of type 2 diabetes and cardiovascular disease at lower BMIs compared to Western standards. 
+> *   **Categories used**: Underweight (<18.5), Healthy (18.5–22.9), Overweight (23.0–24.9), and Obese (≥25.0).
+
 ---
 
 ## 📋 Tier 7: Methodology & Compliance
@@ -132,6 +138,12 @@ This document prepares the proponents for technical and functional questioning b
 > 1. **AI "Magic Log"**: Users can type or paste natural language (NLP), and the AI extracts the macros.
 > 2. **Titan Engine**: 50,000 items searchable in milliseconds for instant manual entry.
 > 3. **One-Tap Relogging**: Users can instantly log frequent meals from their recent history, reducing repetitive typing by **80%**.
+
+**Q: How does the dietary preference filter work in the Meal Planner?**
+> [!NOTE]
+> **Answer**: Our dietary filtering is handled through **Dynamic Prompt Engineering**. When a user selects preferences like "Vegan" or "Keto" in the UI, these constraints are injected directly into the **FoodGapp AI** orchestration logic. 
+> *   **Technical Execution**: The AI Service receives these strings and applies strict exclusion/inclusion rules (e.g., "If Vegan is specified, DO NOT include animal products") within its generation phase. 
+> *   **Validation**: The system then performs a second-pass check to ensure the generated recipes adhere to both the dietary constraints and the mathematical calorie targets, providing a reliable, customized experience.
 
 ---
 
