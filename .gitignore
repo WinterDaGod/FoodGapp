@@ -42,8 +42,9 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# AI Assistant Artifacts
-.artifacts/
+# AI Assistant Artifacts (Enabled for GitHub documentation)
+!.artifacts/
+.artifacts/**/scratch/
 
 # VS Code
 .vscode/
