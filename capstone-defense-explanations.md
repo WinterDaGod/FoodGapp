@@ -100,4 +100,26 @@ FoodGapp is built with a **"Zero-Downtime" Fail-over Strategy** utilizing a 5-la
 *   **Code Obfuscation**: Our production builds are **Obfuscated**. We scramble the source code names into unreadable symbols, preventing reverse-engineering of our proprietary AI logic.
 
 ---
+
+## 📊 10. Data Flow Architecture (DFD Level 1)
+
+**Question: "Can you walk us through how data actually moves through your system?"**
+
+*   **Hierarchical Decomposition**: Our system follows a formal **Gane-Sarson DFD model**. It decomposes from a high-level **Context Diagram (Level 0)**, defining external boundaries like Firebase and Clinical APIs, into a functional **Process Architecture (Level 1)**.
+*   **Intelligent Orchestration (Process 1.2 & 1.3)**: This is the 'Brain' of the system. Data flows from the UI as raw natural language or calorie targets, is processed by the **FoodGapp AI Service**, and returns as high-fidelity JSON. This structured payload is then persisted into the **Nutritional Logs (D2)** or **Active Plan Snapshots (D4)**.
+*   **High-Speed Retrieval (Process 1.4)**: To achieve sub-10ms response times, we implemented the **Titan Engine**. It performs keyword-aware searches against the **Local Encyclopedia (D3)**, bypassing the network layer entirely for high-frequency logging events.
+*   **Proactive Integrity (Process 1.5)**: We implemented a non-blocking **Self-Healing Audit**. On every app launch, this process verifies the structural health of all internal data stores (D1-D5) and automatically triggers schema repairs if corruption or missing tables are detected.
+
+---
+
+## 🗄️ 11. Entity-Relationship Model (ERD)
+
+**Question: "Explain your database design and how you ensure data integrity."**
+
+*   **User-Centric Star Schema**: FoodGapp utilizes a relational **Star Schema** centered on the `USER_PROFILE` entity. Every tracking table—from `MEAL_LOG` to `FASTING_LOG`—is strictly bound via a **Foreign Key (`user_id`)** to the primary profile. This ensures 100% data isolation between users and enables safe cascading deletions.
+*   **Technical Data Typing**: Unlike simple prototype apps, we enforced strict **SQLite Data Types** (`INTEGER`, `REAL`, `TEXT`) across all 11 production tables. This optimizes memory usage on the device and prevents mathematical rounding errors during macro calculations.
+*   **Reference Efficiency**: We optimized discovery by separating the **`FOOD_LIBRARY`** (the 50k Titan items) from the **`NUTRITION_CACHE`** (previously viewed cloud recipes). This "Reference vs. Cache" architecture reduces redundant API requests and keeps the application highly responsive even with a massive local dataset.
+*   **Normalized Resilience**: Our schema supports complex many-to-many relationships (like Recipes to Ingredients) via JSON-serialization within the logs, allowing us to maintain a flat, high-performance table structure while preserving deep nutritional detail.
+
+---
 *FoodGapp Final Capstone Defense — Technical Dossier v1.1.8*
