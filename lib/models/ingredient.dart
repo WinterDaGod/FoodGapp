@@ -10,6 +10,7 @@ class Ingredient {
   final double fat;
   final bool isVerified;
   final String? source;
+  final double? estimatedPricePhp;
 
   const Ingredient({
     required this.name,
@@ -21,6 +22,7 @@ class Ingredient {
     required this.fat,
     this.isVerified = false,
     this.source,
+    this.estimatedPricePhp,
   });
 
   factory Ingredient.fromSpoonacular(Map<String, dynamic> json, {bool isVerified = false, String? source}) {
@@ -112,6 +114,7 @@ class Ingredient {
         'fat': fat,
         'isVerified': isVerified,
         'source': source,
+        'estimatedPricePhp': estimatedPricePhp,
       };
 
   factory Ingredient.fromMap(Map<String, dynamic> map) => Ingredient(
@@ -124,5 +127,6 @@ class Ingredient {
         fat: (map['fat'] as num).toDouble(),
         isVerified: map['isVerified'] as bool? ?? false,
         source: map['source'] as String?,
+        estimatedPricePhp: (map['estimatedPricePhp'] as num?)?.toDouble(),
       );
 }

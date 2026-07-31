@@ -3,6 +3,7 @@ import '../models/shopping_item.dart';
 import 'auth_service.dart';
 import 'database_helper.dart';
 import 'api/foodgapp_ai_service.dart';
+import 'ph_price_watch_service.dart';
 
 class ShoppingListService {
   ShoppingListService._internal();
@@ -35,9 +36,14 @@ class ShoppingListService {
 
     if (rawPairs.isEmpty) return;
 
-    // 2. Batch Categorization (Single AI pass for missing items)
+    // 2. Batch Categorization & Pricing
     final uniqueNames = allIngredientNames.toSet().toList();
     final categoryMap = await _categorizeItems(uniqueNames);
+    
+    final Map<String, double?> priceMap = {};
+    for (var name in uniqueNames) {
+      priceMap[name] = await PhPriceWatchService.instance.getEstimatedPrice(name);
+    }
 
     // 3. Pre-merge in memory to reduce database operations
     // Key: "Name|RecipeName"
@@ -58,6 +64,7 @@ class ShoppingListService {
           recipeName: recipeName,
           category: categoryMap[name] ?? 'Pantry',
           quantity: 1,
+          pricePhp: priceMap[name],
         );
       }
     }
@@ -83,6 +90,10 @@ class ShoppingListService {
 
     // 2. Efficiently categorize in bulk (handles AI and Caching)
     final categoryMap = await _categorizeItems(newIngredients);
+    final Map<String, double?> priceMap = {};
+    for (var name in newIngredients) {
+      priceMap[name] = await PhPriceWatchService.instance.getEstimatedPrice(name);
+    }
 
     // 3. Save to database with intelligent merging (Quantity Support)
     for (var ing in newIngredients) {
@@ -101,6 +112,7 @@ class ShoppingListService {
           recipeName: recipe.name,
           category: categoryMap[name] ?? 'Pantry',
           quantity: 1,
+          pricePhp: priceMap[name],
         ));
       }
     }
@@ -121,6 +133,7 @@ class ShoppingListService {
     }
 
     final categoryMap = await _categorizeItems([trimmed]);
+    final price = await PhPriceWatchService.instance.getEstimatedPrice(trimmed);
     
     await _db.insertShoppingItem(ShoppingItem(
       userId: userId,
@@ -128,6 +141,7 @@ class ShoppingListService {
       recipeName: null,
       category: categoryMap[trimmed] ?? 'Other',
       quantity: 1,
+      pricePhp: price,
     ));
   }
 

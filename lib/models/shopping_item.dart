@@ -6,6 +6,7 @@ class ShoppingItem {
   final String? category;   // Aisle name (e.g. "Produce")
   final int quantity;       // Number of servings or items
   final bool isChecked;
+  final double? pricePhp;
 
   const ShoppingItem({
     this.id,
@@ -15,6 +16,7 @@ class ShoppingItem {
     this.category,
     this.quantity = 1,
     this.isChecked = false,
+    this.pricePhp,
   });
 
   Map<String, Object?> toMap() => {
@@ -25,6 +27,7 @@ class ShoppingItem {
         'category': category,
         'quantity': quantity,
         'is_checked': isChecked ? 1 : 0,
+        'price_php': pricePhp,
       };
 
   factory ShoppingItem.fromMap(Map<String, Object?> map) => ShoppingItem(
@@ -35,6 +38,7 @@ class ShoppingItem {
         category: map['category'] as String?,
         quantity: (map['quantity'] as num?)?.toInt() ?? 1,
         isChecked: (map['is_checked'] as int?) == 1,
+        pricePhp: (map['price_php'] as num?)?.toDouble(),
       );
 
   ShoppingItem copyWith({
@@ -45,6 +49,7 @@ class ShoppingItem {
     String? category,
     int? quantity,
     bool? isChecked,
+    double? pricePhp,
   }) =>
       ShoppingItem(
         id: id ?? this.id,
@@ -54,5 +59,6 @@ class ShoppingItem {
         category: category ?? this.category,
         quantity: quantity ?? this.quantity,
         isChecked: isChecked ?? this.isChecked,
+        pricePhp: pricePhp ?? this.pricePhp,
       );
 }

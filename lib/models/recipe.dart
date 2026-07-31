@@ -23,6 +23,12 @@ class Recipe {
   /// Optional reasoning for AI-selected meals.
   final String? aiReasoning;
 
+  /// Optional keyword for dynamic image fetching.
+  final String? imageKeyword;
+
+  /// Optional estimated total price in PHP.
+  final double? estimatedTotalPhp;
+
   /// Where this came from: `spoonacular` or `themealdb`.
   final String source;
 
@@ -40,7 +46,67 @@ class Recipe {
     this.isVerified = false,
     this.ingredients,
     this.aiReasoning,
+    this.imageKeyword,
+    this.estimatedTotalPhp,
   });
+
+  Recipe copyWith({
+    String? apiMealId,
+    String? name,
+    String? imageUrl,
+    double? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
+    int? ingredientCount,
+    String? author,
+    bool? isVerified,
+    List<String>? ingredients,
+    String? aiReasoning,
+    String? imageKeyword,
+    double? estimatedTotalPhp,
+    String? source,
+  }) =>
+      Recipe(
+        apiMealId: apiMealId ?? this.apiMealId,
+        name: name ?? this.name,
+        imageUrl: imageUrl ?? this.imageUrl,
+        calories: calories ?? this.calories,
+        protein: protein ?? this.protein,
+        carbs: carbs ?? this.carbs,
+        fat: fat ?? this.fat,
+        ingredientCount: ingredientCount ?? this.ingredientCount,
+        author: author ?? this.author,
+        isVerified: isVerified ?? this.isVerified,
+        ingredients: ingredients ?? this.ingredients,
+        aiReasoning: aiReasoning ?? this.aiReasoning,
+        imageKeyword: imageKeyword ?? this.imageKeyword,
+        estimatedTotalPhp: estimatedTotalPhp ?? this.estimatedTotalPhp,
+        source: source ?? this.source,
+      );
+
+  /// Returns a high-fidelity image URL. Prioritizes real [imageUrl],
+  /// falls back to a dynamic food photo based on [imageKeyword] or [name].
+  String? get dynamicImageUrl {
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return getResizedImageUrl(width: 480, height: 360);
+    }
+    
+    // Fallback to a professional food photo service.
+    // We clean the name to avoid overly specific queries that might return nothing.
+    String query = (imageKeyword ?? name);
+    
+    // If it's the full name, take only the first 3 words to ensure better matches
+    if (imageKeyword == null || imageKeyword!.isEmpty) {
+      final words = query.split(' ');
+      if (words.length > 3) {
+        query = words.take(3).join(' ');
+      }
+    }
+    
+    query = query.replaceAll(' ', ',');
+    return 'https://loremflickr.com/480/360/food,$query';
+  }
 
   /// Robust ingredient count that falls back to the ingredients list length.
   int get displayIngredientCount => ingredientCount ?? ingredients?.length ?? 0;
@@ -169,6 +235,7 @@ class Recipe {
         'protein': protein,
         'carbs': carbs,
         'fat': fat,
+        'estimated_total_php': estimatedTotalPhp,
         'raw_json': jsonEncode({
           'image_url': imageUrl,
           'source': source,
@@ -177,6 +244,7 @@ class Recipe {
           'is_verified': isVerified,
           'ingredients': ingredients,
           'ai_reasoning': aiReasoning,
+          'image_keyword': imageKeyword,
         }),
         'cached_at': DateTime.now().millisecondsSinceEpoch,
       };
@@ -195,11 +263,13 @@ class Recipe {
       protein: (map['protein'] as num?)?.toDouble(),
       carbs: (map['carbs'] as num?)?.toDouble(),
       fat: (map['fat'] as num?)?.toDouble(),
+      estimatedTotalPhp: (map['estimated_total_php'] as num?)?.toDouble(),
       ingredientCount: extra['ingredient_count'] as int?,
       author: extra['author'] as String?,
       isVerified: extra['is_verified'] as bool? ?? false,
       ingredients: (extra['ingredients'] as List?)?.cast<String>(),
       aiReasoning: extra['ai_reasoning'] as String?,
+      imageKeyword: extra['image_keyword'] as String?,
     );
   }
 

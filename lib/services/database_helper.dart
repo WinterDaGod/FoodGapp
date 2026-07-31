@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
@@ -58,6 +59,13 @@ class DatabaseHelper {
 
     // CRITICAL: Self-Healing Logic - Ensure all tables exist regardless of source
     await _ensureAllTablesExist(db);
+
+    // DEBUG: Verify library count
+    final countRes = await db.rawQuery('SELECT COUNT(*) as count FROM food_library');
+    final count = countRes.first['count'];
+    debugPrint("--------------------------------------------------");
+    debugPrint("🚀 TITAN ENGINE INITIALIZED: $count clinical items loaded.");
+    debugPrint("--------------------------------------------------");
     
     return db;
   }
@@ -139,6 +147,7 @@ class DatabaseHelper {
           category TEXT,
           quantity INTEGER DEFAULT 1,
           is_checked INTEGER DEFAULT 0,
+          price_php REAL,
           FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
         )''',
       'water_log': '''
@@ -166,6 +175,7 @@ class DatabaseHelper {
           protein REAL,
           carbs REAL,
           fat REAL,
+          estimated_total_php REAL,
           raw_json TEXT,
           cached_at INTEGER
         )''',
@@ -187,12 +197,37 @@ class DatabaseHelper {
           fat REAL NOT NULL,
           source TEXT NOT NULL
         )''',
+      'price_cache': '''
+        CREATE TABLE IF NOT EXISTS price_cache (
+          ingredient_name TEXT PRIMARY KEY,
+          price_php REAL NOT NULL,
+          cached_at INTEGER NOT NULL
+        )''',
+      'market_prices': '''
+        CREATE TABLE IF NOT EXISTS market_prices (
+          name TEXT PRIMARY KEY,
+          price REAL NOT NULL,
+          unit TEXT NOT NULL,
+          category TEXT NOT NULL
+        )''',
+      'user_streaks': '''
+        CREATE TABLE IF NOT EXISTS user_streaks (
+          user_id TEXT PRIMARY KEY,
+          current_streak INTEGER DEFAULT 0,
+          last_log_date TEXT,
+          best_streak INTEGER DEFAULT 0
+        )''',
     };
 
     for (var entry in schema.entries) {
       if (!tableNames.contains(entry.key)) {
         debugPrint("Self-Healing Engine: Restoring table: ${entry.key}");
         await db.execute(entry.value);
+
+        // Special initialization for market_prices from assets
+        if (entry.key == 'market_prices') {
+          await _initMarketPrices(db);
+        }
       }
     }
 
@@ -201,6 +236,61 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_meal_log_user_date ON meal_log (user_id, meal_date)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_food_library_name ON food_library (name)');
+
+    // CRITICAL: Column-Level Self-Healing (v1.1.8 Pricing Update)
+    await _ensureColumnExists(db, 'nutrition_cache', 'estimated_total_php', 'REAL');
+    await _ensureColumnExists(db, 'shopping_list', 'price_php', 'REAL');
+
+    // Special initialization for market_prices from assets
+    // We force refresh if the count is low (indicating old basic dataset)
+    final marketCountRes = await db.rawQuery('SELECT COUNT(*) as count FROM market_prices');
+    final marketCount = (marketCountRes.first['count'] as num?)?.toInt() ?? 0;
+    if (marketCount < 50) {
+      debugPrint("Self-Healing Engine: Refreshing market prices with advanced dataset...");
+      await db.execute('DELETE FROM market_prices');
+      await _initMarketPrices(db);
+    }
+  }
+
+  static Future<void> _initMarketPrices(Database db) async {
+    try {
+      final String jsonString = await rootBundle.loadString('assets/data/ph_market_prices.json');
+      final List<dynamic> data = jsonDecode(jsonString);
+      
+      final batch = db.batch();
+      for (var item in data) {
+        batch.insert('market_prices', {
+          'name': item['name'],
+          'price': item['price'],
+          'unit': item['unit'],
+          'category': item['category'],
+        });
+      }
+      await batch.commit(noResult: true);
+      debugPrint("Self-Healing Engine: Loaded ${data.length} market prices from assets.");
+    } catch (e) {
+      debugPrint("Self-Healing Engine Error (Market Prices): $e");
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getMarketPrices() async {
+    final db = await database;
+    return db.query('market_prices');
+  }
+
+  /// Verifies if a specific column exists in a table and adds it if missing.
+  static Future<void> _ensureColumnExists(Database db, String table, String column, String type) async {
+    try {
+      final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info($table)');
+      final columnNames = columns.map((c) => c['name'] as String).toSet();
+      
+      if (!columnNames.contains(column)) {
+        debugPrint("Self-Healing Engine: Repairing schema - Adding '$column' to $table");
+        await db.execute('ALTER TABLE $table ADD COLUMN $column $type');
+      }
+    } catch (e) {
+      debugPrint("Self-Healing Engine Error (Column Update): $e");
+    }
   }
 
   static Future<void> onCreate(Database db, int version) async {
@@ -753,6 +843,38 @@ class DatabaseHelper {
     );
   }
 
+  // --- price_cache --------------------------------------------------------
+
+  Future<double?> getCachedPrice(String ingredientName) async {
+    final db = await database;
+    final rows = await db.query(
+      'price_cache',
+      where: 'ingredient_name = ?',
+      whereArgs: [ingredientName.toLowerCase().trim()],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+
+    final cachedAt = rows.first['cached_at'] as int;
+    final age = DateTime.now().millisecondsSinceEpoch - cachedAt;
+    if (age > const Duration(days: 7).inMilliseconds) return null; // Expire after 7 days
+
+    return (rows.first['price_php'] as num).toDouble();
+  }
+
+  Future<void> putCachedPrice(String ingredientName, double price) async {
+    final db = await database;
+    await db.insert(
+      'price_cache',
+      {
+        'ingredient_name': ingredientName.toLowerCase().trim(),
+        'price_php': price,
+        'cached_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
   // --- food_library --------------------------------------------------------
 
   Future<List<FoodLibraryItem>> searchFoodLibrary(String query) async {
@@ -772,6 +894,12 @@ class DatabaseHelper {
     );
     
     return rows.map(FoodLibraryItem.fromMap).toList();
+  }
+
+  Future<int> getFoodLibraryCount() async {
+    final db = await database;
+    final res = await db.rawQuery('SELECT COUNT(*) as count FROM food_library');
+    return (res.first['count'] as num?)?.toInt() ?? 0;
   }
 
   Future<List<FoodLibraryItem>> getRandomTitanFoods({int limit = 20, String? category}) async {

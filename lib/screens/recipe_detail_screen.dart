@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/database_helper.dart';
 import '../services/recipe_repository.dart';
 import '../services/shopping_list_service.dart';
+import '../services/ph_price_watch_service.dart';
 import 'add_meal_screen.dart';
 import 'widgets/app_toast.dart';
 import 'widgets/app_logo.dart';
@@ -23,6 +24,8 @@ class RecipeDetailScreen extends StatefulWidget {
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   late Recipe _recipe;
   bool _isLoadingNutrition = false;
+  bool _isLoadingPrice = false;
+  Map<String, double?> _ingredientPrices = {};
   bool _isSaved = false;
   final _repository = RecipeRepository();
   final _db = DatabaseHelper.instance;
@@ -33,6 +36,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     super.initState();
     _recipe = widget.recipe;
     _checkSavedStatus();
+    _loadMarketPrices();
     if (!_recipe.hasNutrition && _recipe.source == 'spoonacular') {
       _loadFullNutrition();
     }
@@ -44,6 +48,31 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final saved = await _db.isSaved(userId, _recipe.apiMealId);
     if (mounted) {
       setState(() => _isSaved = saved);
+    }
+  }
+
+  Future<void> _loadMarketPrices() async {
+    if (_recipe.ingredients == null || _recipe.ingredients!.isEmpty) return;
+    
+    setState(() => _isLoadingPrice = true);
+    
+    final Map<String, double?> prices = {};
+    for (var ing in _recipe.ingredients!) {
+      final price = await PhPriceWatchService.instance.getEstimatedPrice(ing);
+      prices[ing] = price;
+    }
+
+    if (mounted) {
+      setState(() {
+        _ingredientPrices = prices;
+        _isLoadingPrice = false;
+        
+        // If we fetched new prices, update the recipe's estimated total
+        final total = prices.values.whereType<double>().fold(0.0, (sum, p) => sum + p);
+        if (total > 0 && _recipe.estimatedTotalPhp == null) {
+          _recipe = _recipe.copyWith(estimatedTotalPhp: total);
+        }
+      });
     }
   }
 
@@ -268,7 +297,55 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             ),
           ],
         ),
+        if (_recipe.estimatedTotalPhp != null) ...[
+          const SizedBox(height: 16),
+          _buildEstimatedTotalBanner(isDark),
+        ],
       ],
+    );
+  }
+
+  Widget _buildEstimatedTotalBanner(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.greenAccent.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.greenAccent.withValues(alpha: 0.2) : Colors.green.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.payments_outlined, color: isDark ? Colors.greenAccent : Colors.green[700], size: 20),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'EST. MARKET PRICE (DA VERIFIED)',
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : Colors.black38, 
+                  fontSize: 10, 
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1
+                ),
+              ),
+              Text(
+                '₱${_recipe.estimatedTotalPhp!.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: isDark ? Colors.greenAccent : Colors.green[700], 
+                  fontSize: 20, 
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+            ],
+          ),
+          if (_isLoadingPrice) ...[
+            const SizedBox(width: 16),
+            const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+          ],
+        ],
+      ),
     );
   }
 
@@ -395,13 +472,30 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Text(
-                  ing,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                    height: 1.5,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ing,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                        height: 1.5,
+                      ),
+                    ),
+                    if (_ingredientPrices[ing] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          'Est. ₱${_ingredientPrices[ing]!.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: isDark ? Colors.greenAccent.withValues(alpha: 0.6) : Colors.green[700],
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

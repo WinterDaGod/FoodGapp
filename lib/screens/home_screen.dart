@@ -15,6 +15,8 @@ import 'widgets/dashboard_widgets.dart';
 import '../models/fasting_session.dart';
 import '../services/fasting_service.dart';
 import '../services/app_events.dart';
+import '../services/gamification_service.dart';
+import '../services/health_sync_service.dart';
 import 'shopping_list_screen.dart';
 import 'widgets/app_toast.dart';
 import 'widgets/water_tracker_widget.dart';
@@ -38,6 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
   UserProfile? _profile;
   List<MealLog> _todayLogs = [];
   Map<String, double> _dailyProgress = {};
+  int _streakCount = 0;
+  double _steps = 0;
+  double _burnedFromSync = 0;
   bool _isLoading = true;
   DateTime _selectedDate = DateTime.now();
 
@@ -71,12 +76,20 @@ class _HomeScreenState extends State<HomeScreen> {
       final logs = await _db.getMealLogsForDate(userId, dateStr);
       final activeFast = await _fastingService.getActiveSession();
       final profile = await _db.getUserProfile(userId);
-
+      final streak = await GamificationService.instance.getCurrentStreak();
+      
+      // Activity Sync (Sync if it's today)
+      if (dateStr == _formatDate(DateTime.now())) {
+        final activity = await HealthSyncService.instance.fetchTodayActivity();
+        _steps = activity['steps'] ?? 0;
+        _burnedFromSync = activity['burned'] ?? 0;
+      }
+      
       // Fetch 14-day history for the calendar strip
       final now = DateTime.now();
       final stripStart = now.subtract(const Duration(days: 3));
       final stripEnd = stripStart.add(const Duration(days: 13));
-      
+     
       final history = await _db.getCalorieHistoryForRange(
         userId, 
         _formatDate(stripStart), 
@@ -98,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _activeFast = activeFast;
           _profile = profile;
           _dailyProgress = progressMap;
+          _streakCount = streak;
           _isLoading = false;
         });
       }
@@ -126,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -159,6 +174,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       else if (_latestFeedback != null) ...[
                         if (_activeFast != null) _buildActiveFastingWidget(),
                         _buildMainCalorieCard(_latestFeedback!),
+                        const SizedBox(height: 12),
+                        if (_steps > 0 || _burnedFromSync > 0) _buildActivityCard(isDark),
                         const SizedBox(height: 12),
                         WaterTrackerWidget(
                           userId: _auth.currentUser?.uid ?? '',
@@ -289,6 +306,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                   const SizedBox(width: 8),
+                  _buildStreakBadge(isDark),
+                  const SizedBox(width: 8),
+                  _buildStreakBadge(isDark),
+                  const SizedBox(width: 8),
                   _buildTodayButton(),
                 ],
               ),
@@ -296,6 +317,28 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
+    );
+  }
+
+  Widget _buildStreakBadge(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
+          const SizedBox(width: 4),
+          Text(
+            '$_streakCount',
+            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+        ],
+      ),
     );
   }
 
@@ -317,6 +360,73 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13)
         ),
       ),
+    );
+  }
+
+  Widget _buildActivityCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))
+        ] : null,
+      ),
+      child: Row(
+        children: [
+          _buildActivityItem(
+            icon: Icons.directions_walk,
+            value: '${_steps.round()}',
+            label: 'Steps Today',
+            color: Colors.blueAccent,
+            isDark: isDark,
+          ),
+          const Spacer(),
+          Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+          const Spacer(),
+          _buildActivityItem(
+            icon: Icons.local_fire_department,
+            value: '${_burnedFromSync.round()}',
+            label: 'Cal Burned',
+            color: Colors.redAccent,
+            isDark: isDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityItem({required IconData icon, required String value, required String label, required Color color, required bool isDark}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 11),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

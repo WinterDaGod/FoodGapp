@@ -87,17 +87,17 @@ class MealGenerationService {
           final ings = (m['ingredients'] as List?)?.cast<String>();
           final recipe = Recipe(
             apiMealId: m['id'] ?? 'gemini:${DateTime.now().millisecondsSinceEpoch}',
-            name: m['title'] ?? 'AI Generated Meal',
-            source: 'FoodGapp AI',
-            calories: (m['calories'] as num?)?.toDouble(),
-            protein: (m['protein'] as num?)?.toDouble(),
-            carbs: (m['carbs'] as num?)?.toDouble(),
-            fat: (m['fat'] as num?)?.toDouble(),
-            ingredients: ings,
-            ingredientCount: ings?.length,
-            aiReasoning: m['aiReasoning'],
-            isVerified: false,
-          );
+          name: m['title'] ?? 'AI Generated Meal',
+          source: 'FoodGapp AI',
+          calories: (m['calories'] as num?)?.toDouble(),
+          protein: (m['protein'] as num?)?.toDouble(),
+          carbs: (m['carbs'] as num?)?.toDouble(),
+          fat: (m['fat'] as num?)?.toDouble(),
+          ingredients: ings,
+          ingredientCount: ings?.length,
+          aiReasoning: m['aiReasoning'],
+          isVerified: false,
+        );
           
           // Cache the AI recipe so details are available later
           if (recipe.hasNutrition) {

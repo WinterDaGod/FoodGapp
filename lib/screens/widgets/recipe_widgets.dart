@@ -136,11 +136,11 @@ class RecipeDiscoveryCard extends StatelessWidget {
   Widget _buildRecipeImage(bool isDark) {
     if (recipe.imageUrl == null) {
       return Container(
-        height: 150, // Updated height from overhaul
+        height: 150,
         width: double.infinity,
         decoration: BoxDecoration(
           color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)), // Updated radius from overhaul
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Center(
           child: AppLogo(
@@ -165,7 +165,6 @@ class RecipeDiscoveryCard extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildPlaceholder(bool isDark) {
     return Container(
       height: 150,

@@ -39,6 +39,13 @@ dependencies:
 
   # Metadata
   package_info_plus: ^8.3.1
+  share_plus: ^10.1.0
+
+  # New Production Features
+  image_picker: ^1.1.2
+  mobile_scanner: ^5.1.1
+  health: ^13.3.1
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
@@ -64,3 +71,5 @@ flutter:
   assets:
     - assets/icon.png
     - assets/data/food_library_titan.db
+    - assets/data/food_library.json
+    - assets/data/ph_market_prices.json

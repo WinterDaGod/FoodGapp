@@ -4,6 +4,8 @@ import '../add_meal_screen.dart';
 import '../recipe_search_screen.dart';
 import '../meal_plan_screen.dart';
 import '../shopping_list_screen.dart';
+import '../ai_vision_log_screen.dart';
+import '../barcode_scanner_screen.dart';
 import 'describe_meal_modal.dart';
 import 'app_toast.dart';
 
@@ -167,13 +169,13 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
         context,
         icon: Icons.camera_alt_outlined,
         label: 'Photo',
-        onTap: () => _showComingSoon(context, 'AI Photo Recognition'),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiVisionLogScreen())),
       ),
       _buildActionItem(
         context,
         icon: Icons.view_column_rounded,
         label: 'Scan',
-        onTap: () => _showComingSoon(context, 'Barcode Scanner'),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BarcodeScannerScreen())),
       ),
       _buildActionItem(
         context,
@@ -250,15 +252,6 @@ class _QuickAddMenuState extends State<QuickAddMenu> {
           ),
         ),
       ],
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    AppToast.show(
-      context,
-      message: 'The $feature feature is coming soon!',
-      title: 'Coming Soon',
-      type: ToastType.info,
     );
   }
 }

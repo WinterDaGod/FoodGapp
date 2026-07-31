@@ -221,6 +221,7 @@ Instructions:
 4. VARIETY: Do not use the same calorie value for every meal. Match the distribution above.
 5. For each recipe, provide:
    - "title": Clear descriptive name
+   - "image_keyword": 2-word visual essence of the dish (e.g. "Berry Oatmeal") for high-fidelity visual mapping
    - "calories", "protein", "carbs", "fat": Accurate numeric estimates
    - "ingredients": A list of strings for the ingredients
    - "aiReasoning": A short sentence explaining how this meal contributes to the $targetKcal goal.
@@ -234,6 +235,7 @@ Expected Response Format:
     {
       "id": "gemini:b1",
       "title": "...",
+      "image_keyword": "...",
       "calories": 450,
       "protein": 25,
       "carbs": 40,
@@ -289,6 +291,7 @@ Instructions:
 4. VARIETY: Ensure each day has 3 unique meals and the calorie counts within each day match the 25/35/40 distribution.
 5. For each recipe, provide:
    - "title": Descriptive name
+   - "image_keyword": 2-word visual essence (e.g. "Grilled Chicken")
    - "calories", "protein", "carbs", "fat": Numeric estimates
    - "ingredients": List of strings
    - "aiReasoning": Short justification explaining why this meal fits the day's distribution.
@@ -301,7 +304,7 @@ Expected Response Format:
   "week": {
     "monday": {
       "meals": [
-        { "id": "gemini:mon_b", "title": "...", "calories": 450, ... },
+        { "id": "gemini:mon_b", "title": "...", "image_keyword": "...", "calories": 450, ... },
         { "id": "gemini:mon_l", "title": "...", "calories": 650, ... },
         { "id": "gemini:mon_d", "title": "...", "calories": 700, ... }
       ]
@@ -345,6 +348,7 @@ CRITICAL: Strictly adhere to the dietary constraint.
 
 For each recipe, provide:
 - "title": A catchy, professional recipe name.
+- "image_keyword": 2-word visual essence (e.g. "Green Salad")
 - "calories", "protein", "carbs", "fat": Accurate numeric nutritional estimates.
 - "ingredients": A full list of ingredients as strings.
 - "aiReasoning": A one-sentence explanation of why this recipe matches the search.
@@ -358,6 +362,7 @@ Response Format:
     {
       "id": "gemini:search_1",
       "title": "...",
+      "image_keyword": "...",
       "calories": 450,
       "protein": 30,
       "carbs": 40,
@@ -447,6 +452,7 @@ You can include basic pantry staples (oil, salt, pepper, etc.) but focus on the 
 
 For each recipe, provide:
 - "title": Creative name.
+- "image_keyword": 2-word visual essence (e.g. "Pasta Primavera")
 - "calories", "protein", "carbs", "fat": Accurate numeric nutritional estimates.
 - "ingredients": Full ingredient list.
 - "aiReasoning": Why this is a great way to use your pantry items.
@@ -460,6 +466,7 @@ Response Format:
     {
       "id": "gemini:pantry_1",
       "title": "...",
+      "image_keyword": "...",
       "calories": 350,
       "protein": 20,
       "carbs": 30,

@@ -82,7 +82,21 @@ class MealLog {
         'base_protein': baseProtein,
         'base_carbs': baseCarbs,
         'base_fat': baseFat,
-      };
+  };
+
+  /// Returns a high-fidelity image URL based on the meal name if [imageUrl] is missing.
+  String? get dynamicImageUrl {
+    if (imageUrl != null && imageUrl!.isNotEmpty) return imageUrl;
+
+    // Fallback logic consistent with Recipe model
+    String query = foodName;
+    final words = query.split(' ');
+    if (words.length > 3) {
+      query = words.take(3).join(' ');
+    }
+    query = query.replaceAll(' ', ',');
+    return 'https://loremflickr.com/480/360/food,$query';
+  }
 
   factory MealLog.fromMap(Map<String, Object?> map) {
     final ingJson = map['ingredients_json'] as String?;

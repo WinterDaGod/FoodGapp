@@ -16,7 +16,9 @@ This document prepares the proponents for technical and functional questioning b
 
 **Q: What do you mean by a "Self-Healing Database"?**
 > [!IMPORTANT]
-> **Answer**: During development, we identified that mobile databases can sometimes suffer from schema corruption or missing tables during updates. We implemented an **Aggressive Structural Audit** in our `DatabaseHelper`. On every startup, the app scans its own internal tables. If a critical table (like `shopping_list`) is missing, the app **automatically recreates it** in milliseconds, ensuring 100% operational uptime without user intervention.
+> **Answer**: During development, we identified that mobile databases can sometimes suffer from schema corruption or missing tables/columns during updates. We implemented an **Aggressive Multi-Tier Structural Audit** in our `DatabaseHelper`. 
+> 1. **Table Tier**: On startup, the app verifies if all 12 critical tables exist and recreates them if missing.
+> 2. **Column Tier**: The system performs a "Deep Audit" of existing tables. If a new feature (like our ₱ pricing) requires a new column that doesn't exist in the user's old database, the engine **automatically alters the table** to add it in real-time. This ensures 100% operational uptime and zero-data-loss upgrades for users.
 
 **Q: Why did you choose SQLite over a Cloud Database like Firestore for user data?**
 > [!TIP]

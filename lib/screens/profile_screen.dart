@@ -35,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfile? _profile;
   NutritionTarget? _targets;
   String _appVersion = '---';
+  int _libraryCount = 0;
   bool _isLoading = true;
 
   @override
@@ -58,11 +59,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final profile = await _db.getUserProfile(userId);
+    final count = await _db.getFoodLibraryCount();
     final packageInfo = await PackageInfo.fromPlatform();
     if (!mounted) return;
 
     setState(() {
       _profile = profile;
+      _libraryCount = count;
       _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       if (profile != null) {
         _targets = NutritionFeedbackService.buildTarget(profile);

@@ -4,6 +4,7 @@ import 'api/api_exceptions.dart';
 import 'api/spoonacular_service.dart';
 import 'api/the_meal_db_service.dart';
 import 'api/foodgapp_ai_service.dart';
+import 'ph_price_watch_service.dart';
 import 'database_helper.dart';
 import 'nutrition_cache_store.dart';
 
@@ -63,6 +64,11 @@ class RecipeRepository {
             isVerified: true,
           );
         }).toList();
+
+        // Enrich with market prices
+        for (var i = 0; i < recipes.length; i++) {
+          recipes[i] = await _enrichWithPricing(recipes[i]);
+        }
         
         await _cacheAll(recipes);
         return recipes;
@@ -240,9 +246,25 @@ class RecipeRepository {
     }
 
     if (fetched != null && fetched.hasNutrition) {
+      fetched = await _enrichWithPricing(fetched);
       await _cache.put(fetched);
     }
     return fetched;
+  }
+
+  /// Enriches a recipe with estimated PHP pricing for its ingredients.
+  Future<Recipe> _enrichWithPricing(Recipe recipe) async {
+    if (recipe.ingredients == null || recipe.ingredients!.isEmpty) return recipe;
+    
+    try {
+      final total = await PhPriceWatchService.instance.calculateTotal(recipe.ingredients!);
+      if (total > 0) {
+        return recipe.copyWith(estimatedTotalPhp: total);
+      }
+    } catch (_) {
+      // Best effort pricing
+    }
+    return recipe;
   }
 
   /// Generates a full daily meal plan (3 meals) based on user input.

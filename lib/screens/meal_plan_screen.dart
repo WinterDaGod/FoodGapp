@@ -619,7 +619,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                                 child: Icon(Icons.restaurant, color: isDark ? Colors.white12 : Colors.black12),
                               ),
                             const SizedBox(width: 16),
-                            Expanded(
+                           Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -684,7 +684,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                 child: Image.network(recipe.imageUrl!, height: 150, width: double.infinity, fit: BoxFit.cover),
               ),
             Padding(
-              padding: const EdgeInsets.all(20),
+             padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

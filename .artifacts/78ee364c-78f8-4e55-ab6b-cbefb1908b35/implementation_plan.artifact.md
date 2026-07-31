@@ -1,29 +1,38 @@
-# Implementation Plan - Master Technical DFD (v1.1.8 Edition)
+# Implementation Plan - iOS "Sideload & Demo" Cloud Build
 
-Upgrade the Data Flow Diagram (DFD) suite to an advanced engineering standard. This plan ensures that the DFD matches the technical sophistication of the master ERD, adding missing functional modules like Fasting Orchestration and refining data flows with professional technical terminology.
+Enable the generation of an iOS `.ipa` file using GitHub Actions and implement a **"Demo Mode"** for Health features. This bypasses Apple's strict hardware restrictions for free accounts while still allowing you to demo the app's full capabilities.
 
 ## Proposed Changes
 
+### [Services]
+
+#### [MODIFY] [health_sync_service.dart](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/lib/services/health_sync_service.dart)
+- **Demo Override**: Since HealthKit is physically blocked for free Apple IDs, I will implement a "Simulated Data" fallback for iOS.
+- **Logic**: If running on iOS and native sync fails, the app will return **realistic mock data** (e.g., 5,420 steps and 210 cal burned).
+- **Result**: You can still demo the **Activity Card**, **Streak Badge**, and **Gamification** logic on your iPhone without a paid account.
+
+### [DevOps]
+
+#### [NEW] [ios_sideload_build.yml](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/.github/workflows/ios_sideload_build.yml)
+- **Zero-Secret Build**: Create a workflow to build an unsigned `.ipa` for sideloading.
+- **Auto-Artifact**: Upload the build to your GitHub repository for download.
+
 ### [Documentation]
 
-#### [UPGRADE] [foodgapp_dfd.artifact.md](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/.artifacts/78ee364c-78f8-4e55-ab6b-cbefb1908b35/foodgapp_dfd.artifact.md)
-- **Functional Expansion**: Add a new process **"1.7 Orchestrate Biological Fasting"** to the Level 1 DFD.
-- **Technical Flow Labels**: Refine arrows with precise technical data names:
-    - Change "biometrics" to **"Mifflin-St Jeor Parameters"**.
-    - Change "stats" to **"PDRI Nutritional Profile"**.
-    - Change "NLP prompt" to **"Sanitized JSON Instruction"**.
-- **System Balancing**: ensure every external entity from the Context Diagram has a corresponding high-fidelity flow in the Level 1 Process layer.
+#### [NEW] [IOS_SIDELOADING_GUIDE.md](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/IOS_SIDELOADING_GUIDE.md)
+- Step-by-step guide to installing the `.ipa` using **Sideloadly** on Windows.
 
-### [Process Automation]
+## User Review Required
 
-#### [UPDATE] Mermaid Scratch Code
-- Update [**`mermaid_live_editor_code.txt`**](file:///C:\Users\FSOS\AppData\Local\Google\AndroidStudio2026.1.2\projects\mealplanneremail.7aaeaf8e\.artifacts\78ee364c-78f8-4e55-ab6b-cbefb1908b35\scratch\mermaid_live_editor_code.txt) with the finalized advanced DFD code.
+> [!CAUTION]
+> **Apple Restriction**: My research confirms that Apple **strictly blocks** real HealthKit access for free accounts. The "Simulated Data" is the only way to show these features working on a real iPhone without paying the $99/year fee.
 
-#### [UPDATE] DFD Explanations
-- Update [**`dfd_explanations.artifact.md`**](file:///C:\Users\FSOS\AppData\Local\Google\AndroidStudio2026.1.2\projects\mealplanneremail.7aaeaf8e\.artifacts\78ee364c-78f8-4e55-ab6b-cbefb1908b35\dfd_explanations.artifact.md) to explain the new Fasting Orchestration process and technical flow terminology.
+> [!NOTE]
+> **Android is Full**: The health sync will remain 100% real and native on Android via Health Connect.
 
 ## Verification Plan
 
 ### Technical Audit
-- **Balancing Check**: Verify that all inputs/outputs in Level 0 are precisely accounted for in the Level 1 decomposition.
-- **Branding Audit**: ensure every mention of AI uses the **FoodGapp AI** brand name.
+1.  **Demo Logic**: Verify that calling the health sync on iOS triggers the simulated data instead of returning an error.
+2.  **Sideload build**: Verify that the GitHub Action produces a valid `.ipa` file structure.
+3.  **UI Feedback**: Ensure the Activity Card appears on the iOS dashboard once the "Simulated Sync" is triggered.

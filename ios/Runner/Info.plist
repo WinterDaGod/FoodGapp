@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>FoodGapp needs access to your camera to identify meals via AI Vision and scan product barcodes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FoodGapp needs access to your photo library to log meals from your saved food photos.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -54,19 +54,20 @@ class _SavedMealsScreenState extends State<SavedMealsScreen> {
             itemCount: meals.length,
             itemBuilder: (context, index) {
               final meal = meals[index];
+              // We convert SavedMeal back to a skeleton Recipe so we can use dynamicImageUrl
+              final recipe = Recipe(
+                apiMealId: meal.apiMealId ?? '',
+                name: meal.mealName ?? 'Untitled',
+                source: meal.apiMealId?.startsWith('spoonacular') == true ? 'spoonacular' : 'themealdb',
+                imageUrl: meal.imageUrl,
+              );
+              
               return ListTile(
                 leading: meal.imageUrl != null
                     ? Image.network(meal.imageUrl!, width: 50, height: 50, fit: BoxFit.cover)
                     : const Icon(Icons.restaurant),
                 title: Text(meal.mealName ?? 'Untitled'),
-                onTap: () {
-                  // We convert SavedMeal back to a skeleton Recipe so Detail screen can fetch nutrition if needed
-                  final recipe = Recipe(
-                    apiMealId: meal.apiMealId ?? '',
-                    name: meal.mealName ?? 'Untitled',
-                    source: meal.apiMealId?.startsWith('spoonacular') == true ? 'spoonacular' : 'themealdb',
-                    imageUrl: meal.imageUrl,
-                  );
+               onTap: () {
                   Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipe: recipe)),
                   );
