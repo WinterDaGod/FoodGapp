@@ -61,4 +61,20 @@ class GamificationService {
     if (res.isEmpty) return 0;
     return res.first['current_streak'] as int;
   }
+
+  Future<Map<String, dynamic>> getStreakInfo() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return {'current': 0, 'best': 0};
+
+    final db = await _db.database;
+    final res = await db.query('user_streaks', where: 'user_id = ?', whereArgs: [userId]);
+    
+    if (res.isEmpty) return {'current': 0, 'best': 0};
+    final data = res.first;
+    return {
+      'current': data['current_streak'] as int,
+      'best': data['best_streak'] as int,
+      'last_log_date': data['last_log_date'],
+    };
+  }
 }

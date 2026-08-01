@@ -14,6 +14,7 @@ import '../models/fasting_session.dart';
 import '../models/weight_log.dart';
 import '../models/shopping_item.dart';
 import '../models/food_library_item.dart';
+import 'gamification_service.dart';
 
 /// Single point of access to the on-device SQLite database.
 class DatabaseHelper {
@@ -391,7 +392,16 @@ class DatabaseHelper {
 
   Future<int> insertMealLog(MealLog log) async {
     final db = await database;
-    return db.insert('meal_log', log.toMap());
+    final id = await db.insert('meal_log', log.toMap());
+    
+    // Update streak on every new meal log
+    try {
+      await GamificationService.instance.updateStreak();
+    } catch (e) {
+      debugPrint("Gamification Error (Streak Update): $e");
+    }
+    
+    return id;
   }
 
   Future<int> upsertMealLog(MealLog log) async {

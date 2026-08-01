@@ -306,10 +306,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                   const SizedBox(width: 8),
-                  _buildStreakBadge(isDark),
-                  const SizedBox(width: 8),
-                  _buildStreakBadge(isDark),
-                  const SizedBox(width: 8),
                   _buildTodayButton(),
                 ],
               ),
@@ -317,28 +313,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
-    );
-  }
-
-  Widget _buildStreakBadge(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            '$_streakCount',
-            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 13),
-          ),
-        ],
-      ),
     );
   }
 

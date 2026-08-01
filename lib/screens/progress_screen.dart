@@ -9,6 +9,7 @@ import '../services/auth_service.dart';
 import '../services/database_helper.dart';
 import '../services/fasting_service.dart';
 import '../services/app_events.dart';
+import '../services/gamification_service.dart';
 import '../services/unit_converter.dart';
 import '../services/sound_service.dart';
 import 'widgets/app_loading.dart';
@@ -29,6 +30,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
   List<DailyNutrition> _nutritionHistory = [];
   List<Map<String, dynamic>> _waterHistory = [];
   List<FastingSession> _fastingHistory = [];
+  Map<String, dynamic> _streakInfo = {'current': 0, 'best': 0};
   bool _isLoading = true;
   String _selectedTimeFilter = 'This week';
 
@@ -61,6 +63,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final nutrition = await _db.getNutritionHistory(userId, days);
     final water = await _db.getWaterHistory(userId, days);
     final fasting = await _fastingService.getHistory();
+    final streak = await GamificationService.instance.getStreakInfo();
 
     if (mounted) {
       setState(() {
@@ -68,6 +71,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         _nutritionHistory = nutrition;
         _waterHistory = water;
         _fastingHistory = fasting;
+        _streakInfo = streak;
         _isLoading = false;
       });
     }
@@ -251,6 +255,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
             children: [
               _buildHeader(),
               const SizedBox(height: 32),
+              _buildGamificationCard(),
+              const SizedBox(height: 32),
               _buildMacroAveragesCard(),
               const SizedBox(height: 32),
               _buildJourneyCard(),
@@ -325,6 +331,172 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGamificationCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currentStreak = _streakInfo['current'] as int? ?? 0;
+    final bestStreak = _streakInfo['best'] as int? ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark 
+            ? [const Color(0xFF2C1A0F), const Color(0xFF1E1E1E)] 
+            : [const Color(0xFFFFF3E0), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.orange.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))
+        ] : null,
+        border: Border.all(
+          color: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.local_fire_department, color: Colors.orange, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Activity Streak', 
+                    style: TextStyle(
+                      fontSize: 20, 
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    )
+                  ),
+                  Text(
+                    'Keep logging to grow your flame!', 
+                    style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 12)
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStreakStat(
+                  'CURRENT STREAK', 
+                  currentStreak.toString(), 
+                  'days', 
+                  Colors.orange, 
+                  isDark
+                ),
+              ),
+              Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+              Expanded(
+                child: _buildStreakStat(
+                  'BEST STREAK', 
+                  bestStreak.toString(), 
+                  'days', 
+                  isDark ? Colors.white70 : Colors.black54, 
+                  isDark
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildStreakMilestoneProgress(currentStreak, isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStreakStat(String label, String value, String unit, Color color, bool isDark) {
+    return Column(
+      children: [
+        Text(
+          label, 
+          style: TextStyle(
+            fontSize: 10, 
+            fontWeight: FontWeight.bold, 
+            color: isDark ? Colors.white24 : Colors.black26,
+            letterSpacing: 1.1,
+          )
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              value, 
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: color)
+            ),
+            const SizedBox(width: 4),
+            Text(
+              unit, 
+              style: TextStyle(fontSize: 14, color: isDark ? Colors.white24 : Colors.black26)
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStreakMilestoneProgress(int current, bool isDark) {
+    // Calculate next milestone (e.g. 3, 7, 14, 30, 50, 100...)
+    final milestones = [3, 7, 14, 30, 50, 100, 365];
+    int nextMilestone = milestones.firstWhere((m) => m > current, orElse: () => 1000);
+    int prevMilestone = milestones.lastWhere((m) => m <= current, orElse: () => 0);
+    
+    double progress = (current - prevMilestone) / (nextMilestone - prevMilestone);
+    progress = progress.clamp(0.0, 1.0);
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Next Milestone: $nextMilestone days', 
+              style: TextStyle(
+                fontSize: 11, 
+                fontWeight: FontWeight.bold, 
+                color: isDark ? Colors.white38 : Colors.black45
+              )
+            ),
+            Text(
+              '${(progress * 100).round()}%', 
+              style: TextStyle(
+                fontSize: 11, 
+                color: isDark ? Colors.white24 : Colors.black26
+              )
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: progress,
+            backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+            minHeight: 6,
+          ),
+        ),
+      ],
     );
   }
 
