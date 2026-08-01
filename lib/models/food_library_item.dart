@@ -8,6 +8,10 @@ class FoodLibraryItem {
   final double protein;
   final double carbs;
   final double fat;
+  final double? fiber;
+  final double? sugar;
+  final double? sodium;
+  final double? cholesterol;
   final String source; // PhilFCT, USDA, Branded
 
   FoodLibraryItem({
@@ -20,6 +24,10 @@ class FoodLibraryItem {
     required this.protein,
     required this.carbs,
     required this.fat,
+    this.fiber,
+    this.sugar,
+    this.sodium,
+    this.cholesterol,
     required this.source,
   });
 
@@ -34,6 +42,10 @@ class FoodLibraryItem {
       'protein': protein,
       'carbs': carbs,
       'fat': fat,
+      'fiber': fiber,
+      'sugar': sugar,
+      'sodium': sodium,
+      'cholesterol': cholesterol,
       'source': source,
     };
   }
@@ -49,6 +61,10 @@ class FoodLibraryItem {
       protein: (map['protein'] as num).toDouble(),
       carbs: (map['carbs'] as num).toDouble(),
       fat: (map['fat'] as num).toDouble(),
+      fiber: (map['fiber'] as num?)?.toDouble(),
+      sugar: (map['sugar'] as num?)?.toDouble(),
+      sodium: (map['sodium'] as num?)?.toDouble(),
+      cholesterol: (map['cholesterol'] as num?)?.toDouble(),
       source: map['source'] as String,
     );
   }
@@ -63,6 +79,10 @@ class FoodLibraryItem {
       protein: (json['protein'] as num).toDouble(),
       carbs: (json['carbs'] as num).toDouble(),
       fat: (json['fat'] as num).toDouble(),
+      fiber: (json['fiber'] as num?)?.toDouble(),
+      sugar: (json['sugar'] as num?)?.toDouble(),
+      sodium: (json['sodium'] as num?)?.toDouble(),
+      cholesterol: (json['cholesterol'] as num?)?.toDouble(),
       source: json['source'] as String,
     );
   }

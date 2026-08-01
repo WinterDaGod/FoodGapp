@@ -57,6 +57,10 @@ class _MealLogScreenState extends State<MealLogScreen> {
       protein: log.protein,
       carbs: log.carbs,
       fat: log.fat,
+      fiber: log.fiber,
+      sugar: log.sugar,
+      sodium: log.sodium,
+      cholesterol: log.cholesterol,
       imageUrl: log.imageUrl,
       apiMealId: log.apiMealId,
       ingredients: log.ingredients,
@@ -64,6 +68,10 @@ class _MealLogScreenState extends State<MealLogScreen> {
       baseProtein: log.baseProtein,
       baseCarbs: log.baseCarbs,
       baseFat: log.baseFat,
+      baseFiber: log.baseFiber,
+      baseSugar: log.baseSugar,
+      baseSodium: log.baseSodium,
+      baseCholesterol: log.baseCholesterol,
     );
 
     await _db.insertMealLog(newLog);

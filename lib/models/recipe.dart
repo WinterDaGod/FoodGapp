@@ -15,6 +15,10 @@ class Recipe {
   final double? protein;
   final double? carbs;
   final double? fat;
+  final double? fiber;
+  final double? sugar;
+  final double? sodium;
+  final double? cholesterol;
   final int? ingredientCount;
   final String? author;
   final bool isVerified;
@@ -41,6 +45,10 @@ class Recipe {
     this.protein,
     this.carbs,
     this.fat,
+    this.fiber,
+    this.sugar,
+    this.sodium,
+    this.cholesterol,
     this.ingredientCount,
     this.author,
     this.isVerified = false,
@@ -58,6 +66,10 @@ class Recipe {
     double? protein,
     double? carbs,
     double? fat,
+    double? fiber,
+    double? sugar,
+    double? sodium,
+    double? cholesterol,
     int? ingredientCount,
     String? author,
     bool? isVerified,
@@ -75,6 +87,10 @@ class Recipe {
         protein: protein ?? this.protein,
         carbs: carbs ?? this.carbs,
         fat: fat ?? this.fat,
+        fiber: fiber ?? this.fiber,
+        sugar: sugar ?? this.sugar,
+        sodium: sodium ?? this.sodium,
+        cholesterol: cholesterol ?? this.cholesterol,
         ingredientCount: ingredientCount ?? this.ingredientCount,
         author: author ?? this.author,
         isVerified: isVerified ?? this.isVerified,
@@ -175,6 +191,10 @@ class Recipe {
       protein: nutrient('Protein'),
       carbs: nutrient('Carbohydrates'),
       fat: nutrient('Fat'),
+      fiber: nutrient('Fiber'),
+      sugar: nutrient('Sugar'),
+      sodium: nutrient('Sodium'),
+      cholesterol: nutrient('Cholesterol'),
       ingredientCount: (json['extendedIngredients'] as List?)?.length,
       author: json['sourceName'] as String?,
       isVerified: true,
@@ -235,6 +255,10 @@ class Recipe {
         'protein': protein,
         'carbs': carbs,
         'fat': fat,
+        'fiber': fiber,
+        'sugar': sugar,
+        'sodium': sodium,
+        'cholesterol': cholesterol,
         'estimated_total_php': estimatedTotalPhp,
         'raw_json': jsonEncode({
           'image_url': imageUrl,
@@ -263,6 +287,10 @@ class Recipe {
       protein: (map['protein'] as num?)?.toDouble(),
       carbs: (map['carbs'] as num?)?.toDouble(),
       fat: (map['fat'] as num?)?.toDouble(),
+      fiber: (map['fiber'] as num?)?.toDouble(),
+      sugar: (map['sugar'] as num?)?.toDouble(),
+      sodium: (map['sodium'] as num?)?.toDouble(),
+      cholesterol: (map['cholesterol'] as num?)?.toDouble(),
       estimatedTotalPhp: (map['estimated_total_php'] as num?)?.toDouble(),
       ingredientCount: extra['ingredient_count'] as int?,
       author: extra['author'] as String?,

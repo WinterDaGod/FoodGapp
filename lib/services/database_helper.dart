@@ -28,8 +28,13 @@ class DatabaseHelper {
   static const _databaseVersion = 25;
 
   Database? _database;
+  Future<Database>? _openFuture;
 
-  Future<Database> get database async => _database ??= await _open();
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _openFuture ??= _open();
+    return _openFuture!;
+  }
 
   Future<Database> _open() async {
     final databasesDir = await getDatabasesPath();
@@ -59,6 +64,7 @@ class DatabaseHelper {
     );
 
     // CRITICAL: Self-Healing Logic - Ensure all tables exist regardless of source
+    // This is now guarded by _openFuture to prevent parallel "duplicate column" errors.
     await _ensureAllTablesExist(db);
 
     // DEBUG: Verify library count
@@ -128,6 +134,10 @@ class DatabaseHelper {
           protein REAL,
           carbs REAL,
           fat REAL,
+          fiber REAL DEFAULT 0,
+          sugar REAL DEFAULT 0,
+          sodium REAL DEFAULT 0,
+          cholesterol REAL DEFAULT 0,
           meal_time TEXT,
           image_url TEXT,
           is_pinned INTEGER DEFAULT 0,
@@ -137,6 +147,10 @@ class DatabaseHelper {
           base_protein REAL,
           base_carbs REAL,
           base_fat REAL,
+          base_fiber REAL DEFAULT 0,
+          base_sugar REAL DEFAULT 0,
+          base_sodium REAL DEFAULT 0,
+          base_cholesterol REAL DEFAULT 0,
           FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
         )''',
       'shopping_list': '''
@@ -176,6 +190,10 @@ class DatabaseHelper {
           protein REAL,
           carbs REAL,
           fat REAL,
+          fiber REAL DEFAULT 0,
+          sugar REAL DEFAULT 0,
+          sodium REAL DEFAULT 0,
+          cholesterol REAL DEFAULT 0,
           estimated_total_php REAL,
           raw_json TEXT,
           cached_at INTEGER
@@ -196,6 +214,10 @@ class DatabaseHelper {
           protein REAL NOT NULL,
           carbs REAL NOT NULL,
           fat REAL NOT NULL,
+          fiber REAL DEFAULT 0,
+          sugar REAL DEFAULT 0,
+          sodium REAL DEFAULT 0,
+          cholesterol REAL DEFAULT 0,
           source TEXT NOT NULL
         )''',
       'price_cache': '''
@@ -216,7 +238,17 @@ class DatabaseHelper {
           user_id TEXT PRIMARY KEY,
           current_streak INTEGER DEFAULT 0,
           last_log_date TEXT,
-          best_streak INTEGER DEFAULT 0
+          best_streak INTEGER DEFAULT 0,
+          xp INTEGER DEFAULT 0,
+          level INTEGER DEFAULT 1
+        )''',
+      'user_achievements': '''
+        CREATE TABLE IF NOT EXISTS user_achievements (
+          user_id TEXT NOT NULL,
+          achievement_id TEXT NOT NULL,
+          unlocked_at TEXT NOT NULL,
+          PRIMARY KEY (user_id, achievement_id),
+          FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
         )''',
     };
 
@@ -238,9 +270,29 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_nutrition_cache_id ON nutrition_cache (api_meal_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_food_library_name ON food_library (name)');
 
+    // CRITICAL: Column-Level Self-Healing (v1.1.8 Clinical Update)
+    await _ensureColumnExists(db, 'meal_log', 'fiber', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'sugar', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'sodium', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'cholesterol', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'base_fiber', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'base_sugar', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'base_sodium', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'meal_log', 'base_cholesterol', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'nutrition_cache', 'fiber', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'nutrition_cache', 'sugar', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'nutrition_cache', 'sodium', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'nutrition_cache', 'cholesterol', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'food_library', 'fiber', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'food_library', 'sugar', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'food_library', 'sodium', 'REAL DEFAULT 0');
+    await _ensureColumnExists(db, 'food_library', 'cholesterol', 'REAL DEFAULT 0');
+
     // CRITICAL: Column-Level Self-Healing (v1.1.8 Pricing Update)
     await _ensureColumnExists(db, 'nutrition_cache', 'estimated_total_php', 'REAL');
     await _ensureColumnExists(db, 'shopping_list', 'price_php', 'REAL');
+    await _ensureColumnExists(db, 'user_streaks', 'xp', 'INTEGER DEFAULT 0');
+    await _ensureColumnExists(db, 'user_streaks', 'level', 'INTEGER DEFAULT 1');
 
     // Special initialization for market_prices from assets
     // We force refresh if the count is low (indicating old basic dataset)
@@ -374,6 +426,14 @@ class DatabaseHelper {
     if (count == 0) {
       await db.insert('user_profile', map);
     }
+  }
+
+  Future<void> deleteUserAccount(String userId) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('user_profile', where: 'user_id = ?', whereArgs: [userId]);
+      // The other tables have ON DELETE CASCADE so they will be cleared automatically
+    });
   }
 
   Future<UserProfile?> getUserProfile(String userId) async {

@@ -91,6 +91,20 @@ class DostFnriGuidelines {
   /// target. Intake within ±10% of the target counts as on track.
   static const energyOnTrackTolerance = 0.10;
 
+  // --- Clinical Micronutrient Thresholds (PDRI / WHO) ----------------------
+
+  /// Fiber: Aim for 20–30g per day.
+  static const fiberMinGrams = 25.0;
+
+  /// Free Sugar: Limit to <10% of total energy intake.
+  static const sugarMaxPercent = 10.0;
+
+  /// Sodium: Limit to <2000mg per day.
+  static const sodiumMaxMg = 2000.0;
+
+  /// Cholesterol: Limit to <300mg per day.
+  static const cholesterolMaxMg = 300.0;
+
   /// Maps a free-text activity level from the user profile to a PAL factor.
   /// Matching is case-insensitive and keyword-based so it tolerates the
   /// different labels a profile screen might use.

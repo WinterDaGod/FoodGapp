@@ -1,38 +1,33 @@
-# Implementation Plan - iOS "Sideload & Demo" Cloud Build
+# [COMPLETED] Implementation Plan - Advanced Micronutrient Tracking & Progress Insights
 
-Enable the generation of an iOS `.ipa` file using GitHub Actions and implement a **"Demo Mode"** for Health features. This bypasses Apple's strict hardware restrictions for free accounts while still allowing you to demo the app's full capabilities.
+Upgrade FoodGapp's nutritional engine to support **Micronutrient Tracking** (Fiber, Sugar, Sodium, Cholesterol). This plan included architectural changes to the data layer and a premium UI overhaul of the Progress Screen.
 
-## Proposed Changes
+## Proposed Changes (ALL APPLIED)
 
-### [Services]
+### [Models] - DONE
+- **Clinical Expansion**: Added four new fields: `fiber` (g), `sugar` (g), `sodium` (mg), and `cholesterol` (mg) to all models.
+- **Scaling Support**: Added `base_*` fields to `MealLog` for accurate ingredient scaling.
 
-#### [MODIFY] [health_sync_service.dart](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/lib/services/health_sync_service.dart)
-- **Demo Override**: Since HealthKit is physically blocked for free Apple IDs, I will implement a "Simulated Data" fallback for iOS.
-- **Logic**: If running on iOS and native sync fails, the app will return **realistic mock data** (e.g., 5,420 steps and 210 cal burned).
-- **Result**: You can still demo the **Activity Card**, **Streak Badge**, and **Gamification** logic on your iPhone without a paid account.
+### [Data Layer] - DONE
+- **Schema Evolution**: Updated `meal_log`, `nutrition_cache`, and `food_library` tables.
+- **Self-Healing Engine**: Integrated automatic column repair logic (v25) to ensure local databases are clinical-ready.
 
-### [DevOps]
+### [AI & Vision Services] - DONE
+- **Prompt Engineering**: Updated AI services to provide estimates for all 8 key nutritional markers.
 
-#### [NEW] [ios_sideload_build.yml](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/.github/workflows/ios_sideload_build.yml)
-- **Zero-Secret Build**: Create a workflow to build an unsigned `.ipa` for sideloading.
-- **Auto-Artifact**: Upload the build to your GitHub repository for download.
-
-### [Documentation]
-
-#### [NEW] [IOS_SIDELOADING_GUIDE.md](file:///C:/Users/FSOS/Downloads/Compressed/MPEMAIL/MealPlannerEmail/IOS_SIDELOADING_GUIDE.md)
-- Step-by-step guide to installing the `.ipa` using **Sideloadly** on Windows.
+### [UI Components] - DONE
+- **Nutritional Carousel**: Implemented the 3-page clinical carousel on the Progress Screen.
+- **Compact Clinical Grid**: Redesigned the Recipe Detail grid for maximum information density.
+- **Clinical Manual Entry**: Updated the Add Meal screen to support full clinical logging.
 
 ## User Review Required
 
-> [!CAUTION]
-> **Apple Restriction**: My research confirms that Apple **strictly blocks** real HealthKit access for free accounts. The "Simulated Data" is the only way to show these features working on a real iPhone without paying the $99/year fee.
-
-> [!NOTE]
-> **Android is Full**: The health sync will remain 100% real and native on Android via Health Connect.
+> [!IMPORTANT]
+> **Data Availability**: While our AI engine will estimate these values, some items in the local `food_library` might lack specific micro data. In these cases, the app will display `0` or `--` to maintain data integrity.
 
 ## Verification Plan
 
-### Technical Audit
-1.  **Demo Logic**: Verify that calling the health sync on iOS triggers the simulated data instead of returning an error.
-2.  **Sideload build**: Verify that the GitHub Action produces a valid `.ipa` file structure.
-3.  **UI Feedback**: Ensure the Activity Card appears on the iOS dashboard once the "Simulated Sync" is triggered.
+### Technical & Clinical Audit
+1.  **AI Estimation Check**: Log a meal using AI Vision and verify that realistic values for Sodium and Sugar are returned in the logs.
+2.  **Carousel UX**: Verify smooth swiping between the Macro and Micro pages on the Progress Screen.
+3.  **Schema Resilience**: Verify that the app launches without errors and automatically adds the 4 new columns to the local SQLite database.

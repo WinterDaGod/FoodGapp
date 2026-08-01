@@ -8,6 +8,10 @@ class Ingredient {
   final double protein;
   final double carbs;
   final double fat;
+  final double fiber;
+  final double sugar;
+  final double sodium;
+  final double cholesterol;
   final bool isVerified;
   final String? source;
   final double? estimatedPricePhp;
@@ -20,6 +24,10 @@ class Ingredient {
     required this.protein,
     required this.carbs,
     required this.fat,
+    this.fiber = 0.0,
+    this.sugar = 0.0,
+    this.sodium = 0.0,
+    this.cholesterol = 0.0,
     this.isVerified = false,
     this.source,
     this.estimatedPricePhp,
@@ -45,6 +53,10 @@ class Ingredient {
       protein: findNutrient('Protein'),
       carbs: findNutrient('Carbohydrates'),
       fat: findNutrient('Fat'),
+      fiber: findNutrient('Fiber'),
+      sugar: findNutrient('Sugar'),
+      sodium: findNutrient('Sodium'),
+      cholesterol: findNutrient('Cholesterol'),
       isVerified: isVerified,
       source: source,
     );
@@ -84,6 +96,10 @@ class Ingredient {
       protein: findNutrientValue([1003]),
       carbs: findNutrientValue([1005]),
       fat: findNutrientValue([1004]),
+      fiber: findNutrientValue([1079]),
+      sugar: findNutrientValue([2000, 1063]),
+      sodium: findNutrientValue([1093]),
+      cholesterol: findNutrientValue([1253]),
       isVerified: true,
       source: 'USDA',
     );
@@ -99,6 +115,10 @@ class Ingredient {
       protein: item.protein * ratio,
       carbs: item.carbs * ratio,
       fat: item.fat * ratio,
+      fiber: (item.fiber ?? 0.0) * ratio,
+      sugar: (item.sugar ?? 0.0) * ratio,
+      sodium: (item.sodium ?? 0.0) * ratio,
+      cholesterol: (item.cholesterol ?? 0.0) * ratio,
       isVerified: true,
       source: item.source,
     );
@@ -112,6 +132,10 @@ class Ingredient {
         'protein': protein,
         'carbs': carbs,
         'fat': fat,
+        'fiber': fiber,
+        'sugar': sugar,
+        'sodium': sodium,
+        'cholesterol': cholesterol,
         'isVerified': isVerified,
         'source': source,
         'estimatedPricePhp': estimatedPricePhp,
@@ -125,6 +149,10 @@ class Ingredient {
         protein: (map['protein'] as num).toDouble(),
         carbs: (map['carbs'] as num).toDouble(),
         fat: (map['fat'] as num).toDouble(),
+        fiber: (map['fiber'] as num?)?.toDouble() ?? 0.0,
+        sugar: (map['sugar'] as num?)?.toDouble() ?? 0.0,
+        sodium: (map['sodium'] as num?)?.toDouble() ?? 0.0,
+        cholesterol: (map['cholesterol'] as num?)?.toDouble() ?? 0.0,
         isVerified: map['isVerified'] as bool? ?? false,
         source: map['source'] as String?,
         estimatedPricePhp: (map['estimatedPricePhp'] as num?)?.toDouble(),

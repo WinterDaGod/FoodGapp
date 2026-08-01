@@ -64,6 +64,21 @@ class AuthService {
 
   Future<void> signOut() => _auth.signOut();
 
+  Future<AuthResult> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await user.delete();
+        return AuthResult.success(null);
+      }
+      return AuthResult.failure('No user signed in');
+    } on FirebaseAuthException catch (e) {
+      return AuthResult.failure(_messageForCode(e.code));
+    } catch (_) {
+      return AuthResult.failure('Could not delete account. Please try again.');
+    }
+  }
+
   Future<AuthResult> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());

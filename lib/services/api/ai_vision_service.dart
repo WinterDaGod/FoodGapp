@@ -27,7 +27,7 @@ You are a clinical dietitian. Analyze this image of food and return a structured
 Instructions:
 1. Identify all food items visible in the image.
 2. Estimate the portion weight in grams (g) for each item.
-3. Provide accurate Calories (kcal), Protein (g), Carbohydrates (g), and Fat (g) for each item.
+3. Provide accurate Calories (kcal), Protein (g), Carbohydrates (g), Fat (g), Fiber (g), Sugar (g), Sodium (mg), and Cholesterol (mg) for each item.
 4. Suggest a clear "foodName" for the entire plate.
 
 CRITICAL: Return RAW JSON only.
@@ -44,6 +44,10 @@ Expected Response Format:
       "protein": 10.0,
       "carbs": 5.0,
       "fat": 5.0,
+      "fiber": 2.0,
+      "sugar": 1.0,
+      "sodium": 350.0,
+      "cholesterol": 0.0,
       "isVerified": true,
       "source": "FoodGapp AI Vision"
     }

@@ -29,7 +29,7 @@ Input: "$text"
 
 Instructions:
 1. Estimate the total amount in grams (g) if not specified.
-2. Calculate Calories (kcal), Protein (g), Carbohydrates (g), and Fat (g) based on standard nutritional data.
+2. Calculate Calories (kcal), Protein (g), Carbohydrates (g), Fat (g), Fiber (g), Sugar (g), Sodium (mg), and Cholesterol (mg) based on standard nutritional data.
 3. If multiple items are listed, sum them into a single representative ingredient entry.
 4. If the input is not food, return an error or null equivalent.
 
@@ -43,6 +43,10 @@ Response MUST be a single JSON object with these keys:
 - "protein": (double)
 - "carbs": (double)
 - "fat": (double)
+- "fiber": (double)
+- "sugar": (double)
+- "sodium": (double) (in mg)
+- "cholesterol": (double) (in mg)
 - "isVerified": (bool) Set to true
 - "source": (String) Set to "FoodGapp"
 ''';
@@ -74,7 +78,7 @@ Description: "$text"
 Instructions:
 1. Identify all individual food items/ingredients.
 2. Estimate portions in grams (g) if not specified.
-3. Provide accurate Calories (kcal), Protein (g), Carbohydrates (g), and Fat (g) for each item.
+3. Provide accurate Calories (kcal), Protein (g), Carbohydrates (g), Fat (g), Fiber (g), Sugar (g), Sodium (mg), and Cholesterol (mg) for each item.
 4. Suggest a clear, catchy "foodName" for the entire meal.
 5. If the input is not food, return an error or null equivalent.
 
@@ -92,6 +96,10 @@ Expected Response Format:
       "protein": 10.0,
       "carbs": 5.0,
       "fat": 5.0,
+      "fiber": 2.0,
+      "sugar": 1.0,
+      "sodium": 350.0,
+      "cholesterol": 0.0,
       "isVerified": true,
       "source": "FoodGapp"
     },
@@ -132,6 +140,10 @@ Expected Response Format:
       'protein': r.protein ?? 0,
       'carbs': r.carbs ?? 0,
       'fat': r.fat ?? 0,
+      'fiber': r.fiber ?? 0,
+      'sugar': r.sugar ?? 0,
+      'sodium': r.sodium ?? 0,
+      'cholesterol': r.cholesterol ?? 0,
     }).toList();
 
     final prompt = '''
@@ -222,7 +234,7 @@ Instructions:
 5. For each recipe, provide:
    - "title": Clear descriptive name
    - "image_keyword": 2-word visual essence of the dish (e.g. "Berry Oatmeal") for high-fidelity visual mapping
-   - "calories", "protein", "carbs", "fat": Accurate numeric estimates
+   - "calories", "protein", "carbs", "fat", "fiber", "sugar", "sodium", "cholesterol": Accurate numeric estimates
    - "ingredients": A list of strings for the ingredients
    - "aiReasoning": A short sentence explaining how this meal contributes to the $targetKcal goal.
 5. Mark these as "source": "FoodGapp AI" and "isVerified": false.
@@ -240,6 +252,10 @@ Expected Response Format:
       "protein": 25,
       "carbs": 40,
       "fat": 12,
+      "fiber": 2,
+      "sugar": 1,
+      "sodium": 350,
+      "cholesterol": 0,
       "ingredients": ["...", "..."],
       "aiReasoning": "...",
       "source": "FoodGapp AI",
@@ -292,7 +308,7 @@ Instructions:
 5. For each recipe, provide:
    - "title": Descriptive name
    - "image_keyword": 2-word visual essence (e.g. "Grilled Chicken")
-   - "calories", "protein", "carbs", "fat": Numeric estimates
+   - "calories", "protein", "carbs", "fat", "fiber", "sugar", "sodium", "cholesterol": Numeric estimates
    - "ingredients": List of strings
    - "aiReasoning": Short justification explaining why this meal fits the day's distribution.
 5. Mark these as "source": "FoodGapp AI" and "isVerified": false.
@@ -304,13 +320,11 @@ Expected Response Format:
   "week": {
     "monday": {
       "meals": [
-        { "id": "gemini:mon_b", "title": "...", "image_keyword": "...", "calories": 450, ... },
-        { "id": "gemini:mon_l", "title": "...", "calories": 650, ... },
-        { "id": "gemini:mon_d", "title": "...", "calories": 700, ... }
+        { "id": "gemini:mon_b", "title": "...", "image_keyword": "...", "calories": 450, "fiber": 2, "sugar": 1, "sodium": 350, "cholesterol": 0, ... },
+        ...
       ]
     },
-    "tuesday": { ... },
-    ... (up to sunday)
+    ...
   }
 }
 ''';
@@ -349,7 +363,7 @@ CRITICAL: Strictly adhere to the dietary constraint.
 For each recipe, provide:
 - "title": A catchy, professional recipe name.
 - "image_keyword": 2-word visual essence (e.g. "Green Salad")
-- "calories", "protein", "carbs", "fat": Accurate numeric nutritional estimates.
+- "calories", "protein", "carbs", "fat", "fiber", "sugar", "sodium", "cholesterol": Accurate numeric nutritional estimates.
 - "ingredients": A full list of ingredients as strings.
 - "aiReasoning": A one-sentence explanation of why this recipe matches the search.
 - "id": A unique string ID starting with "gemini:search_".
@@ -453,7 +467,7 @@ You can include basic pantry staples (oil, salt, pepper, etc.) but focus on the 
 For each recipe, provide:
 - "title": Creative name.
 - "image_keyword": 2-word visual essence (e.g. "Pasta Primavera")
-- "calories", "protein", "carbs", "fat": Accurate numeric nutritional estimates.
+- "calories", "protein", "carbs", "fat", "fiber", "sugar", "sodium", "cholesterol": Accurate numeric nutritional estimates.
 - "ingredients": Full ingredient list.
 - "aiReasoning": Why this is a great way to use your pantry items.
 - "id": Unique ID starting with "gemini:pantry_".

@@ -402,7 +402,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: 1.8,
+      childAspectRatio: 2.2,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       children: [
@@ -410,6 +410,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         _buildNutrientCard('Protein', format(_recipe.protein, 'g'), Icons.restaurant, Colors.redAccent, isDark),
         _buildNutrientCard('Carbs', format(_recipe.carbs, 'g'), Icons.bakery_dining, Colors.blueAccent, isDark),
         _buildNutrientCard('Fat', format(_recipe.fat, 'g'), Icons.water_drop, Colors.greenAccent, isDark),
+        _buildNutrientCard('Fiber', format(_recipe.fiber, 'g'), Icons.grass, const Color(0xFF52A574), isDark),
+        _buildNutrientCard('Sugar', format(_recipe.sugar, 'g'), Icons.icecream_outlined, Colors.orangeAccent, isDark),
+        _buildNutrientCard('Sodium', format(_recipe.sodium, 'mg'), Icons.shutter_speed_outlined, const Color(0xFFC26DB7), isDark),
+        _buildNutrientCard('Cholesterol', format(_recipe.cholesterol, 'mg'), Icons.favorite_border, Colors.redAccent, isDark),
       ],
     );
   }

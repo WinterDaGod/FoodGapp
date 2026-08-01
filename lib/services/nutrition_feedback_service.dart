@@ -162,6 +162,44 @@ class NutritionFeedbackService {
     final protein = macro('Protein', intake.protein, target.proteinGrams);
     final fat = macro('Fat', intake.fat, target.fatGrams);
 
+    // Clinical Micronutrients
+    final fiber = NutrientFeedback(
+      label: 'Fiber',
+      unit: 'g',
+      consumed: intake.fiber,
+      recommended: const NutrientRange(DostFnriGuidelines.fiberMinGrams, 100),
+      status: intake.fiber >= DostFnriGuidelines.fiberMinGrams ? NutrientStatus.onTrack : NutrientStatus.below,
+      insight: intake.fiber >= DostFnriGuidelines.fiberMinGrams ? 'Great fiber intake!' : 'Aim for more fiber from veggies and grains.',
+    );
+
+    final sugarLimit = (target.energyKcal * (DostFnriGuidelines.sugarMaxPercent / 100)) / DostFnriGuidelines.kcalPerGramCarb;
+    final sugar = NutrientFeedback(
+      label: 'Sugar',
+      unit: 'g',
+      consumed: intake.sugar,
+      recommended: NutrientRange(0, sugarLimit),
+      status: intake.sugar <= sugarLimit ? NutrientStatus.onTrack : NutrientStatus.above,
+      insight: intake.sugar <= sugarLimit ? 'Sugar intake is within limits.' : 'Try to reduce added sugars.',
+    );
+
+    final sodium = NutrientFeedback(
+      label: 'Sodium',
+      unit: 'mg',
+      consumed: intake.sodium,
+      recommended: const NutrientRange(0, DostFnriGuidelines.sodiumMaxMg),
+      status: intake.sodium <= DostFnriGuidelines.sodiumMaxMg ? NutrientStatus.onTrack : NutrientStatus.above,
+      insight: intake.sodium <= DostFnriGuidelines.sodiumMaxMg ? 'Sodium intake is healthy.' : 'Try to use less salt in your meals.',
+    );
+
+    final cholesterol = NutrientFeedback(
+      label: 'Cholesterol',
+      unit: 'mg',
+      consumed: intake.cholesterol,
+      recommended: const NutrientRange(0, DostFnriGuidelines.cholesterolMaxMg),
+      status: intake.cholesterol <= DostFnriGuidelines.cholesterolMaxMg ? NutrientStatus.onTrack : NutrientStatus.above,
+      insight: intake.cholesterol <= DostFnriGuidelines.cholesterolMaxMg ? 'Cholesterol levels are looking good.' : 'Consider leaner protein sources.',
+    );
+
     return NutritionFeedback(
       intake: intake,
       target: target,
@@ -169,7 +207,11 @@ class NutritionFeedbackService {
       carbs: carbs,
       protein: protein,
       fat: fat,
-      headline: _headline(intake, [energy, carbs, protein, fat]),
+      fiber: fiber,
+      sugar: sugar,
+      sodium: sodium,
+      cholesterol: cholesterol,
+      headline: _headline(intake, [energy, carbs, protein, fat, fiber, sugar, sodium, cholesterol]),
     );
   }
 

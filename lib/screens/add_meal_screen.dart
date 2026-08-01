@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/database_helper.dart';
 import '../services/app_events.dart';
 import '../services/sound_service.dart';
+import '../services/gamification_service.dart';
 import 'widgets/add_ingredient_modal.dart';
 import 'widgets/app_toast.dart';
 
@@ -35,18 +36,25 @@ class _AddMealScreenState extends State<AddMealScreen> {
   final _proteinController = TextEditingController();
   final _carbsController = TextEditingController();
   final _fatController = TextEditingController();
+  final _fiberController = TextEditingController();
+  final _sugarController = TextEditingController();
+  final _sodiumController = TextEditingController();
+  final _cholesterolController = TextEditingController();
 
   final List<Ingredient> _ingredients = [];
   int _servings = 1;
-  bool _isMacrosView = false; // Start on ingredients if manual? Actually mockup shows Ingredients tab selected
+  bool _isMacrosView = false; 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
 
-  // Base nutrition when starting from a recipe or existing log
   double _baseCalories = 0;
   double _baseProtein = 0;
   double _baseCarbs = 0;
   double _baseFat = 0;
+  double _baseFiber = 0;
+  double _baseSugar = 0;
+  double _baseSodium = 0;
+  double _baseCholesterol = 0;
 
   @override
   void initState() {
@@ -59,40 +67,46 @@ class _AddMealScreenState extends State<AddMealScreen> {
       _baseProtein = r.protein ?? 0;
       _baseCarbs = r.carbs ?? 0;
       _baseFat = r.fat ?? 0;
+      _baseFiber = r.fiber ?? 0;
+      _baseSugar = r.sugar ?? 0;
+      _baseSodium = r.sodium ?? 0;
+      _baseCholesterol = r.cholesterol ?? 0;
 
       _updateControllers();
-      _isMacrosView = true; // Recipes already have macros
+      _isMacrosView = true;
     } else if (widget.initialIngredients != null) {
-      // AI Described meal pre-fill
       _nameController.text = widget.initialName ?? '';
       _ingredients.addAll(widget.initialIngredients!);
       _calculateFromIngredients();
-      _isMacrosView = false; // Show ingredients list
+      _isMacrosView = false;
     } else if (widget.existingLog != null) {
       final log = widget.existingLog!;
       _nameController.text = log.foodName;
 
-      // If we have ingredients, use the stored base. 
-      // If no ingredients, it was a manual macro log, so base is 0.
       _baseCalories = log.baseCalories ?? 0;
       _baseProtein = log.baseProtein ?? 0;
       _baseCarbs = log.baseCarbs ?? 0;
       _baseFat = log.baseFat ?? 0;
+      _baseFiber = log.baseFiber ?? 0;
+      _baseSugar = log.baseSugar ?? 0;
+      _baseSodium = log.baseSodium ?? 0;
+      _baseCholesterol = log.baseCholesterol ?? 0;
 
-      // Restore ingredients list
       if (log.ingredients != null) {
         _ingredients.addAll(log.ingredients!);
       }
 
       _updateControllers();
 
-      // If it was a manual macro log (no ingredients), ensure the controllers 
-      // show the total logged values, not the 0 base.
       if (_ingredients.isEmpty) {
         _caloriesController.text = log.calories?.round().toString() ?? '';
         _proteinController.text = log.protein?.round().toString() ?? '';
         _carbsController.text = log.carbs?.round().toString() ?? '';
         _fatController.text = log.fat?.round().toString() ?? '';
+        _fiberController.text = log.fiber?.round().toString() ?? '';
+        _sugarController.text = log.sugar?.round().toString() ?? '';
+        _sodiumController.text = log.sodium?.round().toString() ?? '';
+        _cholesterolController.text = log.cholesterol?.round().toString() ?? '';
       }
 
       _selectedDate = DateTime.tryParse(log.mealDate) ?? DateTime.now();
@@ -112,6 +126,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
     _proteinController.text = _baseProtein.round().toString();
     _carbsController.text = _baseCarbs.round().toString();
     _fatController.text = _baseFat.round().toString();
+    _fiberController.text = _baseFiber.round().toString();
+    _sugarController.text = _baseSugar.round().toString();
+    _sodiumController.text = _baseSodium.round().toString();
+    _cholesterolController.text = _baseCholesterol.round().toString();
   }
 
   void _calculateFromIngredients() {
@@ -119,12 +137,20 @@ class _AddMealScreenState extends State<AddMealScreen> {
     double totalProtein = _baseProtein;
     double totalCarbs = _baseCarbs;
     double totalFat = _baseFat;
+    double totalFiber = _baseFiber;
+    double totalSugar = _baseSugar;
+    double totalSodium = _baseSodium;
+    double totalChol = _baseCholesterol;
 
     for (final ing in _ingredients) {
       totalCal += ing.calories;
       totalProtein += ing.protein;
       totalCarbs += ing.carbs;
       totalFat += ing.fat;
+      totalFiber += ing.fiber;
+      totalSugar += ing.sugar;
+      totalSodium += ing.sodium;
+      totalChol += ing.cholesterol;
     }
 
     setState(() {
@@ -132,6 +158,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
       _proteinController.text = (totalProtein * _servings).round().toString();
       _carbsController.text = (totalCarbs * _servings).round().toString();
       _fatController.text = (totalFat * _servings).round().toString();
+      _fiberController.text = (totalFiber * _servings).round().toString();
+      _sugarController.text = (totalSugar * _servings).round().toString();
+      _sodiumController.text = (totalSodium * _servings).round().toString();
+      _cholesterolController.text = (totalChol * _servings).round().toString();
     });
   }
 
@@ -168,6 +198,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
     _proteinController.dispose();
     _carbsController.dispose();
     _fatController.dispose();
+    _fiberController.dispose();
+    _sugarController.dispose();
+    _sodiumController.dispose();
+    _cholesterolController.dispose();
     super.dispose();
   }
 
@@ -191,6 +225,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
       protein: double.tryParse(_proteinController.text),
       carbs: double.tryParse(_carbsController.text),
       fat: double.tryParse(_fatController.text),
+      fiber: double.tryParse(_fiberController.text),
+      sugar: double.tryParse(_sugarController.text),
+      sodium: double.tryParse(_sodiumController.text),
+      cholesterol: double.tryParse(_cholesterolController.text),
       imageUrl: widget.recipe?.imageUrl ?? widget.existingLog?.imageUrl,
       apiMealId: widget.recipe?.apiMealId ?? widget.existingLog?.apiMealId,
       ingredients: _ingredients.isNotEmpty ? _ingredients : null,
@@ -198,18 +236,21 @@ class _AddMealScreenState extends State<AddMealScreen> {
       baseProtein: _baseProtein,
       baseCarbs: _baseCarbs,
       baseFat: _baseFat,
+      baseFiber: _baseFiber,
+      baseSugar: _baseSugar,
+      baseSodium: _baseSodium,
+      baseCholesterol: _baseCholesterol,
     );
 
     if (widget.existingLog != null) {
-      // In a real app we'd have an update method, using insert with REPLACE for now if PK matches
       await DatabaseHelper.instance.upsertMealLog(log); 
     } else {
       await DatabaseHelper.instance.insertMealLog(log);
+      await GamificationService.instance.addXp(50);
+      await GamificationService.instance.unlockAchievement('first_meal');
     }
 
-    // Play feedback sound/haptic
     SoundService.instance.playSuccess();
-
     AppEvents.instance.notifyMealChanged();
 
     if (mounted) {
@@ -622,6 +663,22 @@ class _AddMealScreenState extends State<AddMealScreen> {
             Expanded(child: _buildMacroInput('Carbs (g)', _carbsController, 'Carbs')),
             const SizedBox(width: 12),
             Expanded(child: _buildMacroInput('Fats (g)', _fatController, 'Fats')),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: _buildMacroInput('Fiber (g)', _fiberController, 'Fiber')),
+            const SizedBox(width: 12),
+            Expanded(child: _buildMacroInput('Sugar (g)', _sugarController, 'Sugar')),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: _buildMacroInput('Sodium (mg)', _sodiumController, 'Sodium')),
+            const SizedBox(width: 12),
+            Expanded(child: _buildMacroInput('Cholesterol (mg)', _cholesterolController, 'Cholesterol')),
           ],
         ),
       ],

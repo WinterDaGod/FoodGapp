@@ -906,6 +906,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showComingSoon(String feature) {
+    AppToast.show(
+      context,
+      message: 'The $feature feature is coming soon!',
+      title: 'Coming Soon',
+      type: ToastType.info,
+    );
+  }
+
+  void _showDeleteAccountConfirmation() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        title: Text('Delete Account?', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+        content: Text(
+          'This will permanently delete your account and all your nutritional logs. This action cannot be undone and is required for Play Store compliance.',
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final userId = _authService.currentUser?.uid;
+              if (userId != null) {
+                // 1. Delete local SQLite data
+                await _db.deleteUserAccount(userId);
+                // 2. Delete Firebase Auth account
+                final result = await _authService.deleteAccount();
+                if (mounted) {
+                  Navigator.pop(context);
+                  if (result.isSuccess) {
+                     AppToast.show(
+                      context,
+                      message: 'Your account has been deleted.',
+                      title: 'Goodbye',
+                      type: ToastType.info,
+                    );
+                  } else {
+                    AppToast.show(
+                      context,
+                      message: result.errorMessage ?? 'Please re-login to delete.',
+                      title: 'Action Required',
+                      type: ToastType.error,
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Delete Permanently', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showClearLogsConfirmation() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(

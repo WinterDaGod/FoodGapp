@@ -20,6 +20,10 @@ class MealLog {
   final double? protein;
   final double? carbs;
   final double? fat;
+  final double? fiber;
+  final double? sugar;
+  final double? sodium;
+  final double? cholesterol;
 
   /// Time the meal was logged, e.g. "12:04 AM".
   final String? mealTime;
@@ -39,6 +43,10 @@ class MealLog {
   final double? baseProtein;
   final double? baseCarbs;
   final double? baseFat;
+  final double? baseFiber;
+  final double? baseSugar;
+  final double? baseSodium;
+  final double? baseCholesterol;
 
   const MealLog({
     this.id,
@@ -51,6 +59,10 @@ class MealLog {
     this.protein,
     this.carbs,
     this.fat,
+    this.fiber,
+    this.sugar,
+    this.sodium,
+    this.cholesterol,
     this.mealTime,
     this.imageUrl,
     this.isPinned = false,
@@ -60,6 +72,10 @@ class MealLog {
     this.baseProtein,
     this.baseCarbs,
     this.baseFat,
+    this.baseFiber,
+    this.baseSugar,
+    this.baseSodium,
+    this.baseCholesterol,
   });
 
   Map<String, Object?> toMap() => {
@@ -73,6 +89,10 @@ class MealLog {
         'protein': protein,
         'carbs': carbs,
         'fat': fat,
+        'fiber': fiber,
+        'sugar': sugar,
+        'sodium': sodium,
+        'cholesterol': cholesterol,
         'meal_time': mealTime,
         'image_url': imageUrl,
         'is_pinned': isPinned ? 1 : 0,
@@ -82,6 +102,10 @@ class MealLog {
         'base_protein': baseProtein,
         'base_carbs': baseCarbs,
         'base_fat': baseFat,
+        'base_fiber': baseFiber,
+        'base_sugar': baseSugar,
+        'base_sodium': baseSodium,
+        'base_cholesterol': baseCholesterol,
   };
 
   /// Returns a high-fidelity image URL based on the meal name if [imageUrl] is missing.
@@ -117,6 +141,10 @@ class MealLog {
       protein: (map['protein'] as num?)?.toDouble(),
       carbs: (map['carbs'] as num?)?.toDouble(),
       fat: (map['fat'] as num?)?.toDouble(),
+      fiber: (map['fiber'] as num?)?.toDouble(),
+      sugar: (map['sugar'] as num?)?.toDouble(),
+      sodium: (map['sodium'] as num?)?.toDouble(),
+      cholesterol: (map['cholesterol'] as num?)?.toDouble(),
       mealTime: map['meal_time'] as String?,
       imageUrl: map['image_url'] as String?,
       isPinned: (map['is_pinned'] as int?) == 1,
@@ -126,6 +154,10 @@ class MealLog {
       baseProtein: (map['base_protein'] as num?)?.toDouble(),
       baseCarbs: (map['base_carbs'] as num?)?.toDouble(),
       baseFat: (map['base_fat'] as num?)?.toDouble(),
+      baseFiber: (map['base_fiber'] as num?)?.toDouble(),
+      baseSugar: (map['base_sugar'] as num?)?.toDouble(),
+      baseSodium: (map['base_sodium'] as num?)?.toDouble(),
+      baseCholesterol: (map['base_cholesterol'] as num?)?.toDouble(),
     );
   }
 }

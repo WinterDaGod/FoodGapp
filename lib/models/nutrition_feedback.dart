@@ -46,6 +46,10 @@ class NutritionFeedback {
   final NutrientFeedback carbs;
   final NutrientFeedback protein;
   final NutrientFeedback fat;
+  final NutrientFeedback fiber;
+  final NutrientFeedback sugar;
+  final NutrientFeedback sodium;
+  final NutrientFeedback cholesterol;
 
   /// One-line summary of the day, e.g. how balanced the intake was.
   final String headline;
@@ -57,14 +61,21 @@ class NutritionFeedback {
     required this.carbs,
     required this.protein,
     required this.fat,
+    required this.fiber,
+    required this.sugar,
+    required this.sodium,
+    required this.cholesterol,
     required this.headline,
   });
 
   /// The macronutrient rows, in the order they should be displayed.
   List<NutrientFeedback> get macros => [carbs, protein, fat];
 
-  /// Number of nutrients (energy + macros) that fall inside their
+  /// The clinical micronutrient rows.
+  List<NutrientFeedback> get micros => [fiber, sugar, sodium, cholesterol];
+
+  /// Number of nutrients (energy + macros + micros) that fall inside their
   /// recommended range.
   int get onTrackCount =>
-      [energy, ...macros].where((n) => n.status == NutrientStatus.onTrack).length;
+      [energy, ...macros, ...micros].where((n) => n.status == NutrientStatus.onTrack).length;
 }
