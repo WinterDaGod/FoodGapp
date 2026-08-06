@@ -64,6 +64,7 @@ class AuthService {
 
   Future<void> signOut() => _auth.signOut();
 
+  /// Permanently deletes the user's Firebase account.
   Future<AuthResult> deleteAccount() async {
     try {
       final user = _auth.currentUser;

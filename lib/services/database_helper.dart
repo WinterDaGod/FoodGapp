@@ -428,6 +428,7 @@ class DatabaseHelper {
     }
   }
 
+  /// Deletes all user data from the local database.
   Future<void> deleteUserAccount(String userId) async {
     final db = await database;
     await db.transaction((txn) async {

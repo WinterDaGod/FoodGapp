@@ -854,7 +854,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildTechnicalInfoSection(),
               const SizedBox(height: 32),
               _buildMaintenanceSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
+              _buildComplianceSection(),
+              const SizedBox(height: 32),
               _buildSignOutButton(),
               const SizedBox(height: 100), // Space for FAB
             ],
@@ -903,6 +905,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildComplianceSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Privacy & Security', 
+          style: TextStyle(
+            fontSize: 24, 
+            fontWeight: FontWeight.bold, 
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: !isDark ? [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
+            ] : null,
+          ),
+          child: Material(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(24),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                _buildInfoTile(
+                  icon: Icons.privacy_tip_outlined,
+                  iconColor: Colors.blueAccent,
+                  label: 'Privacy Center',
+                  value: 'Data safety & permissions',
+                  onTap: _showPrivacyCenter,
+                ),
+                _buildDivider(),
+                _buildInfoTile(
+                  icon: Icons.no_accounts_outlined,
+                  iconColor: Colors.redAccent,
+                  label: 'Delete Account',
+                  value: 'Permanently remove all data',
+                  onTap: _showDeleteAccountConfirmation,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showPrivacyCenter() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Data Safety', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+            const SizedBox(height: 16),
+            Text(
+              'FoodGapp respects your privacy. We use Health Connect to sync your steps and active energy to provide a complete picture of your health. Your clinical data stays on your device.',
+              style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 14, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.description_outlined, color: Colors.green),
+              title: const Text('Read Privacy Policy', style: TextStyle(fontWeight: FontWeight.bold)),
+              onTap: () => _showComingSoon('Privacy Policy URL'),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? const Color(0xFF333333) : Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('Got it', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
