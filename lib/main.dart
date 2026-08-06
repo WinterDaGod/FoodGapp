@@ -173,41 +173,60 @@ class _NoStretchScrollBehavior extends MaterialScrollBehavior {
       child;
 }
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
   @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool? _introSeen;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIntroStatus();
+  }
+
+  Future<void> _loadIntroStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _introSeen = prefs.getBool('intro_seen') ?? false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // 1. Wait for Intro Status to load initially
+    if (_introSeen == null) {
+      return const Scaffold(body: AppLoading());
+    }
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // 2. Loading Auth State
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: AppLoading()),
-          );
+          return const Scaffold(body: AppLoading());
         }
-        if (snapshot.hasData) {
+
+        final user = snapshot.data;
+
+        // 3. Authenticated: Show the App Shell
+        if (user != null) {
           return const MainNavigationShell();
         }
+
+        // 4. Unauthenticated: Intro vs Welcome
+        if (_introSeen == true) {
+          return const WelcomeScreen();
+        }
         
-        return FutureBuilder<bool>(
-          future: _checkIntroSeen(),
-          builder: (context, introSnapshot) {
-            if (introSnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(body: AppLoading());
-            }
-            if (introSnapshot.data == true) {
-              return const WelcomeScreen();
-            }
-            return const IntroCarouselScreen();
-          },
-        );
+        return const IntroCarouselScreen();
       },
     );
-  }
-
-  Future<bool> _checkIntroSeen() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('intro_seen') ?? false;
   }
 }

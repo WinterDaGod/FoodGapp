@@ -808,6 +808,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildPersonalInfoSection(),
               const SizedBox(height: 24),
               Text(
+                'Medical Profile', 
+                style: TextStyle(
+                  fontSize: 24, 
+                  fontWeight: FontWeight.bold, 
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildMedicalProfileSection(),
+              const SizedBox(height: 24),
+              Text(
                 'Measurements', 
                 style: TextStyle(
                   fontSize: 24, 
@@ -859,6 +870,160 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 32),
               _buildSignOutButton(),
               const SizedBox(height: 100), // Space for FAB
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMedicalProfileSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final conditions = _profile?.healthConditions ?? [];
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))
+        ] : null,
+      ),
+      child: Material(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            _buildInfoTile(
+              icon: Icons.monitor_heart_outlined,
+              iconColor: Colors.redAccent,
+              label: 'Health Conditions',
+              value: conditions.isEmpty ? 'No conditions set' : conditions.join(', '),
+              onTap: _showHealthConditionsModal,
+            ),
+            if (conditions.isNotEmpty) ...[
+               _buildDivider(),
+               Padding(
+                 padding: const EdgeInsets.all(20.0),
+                 child: Row(
+                   children: [
+                     const Icon(Icons.info_outline, size: 16, color: Colors.blueAccent),
+                     const SizedBox(width: 12),
+                     Expanded(
+                       child: Text(
+                         'Clinical targets have been automatically adjusted for your selected conditions.',
+                         style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 12),
+                       ),
+                     ),
+                   ],
+                 ),
+               ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showHealthConditionsModal() async {
+    if (_profile == null) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    List<String> selected = List.from(_profile!.healthConditions);
+    final allConditions = [
+      {'id': 'Hypertension', 'desc': 'Reduces Sodium limit to <1500mg'},
+      {'id': 'Diabetes', 'desc': 'Stricter Sugar limit (<5% of calories)'},
+      {'id': 'Heart Health', 'desc': 'Lower Cholesterol target (<200mg)'},
+      {'id': 'Digestive Health', 'desc': 'Higher Fiber target (>35g)'},
+    ];
+
+    await showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF2EFE4),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Conditions', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close, color: isDark ? Colors.white70 : Colors.black54),
+                    style: IconButton.styleFrom(backgroundColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select conditions to personalize your clinical thresholds.',
+                style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: allConditions.length,
+                  itemBuilder: (context, index) {
+                    final item = allConditions[index];
+                    final id = item['id'] as String;
+                    final isChecked = selected.contains(id);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isChecked ? Colors.greenAccent : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+                        ),
+                      ),
+                      child: CheckboxListTile(
+                        value: isChecked,
+                        onChanged: (val) {
+                          setModalState(() {
+                            if (val == true) {
+                              selected.add(id);
+                            } else {
+                              selected.remove(id);
+                            }
+                          });
+                        },
+                        title: Text(id, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                        subtitle: Text(item['desc'] as String, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12)),
+                        activeColor: Colors.greenAccent,
+                        checkColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _saveProfile(_profile!.copyWith(healthConditions: selected));
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark ? const Color(0xFF333333) : Colors.black,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('Apply Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

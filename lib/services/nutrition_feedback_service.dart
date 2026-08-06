@@ -162,17 +162,25 @@ class NutritionFeedbackService {
     final protein = macro('Protein', intake.protein, target.proteinGrams);
     final fat = macro('Fat', intake.fat, target.fatGrams);
 
+    // Apply Health Condition Overrides
+    final hasHypertension = profile?.healthConditions.contains('Hypertension') ?? false;
+    final hasDiabetes = profile?.healthConditions.contains('Diabetes') ?? false;
+    final hasHeartHealth = profile?.healthConditions.contains('Heart Health') ?? false;
+    final hasDigestive = profile?.healthConditions.contains('Digestive Health') ?? false;
+
     // Clinical Micronutrients
+    final fiberTarget = hasDigestive ? DostFnriGuidelines.fiberDigestiveTargetGrams : DostFnriGuidelines.fiberMinGrams;
     final fiber = NutrientFeedback(
       label: 'Fiber',
       unit: 'g',
       consumed: intake.fiber,
-      recommended: const NutrientRange(DostFnriGuidelines.fiberMinGrams, 100),
-      status: intake.fiber >= DostFnriGuidelines.fiberMinGrams ? NutrientStatus.onTrack : NutrientStatus.below,
-      insight: intake.fiber >= DostFnriGuidelines.fiberMinGrams ? 'Great fiber intake!' : 'Aim for more fiber from veggies and grains.',
+      recommended: NutrientRange(fiberTarget, 100),
+      status: intake.fiber >= fiberTarget ? NutrientStatus.onTrack : NutrientStatus.below,
+      insight: intake.fiber >= fiberTarget ? 'Great fiber intake!' : 'Aim for more fiber from veggies and grains.',
     );
 
-    final sugarLimit = (target.energyKcal * (DostFnriGuidelines.sugarMaxPercent / 100)) / DostFnriGuidelines.kcalPerGramCarb;
+    final sugarLimitPct = hasDiabetes ? DostFnriGuidelines.sugarDiabetesMaxPercent : DostFnriGuidelines.sugarMaxPercent;
+    final sugarLimit = (target.energyKcal * (sugarLimitPct / 100)) / DostFnriGuidelines.kcalPerGramCarb;
     final sugar = NutrientFeedback(
       label: 'Sugar',
       unit: 'g',
@@ -182,22 +190,24 @@ class NutritionFeedbackService {
       insight: intake.sugar <= sugarLimit ? 'Sugar intake is within limits.' : 'Try to reduce added sugars.',
     );
 
+    final sodiumLimit = hasHypertension ? DostFnriGuidelines.sodiumHypertensionMaxMg : DostFnriGuidelines.sodiumMaxMg;
     final sodium = NutrientFeedback(
       label: 'Sodium',
       unit: 'mg',
       consumed: intake.sodium,
-      recommended: const NutrientRange(0, DostFnriGuidelines.sodiumMaxMg),
-      status: intake.sodium <= DostFnriGuidelines.sodiumMaxMg ? NutrientStatus.onTrack : NutrientStatus.above,
-      insight: intake.sodium <= DostFnriGuidelines.sodiumMaxMg ? 'Sodium intake is healthy.' : 'Try to use less salt in your meals.',
+      recommended: NutrientRange(0, sodiumLimit),
+      status: intake.sodium <= sodiumLimit ? NutrientStatus.onTrack : NutrientStatus.above,
+      insight: intake.sodium <= sodiumLimit ? 'Sodium intake is healthy.' : 'Try to use less salt in your meals.',
     );
 
+    final cholesterolLimit = hasHeartHealth ? DostFnriGuidelines.cholesterolHeartHealthMaxMg : DostFnriGuidelines.cholesterolMaxMg;
     final cholesterol = NutrientFeedback(
       label: 'Cholesterol',
       unit: 'mg',
       consumed: intake.cholesterol,
-      recommended: const NutrientRange(0, DostFnriGuidelines.cholesterolMaxMg),
-      status: intake.cholesterol <= DostFnriGuidelines.cholesterolMaxMg ? NutrientStatus.onTrack : NutrientStatus.above,
-      insight: intake.cholesterol <= DostFnriGuidelines.cholesterolMaxMg ? 'Cholesterol levels are looking good.' : 'Consider leaner protein sources.',
+      recommended: NutrientRange(0, cholesterolLimit),
+      status: intake.cholesterol <= cholesterolLimit ? NutrientStatus.onTrack : NutrientStatus.above,
+      insight: intake.cholesterol <= cholesterolLimit ? 'Cholesterol levels are looking good.' : 'Consider leaner protein sources.',
     );
 
     return NutritionFeedback(

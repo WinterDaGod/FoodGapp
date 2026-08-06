@@ -71,6 +71,9 @@ class MealGenerationService {
     String? preferences,
   }) async {
     try {
+      final profile = await _db.getUserProfile(_auth.currentUser?.uid ?? '');
+      final conditions = profile?.healthConditions ?? [];
+
       // 1. PRIMARY: Generate from FoodGapp AI (Scratch) for bespoke creative plans
       final aiPlanData = await _ai.generateDailyPlanFromScratch(
         targetKcal: targetKcal,
@@ -78,6 +81,7 @@ class MealGenerationService {
         targetCarbs: targetCarbs,
         targetFat: targetFat,
         diets: diets,
+        healthConditions: conditions,
         preferences: preferences,
       );
 
@@ -145,10 +149,14 @@ class MealGenerationService {
   /// Generates a full 7-day, 3-meals-per-day plan.
   Future<WeeklyMealPlan?> generateWeeklyPlan({int? targetCalories, List<String>? diets, String? preferences}) async {
     try {
+      final profile = await _db.getUserProfile(_auth.currentUser?.uid ?? '');
+      final conditions = profile?.healthConditions ?? [];
+
       // 1. PRIMARY: Generate from FoodGapp AI (Scratch) for bespoke creative weeks
       final aiPlanData = await _ai.generateWeeklyPlanFromScratch(
         targetCalories: targetCalories ?? 2000,
         diets: diets,
+        healthConditions: conditions,
         preferences: preferences,
       );
 

@@ -14,6 +14,7 @@ class OnboardingData {
   double height = 170.0;
   double goalWeight = 65.0;
   DateTime birthday = DateTime(2000, 1, 1);
+  List<String> healthConditions = [];
 }
 
 class OnboardingScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentStep = 1;
-  final int _totalSteps = 8;
+  final int _totalSteps = 9;
   final OnboardingData _data = OnboardingData();
 
   final TextEditingController _weightController = TextEditingController(text: '65');
@@ -199,6 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       case 6: return _buildHeightStep();
       case 7: return _buildGoalWeightStep();
       case 8: return _buildBirthdayStep();
+      case 9: return _buildMedicalStep();
       default: return const SizedBox();
     }
   }
@@ -347,6 +349,55 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildMedicalStep() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final allConditions = [
+      {'id': 'Hypertension', 'desc': 'Track Sodium carefully'},
+      {'id': 'Diabetes', 'desc': 'Stricter Sugar & Carb tracking'},
+      {'id': 'Heart Health', 'desc': 'Prioritize low Cholesterol'},
+      {'id': 'Digestive Health', 'desc': 'Focus on high Fiber'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Medical Profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+        const SizedBox(height: 12),
+        Text('Optional: Select any conditions to personalize your clinical targets.', style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14)),
+        const SizedBox(height: 24),
+        ...allConditions.map((item) {
+          final id = item['id'] as String;
+          final isSelected = _data.healthConditions.contains(id);
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.greenAccent.withValues(alpha: 0.1) : (isDark ? const Color(0xFF333333) : const Color(0xFFF5F5F5)),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isSelected ? Colors.greenAccent : Colors.transparent),
+            ),
+            child: CheckboxListTile(
+              value: isSelected,
+              onChanged: (val) {
+                setState(() {
+                  if (val == true) {
+                    _data.healthConditions.add(id);
+                  } else {
+                    _data.healthConditions.remove(id);
+                  }
+                });
+              },
+              title: Text(id, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+              subtitle: Text(item['desc'] as String, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12)),
+              activeColor: Colors.greenAccent,
+              checkColor: Colors.black,
+            ),
+          );
+        }),
       ],
     );
   }

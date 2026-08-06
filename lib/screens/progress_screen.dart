@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../models/daily_nutrition.dart';
 import '../models/user_profile.dart';
@@ -13,7 +14,6 @@ import '../services/unit_converter.dart';
 import '../services/sound_service.dart';
 import '../services/gamification_service.dart';
 import 'widgets/app_loading.dart';
-import 'add_meal_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -659,6 +659,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
       avgChol = _nutritionHistory.fold(0.0, (sum, n) => sum + n.cholesterol) / days;
     }
 
+    final hasHypertension = _profile?.healthConditions.contains('Hypertension') ?? false;
+    final hasDiabetes = _profile?.healthConditions.contains('Diabetes') ?? false;
+    final hasHeartHealth = _profile?.healthConditions.contains('Heart Health') ?? false;
+    final hasDigestive = _profile?.healthConditions.contains('Digestive Health') ?? false;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
@@ -689,29 +694,29 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           const SizedBox(height: 20),
           SizedBox(
-            height: 100,
+            height: 130, // Increased for sparklines
             child: PageView(
               controller: _carouselController,
               onPageChanged: (idx) => setState(() => _currentCarouselPage = idx),
               children: [
                 // PAGE 1: MACROS
                 _buildCarouselPage([
-                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('PROTEIN', '${avgProt.round()}g', Colors.redAccent),
-                  _buildMacroAvgItem('CARBS', '${avgCarb.round()}g', Colors.blueAccent),
-                  _buildMacroAvgItem('FATS', '${avgFat.round()}g', Colors.greenAccent),
+                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent, trendData: _nutritionHistory.map((n) => n.calories).toList()),
+                  _buildMacroAvgItem('PROTEIN', '${avgProt.round()}g', Colors.redAccent, trendData: _nutritionHistory.map((n) => n.protein).toList()),
+                  _buildMacroAvgItem('CARBS', '${avgCarb.round()}g', Colors.blueAccent, trendData: _nutritionHistory.map((n) => n.carbs).toList()),
+                  _buildMacroAvgItem('FATS', '${avgFat.round()}g', Colors.greenAccent, trendData: _nutritionHistory.map((n) => n.fat).toList()),
                 ]),
-                // PAGE 2: MICROS (FIBER, SUGAR, SODIUM)
+                // PAGE 2: CLINICAL (CALORIES + MICROS)
                 _buildCarouselPage([
                   _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('FIBER', '${avgFiber.round()}g', const Color(0xFF52A574)),
-                  _buildMacroAvgItem('SUGAR', '${avgSugar.round()}g', Colors.orangeAccent),
-                  _buildMacroAvgItem('SODIUM', '${avgSodium.round()}mg', const Color(0xFFC26DB7)),
+                  _buildMacroAvgItem('FIBER', '${avgFiber.round()}g', const Color(0xFF52A574), isPriority: hasDigestive),
+                  _buildMacroAvgItem('SUGAR', '${avgSugar.round()}g', Colors.orangeAccent, isPriority: hasDiabetes),
+                  _buildMacroAvgItem('SODIUM', '${avgSodium.round()}mg', const Color(0xFFC26DB7), isPriority: hasHypertension),
                 ]),
-                // PAGE 3: CHOLESTEROL
+                // PAGE 3: HEART HEALTH
                 _buildCarouselPage([
                   _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('CHOL', '${avgChol.round()}mg', Colors.redAccent),
+                  _buildMacroAvgItem('CHOL', '${avgChol.round()}mg', Colors.redAccent, isPriority: hasHeartHealth),
                 ]),
               ],
             ),
@@ -765,12 +770,62 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildExtraAverages(bool isDark) {
-    double avgWaterMl = 0;
-    if (_waterHistory.isNotEmpty) {
-      avgWaterMl = _waterHistory.fold(0.0, (sum, w) => sum + (w['amount_ml'] as num)) / _waterHistory.length;
-    }
-    final avgCups = (avgWaterMl / 250).round();
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 6));
+    
+    // Map water history for easy lookup
+    final Map<String, int> waterMap = {
+      for (var w in _waterHistory) w['date'] as String: (w['amount_ml'] as num).toInt()
+    };
 
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildSecondaryAvgItem('FASTING', '${_calculateAvgFasting()}h', 'avg', Colors.redAccent),
+            _buildVerticalDivider(isDark),
+            _buildSecondaryAvgItem('STEPS', '0', 'avg', Colors.greenAccent),
+          ],
+        ),
+        const SizedBox(height: 32),
+        Text(
+          '7-DAY HYDRATION CONSISTENCY', 
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white38 : Colors.black45, letterSpacing: 1.1)
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(7, (idx) {
+            final date = sevenDaysAgo.add(Duration(days: idx));
+            final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+            final ml = waterMap[dateStr] ?? 0;
+            final bool isTargetMet = ml >= 2000; // Assuming 2L goal
+
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.water_drop, 
+                    color: isTargetMet ? Colors.blueAccent : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                    size: 24,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('E').format(date)[0], 
+                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: isDark ? Colors.white24 : Colors.black26)
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  double _calculateAvgFasting() {
     double totalFastingHours = 0;
     int fastingDays = 7;
     if (_selectedTimeFilter == '1 month') fastingDays = 30;
@@ -782,18 +837,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     if (periodFasts.isNotEmpty) {
       totalFastingHours = periodFasts.fold(0.0, (sum, f) => sum + f.elapsedHours);
     }
-    final avgFasting = totalFastingHours / fastingDays;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildSecondaryAvgItem('WATER', avgCups.toString(), 'cups', Colors.blueAccent),
-        _buildVerticalDivider(isDark),
-        _buildSecondaryAvgItem('FASTING', '${avgFasting.toStringAsFixed(1)}h', 'avg', Colors.redAccent),
-        _buildVerticalDivider(isDark),
-        _buildSecondaryAvgItem('STEPS', '0', 'avg', Colors.greenAccent),
-      ],
-    );
+    return totalFastingHours / fastingDays;
   }
 
   Widget _buildTimeFilterRow() {
@@ -828,11 +872,23 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildMacroAvgItem(String label, String value, Color color) {
+  Widget _buildMacroAvgItem(String label, String value, Color color, {List<double>? trendData, bool isPriority = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        if (isPriority)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.verified_user, size: 8, color: color),
+                const SizedBox(width: 2),
+                Text('PRIORITY', style: TextStyle(color: color, fontSize: 7, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+              ],
+            ),
+          ),
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
@@ -844,7 +900,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             )
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
           label, 
           style: TextStyle(
@@ -854,14 +910,42 @@ class _ProgressScreenState extends State<ProgressScreen> {
             letterSpacing: 0.5,
           )
         ),
-        Text(
-          'avg / day', 
-          style: TextStyle(
-            fontSize: 9, 
-            color: isDark ? Colors.white24 : Colors.black26,
-            fontWeight: FontWeight.bold,
-          )
-        ),
+        if (trendData != null && trendData.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 24,
+            width: 40,
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: trendData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList(),
+                    isCurved: true,
+                    color: color.withValues(alpha: 0.5),
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: color.withValues(alpha: 0.05),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ] else
+          Text(
+            'avg / day', 
+            style: TextStyle(
+              fontSize: 9, 
+              color: isDark ? Colors.white24 : Colors.black26,
+              fontWeight: FontWeight.bold,
+            )
+          ),
       ],
     );
   }

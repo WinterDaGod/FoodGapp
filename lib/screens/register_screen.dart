@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user_profile.dart';
 import '../models/weight_log.dart';
@@ -10,6 +11,7 @@ import '../services/app_events.dart';
 
 import '../services/sound_service.dart';
 import 'onboarding_screen.dart';
+import 'main_navigation_shell.dart';
 import 'legal_content_screen.dart';
 import 'widgets/app_loading.dart';
 
@@ -95,6 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       heightCm: widget.onboardingData?.height,
       targetWeightKg: widget.onboardingData?.goalWeight,
       birthday: widget.onboardingData != null ? DateFormat('yyyy-MM-dd').format(widget.onboardingData!.birthday) : null,
+      healthConditions: widget.onboardingData?.healthConditions ?? [],
       createdAt: DateFormat('yyyy-MM-dd').format(DateTime.now()),
     );
     
@@ -112,9 +115,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     AppEvents.instance.notifyProfileChanged();
     AppEvents.instance.notifyWeightChanged();
 
-    // After database write is complete, we can clear the navigation if still mounted.
+    // Mark intro as seen just in case they reached registration directly
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('intro_seen', true);
+
     if (mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Clear navigation and enter the app shell
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => MainNavigationShell()),
+        (route) => false,
+      );
     }
   }
 

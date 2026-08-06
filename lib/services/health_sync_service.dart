@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:health/health.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class HealthSyncService {
   HealthSyncService._internal();
@@ -8,12 +9,17 @@ class HealthSyncService {
   final Health _health = Health();
 
   Future<Map<String, double>> fetchTodayActivity() async {
-    // Demo Mode for iOS (Apple strictly blocks HealthKit for free developer accounts)
+    // 1. Demo Mode for iOS
     if (Platform.isIOS) {
-      return {
-        'steps': 5420.0, 
-        'burned': 215.0,
-      };
+      return {'steps': 5420.0, 'burned': 215.0};
+    }
+
+    // 2. Emulator Check (Health Connect is generally not supported on emulators)
+    final deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+    if (!androidInfo.isPhysicalDevice) {
+      print('FLUTTER_HEALTH: Sync disabled. Health Connect is not supported on emulators.');
+      return {'steps': 0.0, 'burned': 0.0};
     }
 
     final types = [
@@ -23,13 +29,58 @@ class HealthSyncService {
 
     final permissions = types.map((e) => HealthDataAccess.READ).toList();
 
-    bool hasPermissions = await _health.hasPermissions(types) ?? false;
+    // 3. Availability Check
+    try {
+      final bool isInstalled = await _health.isHealthConnectAvailable();
+      if (!isInstalled) {
+        print('FLUTTER_HEALTH: Health Connect app is missing.');
+        return {'steps': 0.0, 'burned': 0.0};
+      }
+      
+      final sdkStatus = await _health.getHealthConnectSdkStatus();
+      if (sdkStatus != HealthConnectSdkStatus.sdkAvailable) {
+        print('FLUTTER_HEALTH: Health Connect SDK status: $sdkStatus');
+        return {'steps': 0.0, 'burned': 0.0};
+      }
+    } catch (e) {
+      print('FLUTTER_HEALTH Availability Error: $e');
+      return {'steps': 0.0, 'burned': 0.0};
+    }
+
+    // 4. Permissions Logic
+    bool hasPermissions = false;
+    try {
+      hasPermissions = await _health.hasPermissions(types) ?? false;
+    } catch (e) {
+      print('FLUTTER_HEALTH Permission Check Error: $e');
+    }
+
     if (!hasPermissions) {
-      hasPermissions = await _health.requestAuthorization(types, permissions: permissions);
+      try {
+        print('FLUTTER_HEALTH: Requesting authorization...');
+        hasPermissions = await _health.requestAuthorization(types, permissions: permissions);
+        
+        if (!hasPermissions) {
+           print('FLUTTER_HEALTH: Authorization denied or cancelled by user.');
+        }
+      } catch (e) {
+        print('FLUTTER_HEALTH: Critical Error during auth request: $e');
+        
+        // If the launcher is missing, nudge the user to open Health Connect manually
+        if (e.toString().contains('launcher')) {
+          print('FLUTTER_HEALTH: Launcher missing fallback triggered.');
+          try {
+            await _health.installHealthConnect();
+          } catch (_) {}
+        }
+        
+        return {'steps': 0.0, 'burned': 0.0};
+      }
     }
 
     if (!hasPermissions) return {'steps': 0.0, 'burned': 0.0};
 
+    // 5. Data Fetching
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, now.day);
     final end = now;
@@ -57,7 +108,7 @@ class HealthSyncService {
         'burned': totalBurned,
       };
     } catch (e) {
-      print('Health Sync Error: $e');
+      print('FLUTTER_HEALTH Data Fetch Error: $e');
       return {'steps': 0.0, 'burned': 0.0};
     }
   }

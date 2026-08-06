@@ -402,7 +402,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: 2.2,
+      childAspectRatio: 2.0,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       children: [

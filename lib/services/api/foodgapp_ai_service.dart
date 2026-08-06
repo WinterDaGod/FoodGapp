@@ -127,6 +127,7 @@ Expected Response Format:
     required double targetProtein,
     required double targetCarbs,
     required double targetFat,
+    List<String> healthConditions = const [],
     String? preferences,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
@@ -146,8 +147,13 @@ Expected Response Format:
       'cholesterol': r.cholesterol ?? 0,
     }).toList();
 
+    final conditionContext = healthConditions.isEmpty 
+        ? '' 
+        : '\nUser Medical Conditions: ${healthConditions.join(", ")}. prioritize meals that adhere to clinical limits for these conditions (e.g. Low Sodium for Hypertension, Low Sugar for Diabetes).';
+
     final prompt = '''
 You are a master dietitian. Your goal is to select the 3 BEST recipes for a user's daily meal plan from a provided list of candidates.
+$conditionContext
 
 Daily Targets:
 - Total Calories: $targetCalories kcal
@@ -204,14 +210,20 @@ Expected Response Format:
     required double targetCarbs,
     required double targetFat,
     List<String>? diets,
+    List<String> healthConditions = const [],
     String? preferences,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
       throw Exception('FoodGapp AI Key not set');
     }
 
+    final conditionContext = healthConditions.isEmpty 
+        ? '' 
+        : '\nUser Medical Conditions: ${healthConditions.join(", ")}. EXTREMELY IMPORTANT: You MUST strictly follow clinical guidelines for these conditions (e.g. <1500mg Sodium for Hypertension, <5% calories from sugar for Diabetes).';
+
     final prompt = '''
 You are a master dietitian. Your goal is to generate a complete 3-meal daily plan (Breakfast, Lunch, Dinner) from scratch because the primary recipe database is currently offline.
+$conditionContext
 
 Daily Targets:
 - Total Calories: $targetKcal kcal
@@ -283,14 +295,20 @@ Expected Response Format:
   Future<Map<String, dynamic>?> generateWeeklyPlanFromScratch({
     required int targetCalories,
     List<String>? diets,
+    List<String> healthConditions = const [],
     String? preferences,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
       throw Exception('FoodGapp AI Key not set');
     }
 
+    final conditionContext = healthConditions.isEmpty 
+        ? '' 
+        : '\nUser Medical Conditions: ${healthConditions.join(", ")}. EXTREMELY IMPORTANT: Every day of the plan MUST strictly follow clinical guidelines for these conditions.';
+
     final prompt = '''
 You are a master dietitian. Your goal is to generate a complete 7-day meal plan (Breakfast, Lunch, Dinner for each day) from scratch because the primary database is offline.
+$conditionContext
 
 Daily Target: $targetCalories kcal per day.
 User Constraints:
@@ -345,15 +363,20 @@ Expected Response Format:
   Future<List<Map<String, dynamic>>?> searchRecipes({
     required String query,
     String? diet,
+    List<String> healthConditions = const [],
     int number = 10,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
       throw Exception('FoodGapp AI Key not set');
     }
 
+    final conditionContext = healthConditions.isEmpty 
+        ? '' 
+        : '\nUser Medical Conditions: ${healthConditions.join(", ")}. Prioritize recipes that are safe for these conditions.';
+
     final prompt = '''
 You are a world-class chef and nutritionist. Generate a list of $number recipe ideas based on the query: "$query".
-Dietary constraint: ${diet ?? 'None'}.
+Dietary constraint: ${diet ?? 'None'}.$conditionContext
 
 CRITICAL: Strictly adhere to the dietary constraint. 
 - If 'Vegetarian' is specified: DO NOT include any meat, poultry, or fish. 
@@ -454,15 +477,21 @@ CRITICAL: Return RAW JSON only.
 
   Future<List<Map<String, dynamic>>?> chefFromPantry({
     required List<String> ingredients,
+    List<String> healthConditions = const [],
     int number = 10,
   }) async {
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
       throw Exception('FoodGapp AI Key not set');
     }
 
+    final conditionContext = healthConditions.isEmpty 
+        ? '' 
+        : '\nUser Medical Conditions: ${healthConditions.join(", ")}. Ensure the recipes are medically appropriate for these conditions.';
+
     final prompt = '''
 You are the "Pantry Chef." Create $number delicious recipes using primarily these ingredients: ${ingredients.join(', ')}.
 You can include basic pantry staples (oil, salt, pepper, etc.) but focus on the provided items.
+$conditionContext
 
 For each recipe, provide:
 - "title": Creative name.

@@ -120,6 +120,7 @@ class DatabaseHelper {
           custom_macro_protein REAL DEFAULT 33.3,
           custom_macro_carbs REAL DEFAULT 33.3,
           custom_macro_fat REAL DEFAULT 33.4,
+          health_conditions TEXT DEFAULT '',
           created_at TEXT
         )''',
       'meal_log': '''
@@ -293,6 +294,7 @@ class DatabaseHelper {
     await _ensureColumnExists(db, 'shopping_list', 'price_php', 'REAL');
     await _ensureColumnExists(db, 'user_streaks', 'xp', 'INTEGER DEFAULT 0');
     await _ensureColumnExists(db, 'user_streaks', 'level', 'INTEGER DEFAULT 1');
+    await _ensureColumnExists(db, 'user_profile', 'health_conditions', 'TEXT DEFAULT \'\'');
 
     // Special initialization for market_prices from assets
     // We force refresh if the count is low (indicating old basic dataset)

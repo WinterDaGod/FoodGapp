@@ -30,6 +30,10 @@
 	<string>FoodGapp needs access to your camera to identify meals via AI Vision and scan product barcodes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FoodGapp needs access to your photo library to log meals from your saved food photos.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>FoodGapp needs access to your health data to sync your daily steps and active energy burned for accurate nutritional feedback.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>FoodGapp needs access to your health data to sync your daily activity levels for accurate nutritional feedback.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

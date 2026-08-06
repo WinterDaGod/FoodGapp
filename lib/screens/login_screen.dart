@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
 import 'onboarding_screen.dart';
+import 'main_navigation_shell.dart';
 import 'widgets/app_loading.dart';
 import 'widgets/app_toast.dart';
 
@@ -40,7 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     if (!mounted) return;
     if (result.isSuccess) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Clear navigation and enter the app shell
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => MainNavigationShell()),
+        (route) => false,
+      );
     } else {
       setState(() {
         _isLoading = false;

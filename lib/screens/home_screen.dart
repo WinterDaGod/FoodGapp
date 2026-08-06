@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _streakCount = 0;
   double _steps = 0;
   double _burnedFromSync = 0;
+  bool _healthConnectMissing = false;
   bool _isLoading = true;
   DateTime _selectedDate = DateTime.now();
 
@@ -83,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final activity = await HealthSyncService.instance.fetchTodayActivity();
         _steps = activity['steps'] ?? 0;
         _burnedFromSync = activity['burned'] ?? 0;
+        _healthConnectMissing = _steps == 0 && _burnedFromSync == 0;
       }
       
       // Fetch 14-day history for the calendar strip
@@ -175,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (_activeFast != null) _buildActiveFastingWidget(),
                         _buildMainCalorieCard(_latestFeedback!),
                         const SizedBox(height: 12),
-                        if (_steps > 0 || _burnedFromSync > 0) _buildActivityCard(isDark),
+                        _buildActivityCard(isDark),
                         const SizedBox(height: 12),
                         WaterTrackerWidget(
                           userId: _auth.currentUser?.uid ?? '',
@@ -338,6 +340,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActivityCard(bool isDark) {
+    if (_healthConnectMissing && _steps == 0) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.blueAccent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Install Health Connect from Play Store to sync your daily activity.',
+                style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/saved_meal.dart';
+import '../models/user_profile.dart';
 import '../services/api/api_exceptions.dart';
 import '../services/auth_service.dart';
 import '../services/database_helper.dart';
@@ -24,6 +25,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   final _repository = RecipeRepository();
   final _db = DatabaseHelper.instance;
   final _auth = AuthService();
+  UserProfile? _userProfile;
 
   List<Recipe> _communityResults = [];
   List<Recipe> _pantryResults = [];
@@ -45,8 +47,17 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   void initState() {
     super.initState();
     _activeTabIndex = widget.initialTabIndex;
+    _loadUserProfile();
     _loadUserRecipes();
     _loadInitialRecipes();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId != null) {
+      final profile = await _db.getUserProfile(userId);
+      if (mounted) setState(() => _userProfile = profile);
+    }
   }
 
   Future<void> _loadInitialRecipes() async {
@@ -151,6 +162,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
       final results = await _repository.searchByName(
         query,
         diet: _selectedFilters.contains('Vegetarian') ? 'vegetarian' : null,
+        healthConditions: _userProfile?.healthConditions ?? [],
       );
       if (mounted) {
         setState(() {
@@ -248,6 +260,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
         minProtein: minProt,
         maxCarbs: maxCarb,
         diet: primaryDiet.isNotEmpty ? primaryDiet : null,
+        healthConditions: _userProfile?.healthConditions ?? [],
         number: 15,
       );
 
@@ -256,7 +269,8 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
       List<Recipe> finalResults = results;
       if (_selectedFilters.length > 1 || currentQuery.isNotEmpty) {
         finalResults = await _repository.searchByName(semanticQuery, 
-          diet: primaryDiet.isNotEmpty ? primaryDiet.toLowerCase() : null
+          diet: primaryDiet.isNotEmpty ? primaryDiet.toLowerCase() : null,
+          healthConditions: _userProfile?.healthConditions ?? [],
         );
       }
 
@@ -309,7 +323,10 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
     });
 
     try {
-      final results = await _repository.searchByPantry(_pantryIngredients);
+      final results = await _repository.searchByPantry(
+        _pantryIngredients,
+        healthConditions: _userProfile?.healthConditions ?? [],
+      );
       if (mounted) {
         setState(() {
           _pantryResults = results;

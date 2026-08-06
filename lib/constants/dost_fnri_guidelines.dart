@@ -105,6 +105,24 @@ class DostFnriGuidelines {
   /// Cholesterol: Limit to <300mg per day.
   static const cholesterolMaxMg = 300.0;
 
+  // --- Clinical Overrides (Health Conditions) -----------------------------
+
+  /// Sodium limit for Hypertension (mg/day)
+  static const sodiumHypertensionMaxMg = 1500.0;
+
+  /// Sugar limit for Diabetes (percentage of total energy)
+  static const sugarDiabetesMaxPercent = 5.0;
+
+  /// Cholesterol limit for Heart Health (mg/day)
+  static const cholesterolHeartHealthMaxMg = 200.0;
+
+  /// Fiber target for Digestive Health (g/day)
+  static const fiberDigestiveTargetGrams = 35.0;
+
+  /// Protein adjustment for CKD (Renal) - typically lower, but needs medical supervision.
+  /// We'll use a conservative 0.8g per kg of body weight if needed.
+  static const proteinCKDPerKg = 0.8;
+
   /// Maps a free-text activity level from the user profile to a PAL factor.
   /// Matching is case-insensitive and keyword-based so it tolerates the
   /// different labels a profile screen might use.

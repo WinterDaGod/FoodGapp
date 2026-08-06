@@ -39,6 +39,9 @@ class UserProfile {
   final double customMacroCarbs;
   final double customMacroFat;
 
+  /// Clinical conditions (e.g. "Hypertension", "Diabetes", "CKD")
+  final List<String> healthConditions;
+
   final String? createdAt; // yyyy-MM-dd
 
   const UserProfile({
@@ -73,6 +76,7 @@ class UserProfile {
     this.customMacroProtein = 33.3,
     this.customMacroCarbs = 33.3,
     this.customMacroFat = 33.4,
+    this.healthConditions = const [],
     this.createdAt,
   });
 
@@ -108,10 +112,15 @@ class UserProfile {
         'custom_macro_protein': customMacroProtein,
         'custom_macro_carbs': customMacroCarbs,
         'custom_macro_fat': customMacroFat,
+        'health_conditions': healthConditions.join(','),
         'created_at': createdAt,
       };
 
-  factory UserProfile.fromMap(Map<String, Object?> map) => UserProfile(
+  factory UserProfile.fromMap(Map<String, Object?> map) {
+    final conditionsStr = map['health_conditions'] as String? ?? '';
+    final conditions = conditionsStr.isEmpty ? <String>[] : conditionsStr.split(',');
+
+    return UserProfile(
         userId: map['user_id'] as String,
         name: map['name'] as String?,
         email: map['email'] as String?,
@@ -143,8 +152,10 @@ class UserProfile {
         customMacroProtein: (map['custom_macro_protein'] as num? ?? 33.3).toDouble(),
         customMacroCarbs: (map['custom_macro_carbs'] as num? ?? 33.3).toDouble(),
         customMacroFat: (map['custom_macro_fat'] as num? ?? 33.4).toDouble(),
+        healthConditions: conditions,
         createdAt: map['created_at'] as String?,
       );
+  }
 
   UserProfile copyWith({
     String? name,
@@ -177,6 +188,7 @@ class UserProfile {
     double? customMacroProtein,
     double? customMacroCarbs,
     double? customMacroFat,
+    List<String>? healthConditions,
     String? createdAt,
   }) =>
       UserProfile(
@@ -211,6 +223,7 @@ class UserProfile {
         customMacroProtein: customMacroProtein ?? this.customMacroProtein,
         customMacroCarbs: customMacroCarbs ?? this.customMacroCarbs,
         customMacroFat: customMacroFat ?? this.customMacroFat,
+        healthConditions: healthConditions ?? this.healthConditions,
         createdAt: createdAt ?? this.createdAt,
       );
 }

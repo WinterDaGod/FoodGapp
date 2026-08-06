@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'onboarding_screen.dart';
+import 'welcome_screen.dart';
 
 class IntroCarouselScreen extends StatefulWidget {
   const IntroCarouselScreen({super.key});
@@ -41,16 +41,17 @@ class _IntroCarouselScreenState extends State<IntroCarouselScreen> {
   Future<void> _completeIntro() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('intro_seen', true);
+    
     if (mounted) {
+      // Direct navigation to WelcomeScreen, removing the carousel from history
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        MaterialPageRoute(builder: (_) => WelcomeScreen()),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = _pages[_currentPage].accentColor;
 
     return Scaffold(

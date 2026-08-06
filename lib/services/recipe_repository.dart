@@ -33,7 +33,7 @@ class RecipeRepository {
 
   /// Searches recipes by name. Tries FoodGapp AI first for creative results, 
   /// falls back to Spoonacular/TheMealDB if AI fails.
-  Future<List<Recipe>> searchByName(String query, {String? diet}) async {
+  Future<List<Recipe>> searchByName(String query, {String? diet, List<String> healthConditions = const []}) async {
     final trimmed = query.trim();
     
     // If no query and no diet, return empty.
@@ -46,7 +46,11 @@ class RecipeRepository {
 
     // 1. Try FoodGapp AI as primary
     try {
-      final aiResults = await _ai.searchRecipes(query: effectiveQuery, diet: diet);
+      final aiResults = await _ai.searchRecipes(
+        query: effectiveQuery, 
+        diet: diet,
+        healthConditions: healthConditions,
+      );
       if (aiResults != null && aiResults.isNotEmpty) {
         final recipes = aiResults.map((m) {
           final ings = (m['ingredients'] as List?)?.cast<String>();
@@ -109,9 +113,10 @@ class RecipeRepository {
     int? maxProtein,
     int? minCarbs,
     int? maxCarbs,
-    int? minFat,
+    int?    minFat,
     int? maxFat,
     String? diet,
+    List<String> healthConditions = const [],
     int number = 10,
   }) async {
     // 1. Try FoodGapp AI
@@ -127,6 +132,7 @@ class RecipeRepository {
       final aiResults = await _ai.searchRecipes(
         query: query, 
         diet: diet,
+        healthConditions: healthConditions,
         number: number
       );
       if (aiResults != null && aiResults.isNotEmpty) {
@@ -190,10 +196,13 @@ class RecipeRepository {
 
   /// Searches recipes by ingredients in your pantry. Prioritizes AI for
   /// "Chef" style creative suggestions.
-  Future<List<Recipe>> searchByPantry(List<String> ingredients) async {
+  Future<List<Recipe>> searchByPantry(List<String> ingredients, {List<String> healthConditions = const []}) async {
     // 1. Try FoodGapp AI
     try {
-      final aiResults = await _ai.chefFromPantry(ingredients: ingredients);
+      final aiResults = await _ai.chefFromPantry(
+        ingredients: ingredients,
+        healthConditions: healthConditions,
+      );
       if (aiResults != null && aiResults.isNotEmpty) {
         final recipes = aiResults.map((m) {
           final ings = (m['ingredients'] as List?)?.cast<String>();
