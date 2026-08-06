@@ -1,4 +1,4 @@
-package com.example.foodgapp
+package com.kiyoshilim.foodgapp
 
 import io.flutter.embedding.android.FlutterActivity
 
