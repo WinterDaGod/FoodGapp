@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'register_screen.dart';
+import 'welcome_screen.dart';
 import '../services/unit_converter.dart';
 
 class OnboardingData {
@@ -77,7 +78,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _currentStep--;
       });
     } else {
-      Navigator.pop(context);
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      } else {
+        // If we can't pop (e.g. came from Intro Carousel via pushReplacement),
+        // go to the Welcome Screen as the safe fallback.
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+        );
+      }
     }
   }
 

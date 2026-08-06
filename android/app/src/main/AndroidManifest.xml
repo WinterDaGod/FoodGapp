@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
     <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
 
+    <!-- Exact Alarm Permission for Daily Reminders (Android 14+) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <application
         android:label="FoodGapp"
         android:name="${applicationName}"

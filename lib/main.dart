@@ -1,12 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/main_navigation_shell.dart';
+import 'screens/intro_carousel_screen.dart';
 import 'services/app_events.dart';
 import 'services/database_helper.dart';
+import 'services/notification_service.dart';
 import 'screens/widgets/app_loading.dart';
 
 Future<void> main() async {
@@ -16,6 +21,39 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // 1. Initialize Stability Monitoring (Crashlytics)
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // 2. Initialize Local Notifications
+  try {
+    await NotificationService.instance.init();
+    
+    // 3. Schedule Production Reminders
+    await NotificationService.instance.scheduleDailyReminder(
+      id: 101,
+      title: 'Time for Lunch? 🥗',
+      body: 'A quick log now keeps your streak alive!',
+      hour: 12,
+      minute: 0,
+    );
+    
+    await NotificationService.instance.scheduleDailyReminder(
+      id: 102,
+      title: 'Dinner Log 🍱',
+      body: 'Don\'t forget to track your dinner to see your daily balance.',
+      hour: 19,
+      minute: 0,
+    );
+  } catch (e) {
+    debugPrint('Notification scheduling failed: $e');
+  }
 
   runApp(const FoodGApp());
 }
@@ -67,8 +105,6 @@ class _FoodGAppState extends State<FoodGApp> {
       title: 'FoodGApp',
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
-      // Disable Android's default "stretch" overscroll so scrolling stops
-      // cleanly at the edges instead of stretching the content.
       scrollBehavior: const _NoStretchScrollBehavior(),
       theme: ThemeData(
         brightness: Brightness.light,
@@ -125,8 +161,6 @@ class _FoodGAppState extends State<FoodGApp> {
   }
 }
 
-/// Scroll behavior that removes the stretch/glow overscroll indicator so lists
-/// stop cleanly at their edges. Applied app-wide via [MaterialApp.scrollBehavior].
 class _NoStretchScrollBehavior extends MaterialScrollBehavior {
   const _NoStretchScrollBehavior();
 
@@ -139,9 +173,6 @@ class _NoStretchScrollBehavior extends MaterialScrollBehavior {
       child;
 }
 
-/// Shows [HomeScreen] when a user is signed in, otherwise [LoginScreen].
-///
-/// Listens to Firebase auth state so signing in/out swaps screens automatically.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -156,11 +187,27 @@ class AuthGate extends StatelessWidget {
           );
         }
         if (snapshot.hasData) {
-          // Use const to help Flutter optimize rebuilds
           return const MainNavigationShell();
         }
-        return const WelcomeScreen();
+        
+        return FutureBuilder<bool>(
+          future: _checkIntroSeen(),
+          builder: (context, introSnapshot) {
+            if (introSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(body: AppLoading());
+            }
+            if (introSnapshot.data == true) {
+              return const WelcomeScreen();
+            }
+            return const IntroCarouselScreen();
+          },
+        );
       },
     );
+  }
+
+  Future<bool> _checkIntroSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('intro_seen') ?? false;
   }
 }

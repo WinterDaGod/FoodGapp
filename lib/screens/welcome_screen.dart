@@ -18,10 +18,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Timer? _timer;
 
   static const List<_NutrientData> _nutrients = [
-    _NutrientData(Icons.local_fire_department, Colors.orangeAccent),
-    _NutrientData(Icons.restaurant, Colors.redAccent),
-    _NutrientData(Icons.bakery_dining, Colors.blueAccent),
-    _NutrientData(Icons.water_drop, Colors.greenAccent),
+    _NutrientData(Icons.local_fire_department, Colors.orangeAccent, 'Energy'),
+    _NutrientData(Icons.restaurant, Colors.redAccent, 'Protein'),
+    _NutrientData(Icons.bakery_dining, Colors.blueAccent, 'Carbs'),
+    _NutrientData(Icons.water_drop, Colors.greenAccent, 'Hydration'),
   ];
 
   @override
@@ -50,23 +50,41 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildMainCard(context),
-                  const SizedBox(height: 48),
-                  _buildFooter(context),
-                ],
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF2EFE4),
+      body: Stack(
+        children: [
+          // Background Gradient subtle
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    isDark ? Colors.black : const Color(0xFFF2EFE4),
+                    isDark ? const Color(0xFF121212) : Colors.white,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
-        ),
+          
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildMainCard(context),
+                    const SizedBox(height: 48),
+                    _buildFooter(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -76,13 +94,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(maxWidth: 400),
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
+      padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(32),
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(40),
         boxShadow: !isDark ? [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))
-        ] : null,
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 30, offset: const Offset(0, 15))
+        ] : [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 10))
+        ],
+        border: isDark ? Border.all(color: Colors.white.withValues(alpha: 0.05)) : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -93,37 +114,58 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             'foodgapp',
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -1,
+              fontSize: 40,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1.5,
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Achieve your goal weight by tracking calories and macros every day',
+            'Achieve your goal weight with clinical-grade tracking and AI insights.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isDark ? Colors.white60 : Colors.black54,
+              color: isDark ? Colors.white54 : Colors.black54,
               fontSize: 16,
+              height: 1.5,
             ),
           ),
-          const SizedBox(height: 48),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(scale: animation, child: child),
-              );
-            },
-            child: KeyedSubtree(
-              key: ValueKey(_currentNutrientIndex),
-              child: const _AnimatedNutrientCircle(
-                size: 140,
+          const SizedBox(height: 56),
+          
+          // Refined Nutrient Animation
+          SizedBox(
+            height: 180,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 800),
+              switchInCurve: Curves.elasticOut,
+              switchOutCurve: Curves.easeInBack,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(scale: animation, child: child),
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey(_currentNutrientIndex),
+                child: Column(
+                  children: [
+                    const _AnimatedNutrientCircle(size: 140),
+                    const SizedBox(height: 12),
+                    Text(
+                      _nutrients[_currentNutrientIndex].label.toUpperCase(),
+                      style: TextStyle(
+                        color: _nutrients[_currentNutrientIndex].color.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 64),
+          
+          const SizedBox(height: 56),
           _buildGetStartedButton(context),
           const SizedBox(height: 24),
           _buildSignInLink(context),
@@ -133,58 +175,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Widget _buildLogoIcon() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        _buildScanFrame(),
-        const Icon(
-          Icons.restaurant,
-          color: Colors.orange,
-          size: 40,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScanFrame() {
     return Container(
-      width: 80,
-      height: 80,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.orange.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
       ),
-      child: Stack(
-        children: [
-          Positioned(top: 0, left: 0, child: _buildCorner(top: true, left: true)),
-          Positioned(top: 0, right: 0, child: _buildCorner(top: true, left: false)),
-          Positioned(bottom: 0, left: 0, child: _buildCorner(top: false, left: true)),
-          Positioned(bottom: 0, right: 0, child: _buildCorner(top: false, left: false)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCorner({required bool top, required bool left}) {
-    const double size = 20.0;
-    const double thickness = 6.0;
-    const Color color = Color(0xFF8B5E3C);
-
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        border: Border(
-          top: top ? const BorderSide(color: color, width: thickness) : BorderSide.none,
-          bottom: !top ? const BorderSide(color: color, width: thickness) : BorderSide.none,
-          left: left ? const BorderSide(color: color, width: thickness) : BorderSide.none,
-          right: !left ? const BorderSide(color: color, width: thickness) : BorderSide.none,
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: top && left ? const Radius.circular(8) : Radius.zero,
-          topRight: top && !left ? const Radius.circular(8) : Radius.zero,
-          bottomLeft: !top && left ? const Radius.circular(8) : Radius.zero,
-          bottomRight: !top && !left ? const Radius.circular(8) : Radius.zero,
-        ),
+      child: const Icon(
+        Icons.restaurant_rounded,
+        color: Colors.orange,
+        size: 32,
       ),
     );
   }
@@ -200,8 +200,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: isDark ? const Color(0xFF333333) : Colors.black,
-          foregroundColor: Colors.white,
+          backgroundColor: isDark ? Colors.white : Colors.black,
+          foregroundColor: isDark ? Colors.black : Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -226,14 +226,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       },
       child: RichText(
         text: TextSpan(
-          style: TextStyle(color: isDark ? Colors.white60 : Colors.black45, fontSize: 14),
+          style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 14),
           children: [
             const TextSpan(text: 'Already have an account? '),
             TextSpan(
               text: 'Sign In',
               style: TextStyle(
-                color: isDark ? Colors.orangeAccent : Colors.green,
+                color: isDark ? Colors.white : Colors.black,
                 fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
               ),
             ),
           ],
@@ -283,8 +284,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 class _NutrientData {
   final IconData icon;
   final Color color;
+  final String label;
 
-  const _NutrientData(this.icon, this.color);
+  const _NutrientData(this.icon, this.color, this.label);
 }
 
 class _AnimatedNutrientCircle extends StatelessWidget {
