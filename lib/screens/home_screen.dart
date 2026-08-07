@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -340,26 +341,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActivityCard(bool isDark) {
-    if (_healthConnectMissing && _steps == 0) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.info_outline, color: Colors.blueAccent),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Install Health Connect from Play Store to sync your daily activity.',
-                style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 13),
-              ),
-            ),
-          ],
-        ),
-      );
+    // If Health Connect is missing and we have no data, hide the card entirely 
+    // to keep the dashboard clean and professional.
+    if (_healthConnectMissing && _steps == 0 && _burnedFromSync == 0 && !Platform.isIOS) {
+      return const SizedBox.shrink();
     }
 
     return Container(
@@ -371,24 +356,48 @@ class _HomeScreenState extends State<HomeScreen> {
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))
         ] : null,
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildActivityItem(
-            icon: Icons.directions_walk,
-            value: '${_steps.round()}',
-            label: 'Steps Today',
-            color: Colors.blueAccent,
-            isDark: isDark,
-          ),
-          const Spacer(),
-          Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-          const Spacer(),
-          _buildActivityItem(
-            icon: Icons.local_fire_department,
-            value: '${_burnedFromSync.round()}',
-            label: 'Cal Burned',
-            color: Colors.redAccent,
-            isDark: isDark,
+          if (Platform.isIOS)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, size: 12, color: Colors.blueAccent),
+                  const SizedBox(width: 4),
+                  Text(
+                    'DEMO DATA', 
+                    style: TextStyle(
+                      color: Colors.blueAccent, 
+                      fontSize: 10, 
+                      fontWeight: FontWeight.w900, 
+                      letterSpacing: 1.2
+                    )
+                  ),
+                ],
+              ),
+            ),
+          Row(
+            children: [
+              _buildActivityItem(
+                icon: Icons.directions_walk,
+                value: '${_steps.round()}',
+                label: 'Steps Today',
+                color: Colors.blueAccent,
+                isDark: isDark,
+              ),
+              const Spacer(),
+              Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+              const Spacer(),
+              _buildActivityItem(
+                icon: Icons.local_fire_department,
+                value: '${_burnedFromSync.round()}',
+                label: 'Cal Burned',
+                color: Colors.redAccent,
+                isDark: isDark,
+              ),
+            ],
           ),
         ],
       ),
