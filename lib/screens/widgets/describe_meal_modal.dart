@@ -7,6 +7,15 @@ import 'app_toast.dart';
 class DescribeMealModal extends StatefulWidget {
   const DescribeMealModal({super.key});
 
+  static void show(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const DescribeMealModal(),
+    );
+  }
+
   @override
   State<DescribeMealModal> createState() => _DescribeMealModalState();
 }

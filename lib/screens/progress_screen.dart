@@ -6,6 +6,7 @@ import '../models/daily_nutrition.dart';
 import '../models/user_profile.dart';
 import '../models/weight_log.dart';
 import '../models/fasting_session.dart';
+import '../models/vitality_log.dart';
 import '../services/auth_service.dart';
 import '../services/database_helper.dart';
 import '../services/fasting_service.dart';
@@ -14,6 +15,7 @@ import '../services/unit_converter.dart';
 import '../services/sound_service.dart';
 import '../services/gamification_service.dart';
 import 'widgets/app_loading.dart';
+import 'log_vitality_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -31,6 +33,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
   List<DailyNutrition> _nutritionHistory = [];
   List<Map<String, dynamic>> _waterHistory = [];
   List<FastingSession> _fastingHistory = [];
+  List<VitalityLog> _vitalityHistory = [];
   Map<String, dynamic> _streakInfo = {'current': 0, 'best': 0};
   int _xp = 0;
   int _level = 1;
@@ -70,6 +73,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final nutrition = await _db.getNutritionHistory(userId, days);
     final water = await _db.getWaterHistory(userId, days);
     final fasting = await _fastingService.getHistory();
+    final vitality = await _db.getVitalityHistory(userId, days);
     final gamification = await GamificationService.instance.getGamificationStats();
 
     if (mounted) {
@@ -78,6 +82,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         _nutritionHistory = nutrition;
         _waterHistory = water;
         _fastingHistory = fasting;
+        _vitalityHistory = vitality;
         _streakInfo = {
           'current': gamification['current_streak'] ?? 0,
           'best': gamification['best_streak'] ?? 0,
@@ -273,6 +278,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _buildMacroAveragesCard(),
               const SizedBox(height: 20),
               _buildJourneyCard(),
+              const SizedBox(height: 20),
+              _buildVitalityTrendsCard(),
               const SizedBox(height: 20),
               _buildBmiCard(),
               const SizedBox(height: 100),
@@ -971,6 +978,136 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildVerticalDivider(bool isDark) {
     return Container(width: 1, height: 32, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05));
+  }
+
+  Widget _buildVitalityTrendsCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Calculate averages
+    double avgSys = 0, avgDia = 0, avgGlu = 0;
+    final bpLogs = _vitalityHistory.where((v) => v.hasBp).toList();
+    final gluLogs = _vitalityHistory.where((v) => v.hasGlucose).toList();
+
+    if (bpLogs.isNotEmpty) {
+      avgSys = bpLogs.fold(0.0, (sum, v) => sum + (v.systolic ?? 0)) / bpLogs.length;
+      avgDia = bpLogs.fold(0.0, (sum, v) => sum + (v.diastolic ?? 0)) / bpLogs.length;
+    }
+    if (gluLogs.isNotEmpty) {
+      avgGlu = gluLogs.fold(0.0, (sum, v) => sum + (v.glucose ?? 0)) / gluLogs.length;
+    }
+
+    final hasBp = bpLogs.isNotEmpty;
+    final hasGlu = gluLogs.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))
+        ] : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Vitality Trends', 
+                style: TextStyle(
+                  fontSize: 20, 
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                )
+              ),
+              IconButton(
+                onPressed: () async {
+                  await Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(builder: (_) => const LogVitalityScreen())
+                  );
+                  _loadData();
+                },
+                icon: const Icon(Icons.add_circle_outline, color: Colors.blueAccent),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildVitalityItem(
+                  'BLOOD PRESSURE', 
+                  hasBp ? '${avgSys.round()}/${avgDia.round()}' : '--', 
+                  'mmHg', 
+                  Colors.redAccent, 
+                  trendData: bpLogs.reversed.map((v) => (v.systolic ?? 0).toDouble()).toList(),
+                  isDark: isDark
+                ),
+              ),
+              _buildVerticalDivider(isDark),
+              Expanded(
+                child: _buildVitalityItem(
+                  'BLOOD GLUCOSE', 
+                  hasGlu ? avgGlu.toStringAsFixed(1) : '--', 
+                  'mg/dL', 
+                  Colors.orangeAccent, 
+                  trendData: gluLogs.reversed.map((v) => (v.glucose ?? 0).toDouble()).toList(),
+                  isDark: isDark
+                ),
+              ),
+            ],
+          ),
+          if (!hasBp && !hasGlu)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Center(
+                child: Text(
+                  'Log your readings to see trends.', 
+                  style: TextStyle(color: isDark ? Colors.white10 : Colors.black12, fontSize: 11, fontWeight: FontWeight.bold)
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVitalityItem(String label, String value, String unit, Color color, {List<double>? trendData, required bool isDark}) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white24 : Colors.black26)),
+        const SizedBox(height: 8),
+        Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
+        Text(unit, style: TextStyle(fontSize: 10, color: isDark ? Colors.white38 : Colors.black38)),
+        if (trendData != null && trendData.length >= 2) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 30,
+            width: 80,
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: trendData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList(),
+                    isCurved: true,
+                    color: color,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(show: true, color: color.withValues(alpha: 0.1)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   Widget _buildJourneyCard() {

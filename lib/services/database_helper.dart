@@ -14,6 +14,7 @@ import '../models/fasting_session.dart';
 import '../models/weight_log.dart';
 import '../models/shopping_item.dart';
 import '../models/food_library_item.dart';
+import '../models/vitality_log.dart';
 import 'gamification_service.dart';
 
 /// Single point of access to the on-device SQLite database.
@@ -25,7 +26,7 @@ class DatabaseHelper {
   DatabaseHelper.forTesting(Database database) : _database = database;
 
   static const _databaseName = 'foodgapp_v5.db';
-  static const _databaseVersion = 25;
+  static const _databaseVersion = 26;
 
   Database? _database;
   Future<Database>? _openFuture;
@@ -249,6 +250,18 @@ class DatabaseHelper {
           achievement_id TEXT NOT NULL,
           unlocked_at TEXT NOT NULL,
           PRIMARY KEY (user_id, achievement_id),
+          FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
+        )''',
+      'vitality_log': '''
+        CREATE TABLE IF NOT EXISTS vitality_log (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL,
+          date TEXT NOT NULL,
+          time TEXT NOT NULL,
+          systolic INTEGER,
+          diastolic INTEGER,
+          glucose REAL,
+          note TEXT,
           FOREIGN KEY (user_id) REFERENCES user_profile (user_id) ON DELETE CASCADE
         )''',
     };
@@ -993,5 +1006,45 @@ class DatabaseHelper {
       limit: limit,
     );
     return rows.map(FoodLibraryItem.fromMap).toList();
+  }
+
+  // --- vitality_log --------------------------------------------------------
+
+  Future<int> insertVitalityLog(VitalityLog log) async {
+    final db = await database;
+    return db.insert('vitality_log', log.toMap());
+  }
+
+  Future<List<VitalityLog>> getVitalityHistory(String userId, int days) async {
+    final db = await database;
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: days - 1));
+    final startDateStr = '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+
+    final rows = await db.query(
+      'vitality_log',
+      where: 'user_id = ? AND date >= ?',
+      whereArgs: [userId, startDateStr],
+      orderBy: 'date DESC, time DESC',
+    );
+    return rows.map(VitalityLog.fromMap).toList();
+  }
+
+  Future<VitalityLog?> getLatestVitalityReading(String userId) async {
+    final db = await database;
+    final rows = await db.query(
+      'vitality_log',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'date DESC, time DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return VitalityLog.fromMap(rows.first);
+  }
+
+  Future<void> deleteVitalityLog(int id) async {
+    final db = await database;
+    await db.delete('vitality_log', where: 'id = ?', whereArgs: [id]);
   }
 }

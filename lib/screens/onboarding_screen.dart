@@ -44,6 +44,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextStep() {
+    // 1. Age Validation (Step 8: Birthday)
+    if (_currentStep == 8) {
+      final now = DateTime.now();
+      int age = now.year - _data.birthday.year;
+      if (now.month < _data.birthday.month || (now.month == _data.birthday.month && now.day < _data.birthday.day)) {
+        age--;
+      }
+      
+      if (age < 13) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Age Requirement'),
+            content: const Text('FoodGapp requires users to be at least 13 years old to use the clinical features and account services.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
     // Sync numeric data whenever moving forward from an input step
     if (_currentStep == 5) {
       final val = double.tryParse(_weightController.text) ?? _data.currentWeight;

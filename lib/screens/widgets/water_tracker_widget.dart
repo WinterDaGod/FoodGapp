@@ -188,7 +188,7 @@ class _WaterTrackerWidgetState extends State<WaterTrackerWidget> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+          color: isDark ? Colors.white38 : Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: isDark ? Colors.white : Colors.black, size: 20),

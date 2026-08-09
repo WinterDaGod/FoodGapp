@@ -137,7 +137,7 @@ class CalendarStrip extends StatelessWidget {
             CustomPaint(
               size: const Size(44, 44),
               painter: DashedCirclePainter(
-                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.1)
               ),
             ),
           if (!isFuture && progress > 0)

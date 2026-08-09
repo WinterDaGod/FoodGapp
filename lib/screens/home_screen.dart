@@ -8,10 +8,12 @@ import '../models/nutrition_feedback.dart';
 import '../models/meal_log.dart';
 import '../services/database_helper.dart';
 import '../models/user_profile.dart';
+import '../models/vitality_log.dart';
 import 'meal_log_screen.dart';
 import 'add_meal_screen.dart';
 import 'meal_plan_screen.dart';
 import 'fasting_timer_screen.dart';
+import 'log_vitality_screen.dart';
 import 'widgets/dashboard_widgets.dart';
 import '../models/fasting_session.dart';
 import '../services/fasting_service.dart';
@@ -39,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   NutritionFeedback? _latestFeedback;
   FastingSession? _activeFast;
   UserProfile? _profile;
+  VitalityLog? _latestVitality;
   List<MealLog> _todayLogs = [];
   Map<String, double> _dailyProgress = {};
   int _streakCount = 0;
@@ -78,6 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final logs = await _db.getMealLogsForDate(userId, dateStr);
       final activeFast = await _fastingService.getActiveSession();
       final profile = await _db.getUserProfile(userId);
+      final vitality = await _db.getLatestVitalityReading(userId);
       final streak = await GamificationService.instance.getCurrentStreak();
       
       // Activity Sync (Sync if it's today)
@@ -113,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _todayLogs = logs;
           _activeFast = activeFast;
           _profile = profile;
+          _latestVitality = vitality;
           _dailyProgress = progressMap;
           _streakCount = streak;
           _isLoading = false;
@@ -179,6 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         _buildMainCalorieCard(_latestFeedback!),
                         const SizedBox(height: 12),
                         _buildActivityCard(isDark),
+                        if (_latestVitality != null) ...[
+                          const SizedBox(height: 12),
+                          _buildVitalityCard(isDark),
+                        ],
                         const SizedBox(height: 12),
                         WaterTrackerWidget(
                           userId: _auth.currentUser?.uid ?? '',
@@ -253,6 +262,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   _buildCircleAction(Icons.timer_outlined, () async {
                      await Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (_) => const FastingTimerScreen()));
+                     _loadData();
+                  }),
+                  const SizedBox(width: 8),
+                  _buildCircleAction(Icons.monitor_heart_outlined, () async {
+                     await Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (_) => const LogVitalityScreen()));
                      _loadData();
                   }),
                   if (!isExtraSmall) ...[
@@ -401,6 +415,73 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVitalityCard(bool isDark) {
+    final v = _latestVitality!;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))
+        ] : null,
+      ),
+      child: Row(
+        children: [
+          if (v.hasBp)
+            Expanded(
+              child: _buildVitalityMiniItem(
+                icon: Icons.monitor_heart_outlined,
+                value: v.bpDisplay,
+                label: 'Blood Pressure',
+                color: Colors.redAccent,
+                isDark: isDark,
+              ),
+            ),
+          if (v.hasBp && v.hasGlucose)
+             Container(width: 1, height: 30, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05), margin: const EdgeInsets.symmetric(horizontal: 16)),
+          if (v.hasGlucose)
+            Expanded(
+              child: _buildVitalityMiniItem(
+                icon: Icons.bloodtype_outlined,
+                value: '${v.glucose?.round()}',
+                label: 'Blood Glucose',
+                color: Colors.orangeAccent,
+                isDark: isDark,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVitalityMiniItem({required IconData icon, required String value, required String label, required Color color, required bool isDark}) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 10, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
