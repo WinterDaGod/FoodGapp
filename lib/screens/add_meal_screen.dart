@@ -46,6 +46,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
   bool _isMacrosView = false; 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+  String _selectedMealType = 'Breakfast';
 
   double _baseCalories = 0;
   double _baseProtein = 0;
@@ -59,6 +60,8 @@ class _AddMealScreenState extends State<AddMealScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedMealType = _guessMealType();
+
     if (widget.recipe != null) {
       final r = widget.recipe!;
       _nameController.text = r.name;
@@ -82,6 +85,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
     } else if (widget.existingLog != null) {
       final log = widget.existingLog!;
       _nameController.text = log.foodName;
+      _selectedMealType = log.mealType;
 
       _baseCalories = log.baseCalories ?? 0;
       _baseProtein = log.baseProtein ?? 0;
@@ -119,6 +123,14 @@ class _AddMealScreenState extends State<AddMealScreen> {
       }
       _isMacrosView = _ingredients.isEmpty;
     }
+  }
+
+  String _guessMealType() {
+    final hour = DateTime.now().hour;
+    if (hour >= 4 && hour < 11) return 'Breakfast';
+    if (hour >= 11 && hour < 16) return 'Lunch';
+    if (hour >= 16 && hour < 21) return 'Dinner';
+    return 'Snack';
   }
 
   void _updateControllers() {
@@ -219,7 +231,7 @@ class _AddMealScreenState extends State<AddMealScreen> {
       userId: userId,
       mealDate: dateStr,
       mealTime: timeStr,
-      mealType: widget.existingLog?.mealType ?? 'Manual',
+      mealType: _selectedMealType,
       foodName: _nameController.text.trim(),
       calories: double.tryParse(_caloriesController.text),
       protein: double.tryParse(_proteinController.text),
@@ -285,6 +297,10 @@ class _AddMealScreenState extends State<AddMealScreen> {
                       Text('Meal name', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
                       const SizedBox(height: 8),
                       _buildTextField(_nameController, 'Meal name'),
+                      const SizedBox(height: 24),
+                      Text('Meal type', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13)),
+                      const SizedBox(height: 12),
+                      _buildMealTypeSelector(),
                       const SizedBox(height: 24),
                       _buildToggle(),
                       const SizedBox(height: 24),
@@ -355,6 +371,49 @@ class _AddMealScreenState extends State<AddMealScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMealTypeSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final types = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+    
+    return Row(
+      children: types.map((type) {
+        final bool isSelected = _selectedMealType == type;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedMealType = type),
+            child: Container(
+              margin: EdgeInsets.only(
+                right: type != types.last ? 8.0 : 0,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected 
+                  ? (isDark ? Colors.white : Colors.black)
+                  : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? Colors.transparent : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05))
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  type,
+                  style: TextStyle(
+                    color: isSelected 
+                      ? (isDark ? Colors.black : Colors.white)
+                      : (isDark ? Colors.white38 : Colors.black45),
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 

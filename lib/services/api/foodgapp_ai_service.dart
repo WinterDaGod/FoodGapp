@@ -10,7 +10,7 @@ class FoodGappAiService {
 
   FoodGappAiService()
       : _model = GenerativeModel(
-          model: 'gemini-1.5-flash',
+          model: 'gemini-3.6-flash',
           apiKey: ApiConfig.geminiApiKey,
           generationConfig: GenerationConfig(
             responseMimeType: 'application/json',
