@@ -15,6 +15,7 @@ class OnboardingData {
   double goalWeight = 65.0;
   DateTime birthday = DateTime(2000, 1, 1);
   List<String> healthConditions = [];
+  bool disclaimerAccepted = false;
 }
 
 class OnboardingScreen extends StatefulWidget {
@@ -65,6 +66,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
         return;
       }
+    }
+
+    // 2. Disclaimer Validation (Step 9: Medical)
+    if (_currentStep == 9 && !_data.disclaimerAccepted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Clinical Disclaimer'),
+          content: const Text('Please acknowledge the clinical disclaimer at the bottom of the page to proceed.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          ],
+        ),
+      );
+      return;
     }
 
     // Sync numeric data whenever moving forward from an input step
@@ -421,6 +437,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           );
         }),
+        const SizedBox(height: 32),
+        // Clinical Disclaimer
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Checkbox(
+                value: _data.disclaimerAccepted,
+                onChanged: (val) => setState(() => _data.disclaimerAccepted = val ?? false),
+                activeColor: Colors.orange,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Clinical Disclaimer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange)),
+                    Text(
+                      'I understand that FoodGapp estimates are for educational purposes and do not replace professional medical advice.',
+                      style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11, height: 1.3),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

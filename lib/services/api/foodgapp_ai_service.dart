@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../config/api_config.dart';
@@ -9,14 +10,28 @@ class FoodGappAiService {
 
   FoodGappAiService()
       : _model = GenerativeModel(
-          model: 'gemini-3.6-flash',
+          model: 'gemini-1.5-flash',
           apiKey: ApiConfig.geminiApiKey,
           generationConfig: GenerationConfig(
             responseMimeType: 'application/json',
           ),
         );
 
+  /// Checks if the device has an active internet connection.
+  Future<bool> _isOnline() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+
   Future<Ingredient?> parseIngredient(String text) async {
+    if (!await _isOnline()) {
+      throw const SocketException('No internet connection');
+    }
+    
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
       throw Exception('FoodGapp AI Key not set');
     }
@@ -67,6 +82,10 @@ Response MUST be a single JSON object with these keys:
   }
 
   Future<Map<String, dynamic>?> parseMealDescription(String text) async {
+    if (!await _isOnline()) {
+      throw const SocketException('No internet connection');
+    }
+
     if (ApiConfig.geminiApiKey == 'YOUR_GEMINI_API_KEY' || ApiConfig.geminiApiKey.isEmpty) {
       throw Exception('FoodGapp AI Key not set');
     }

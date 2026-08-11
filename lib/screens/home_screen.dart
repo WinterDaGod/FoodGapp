@@ -15,6 +15,8 @@ import 'meal_plan_screen.dart';
 import 'fasting_timer_screen.dart';
 import 'log_vitality_screen.dart';
 import 'widgets/dashboard_widgets.dart';
+import 'widgets/health_disclosure_modal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/fasting_session.dart';
 import '../services/fasting_service.dart';
 import '../services/app_events.dart';
@@ -90,6 +92,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _steps = activity['steps'] ?? 0;
         _burnedFromSync = activity['burned'] ?? 0;
         _healthConnectMissing = _steps == 0 && _burnedFromSync == 0;
+        
+        // Google Play Compliance: Check for Disclosure if sync is missing
+        if (_healthConnectMissing && !Platform.isIOS) {
+          _checkDisclosureNeeded();
+        }
       }
       
       // Fetch 14-day history for the calendar strip
@@ -125,6 +132,26 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _checkDisclosureNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasInteracted = prefs.getBool('health_disclosure_decided') ?? false;
+    
+    if (!hasInteracted && mounted) {
+      HealthDisclosureModal.show(
+        context,
+        onAccept: () async {
+          await prefs.setBool('health_disclosure_decided', true);
+          // Trigger sync authorization now that disclosure is accepted
+          await HealthSyncService.instance.fetchTodayActivity();
+          _loadData();
+        },
+        onDecline: () async {
+          await prefs.setBool('health_disclosure_decided', true);
+        },
+      );
     }
   }
 
