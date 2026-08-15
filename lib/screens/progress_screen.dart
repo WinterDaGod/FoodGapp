@@ -262,41 +262,48 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF2EFE4),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 20),
-              _buildLevelCard(),
-              const SizedBox(height: 12),
-              _buildStreakCard(),
-              const SizedBox(height: 24),
-              _buildAchievementsSection(),
-              const SizedBox(height: 32),
-              _buildMacroAveragesCard(),
-              const SizedBox(height: 20),
-              _buildJourneyCard(),
-              const SizedBox(height: 20),
-              _buildMicronutrientBalanceCard(),
-              const SizedBox(height: 20),
-              _buildVitalityTrendsCard(),
-              const SizedBox(height: 20),
-              _buildBmiCard(),
-              const SizedBox(height: 100),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool isSmall = constraints.maxWidth < 380;
+            final double horizontalPadding = isSmall ? 12 : 16;
+            
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(isSmall),
+                  const SizedBox(height: 20),
+                  _buildLevelCard(isSmall),
+                  const SizedBox(height: 12),
+                  _buildStreakCard(isSmall),
+                  const SizedBox(height: 24),
+                  _buildAchievementsSection(isSmall),
+                  const SizedBox(height: 32),
+                  _buildMacroAveragesCard(isSmall),
+                  const SizedBox(height: 20),
+                  _buildJourneyCard(isSmall),
+                  const SizedBox(height: 20),
+                  _buildMicronutrientBalanceCard(isSmall),
+                  const SizedBox(height: 20),
+                  _buildVitalityTrendsCard(isSmall),
+                  const SizedBox(height: 20),
+                  _buildBmiCard(isSmall),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            );
+          }
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isSmall ? 16 : 24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -312,14 +319,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
               Text(
                 'Progress', 
                 style: TextStyle(
-                  fontSize: 28, 
+                  fontSize: isSmall ? 24 : 28, 
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
               Text(
                 'See your trend over time', 
-                style: TextStyle(color: isDark ? Colors.white54 : Colors.black45, fontSize: 13),
+                style: TextStyle(color: isDark ? Colors.white54 : Colors.black45, fontSize: isSmall ? 11 : 13),
               ),
             ],
           ),
@@ -327,13 +334,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
             right: 0,
             top: 0,
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isDark ? Colors.teal.withValues(alpha: 0.15) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: !isDark ? Border.all(color: Colors.black.withValues(alpha: 0.05)) : null,
               ),
-              child: const Icon(Icons.trending_up, color: Colors.teal, size: 20),
+              child: Icon(Icons.trending_up, color: Colors.teal, size: isSmall ? 16 : 20),
             ),
           ),
         ],
@@ -341,13 +348,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildStreakCard() {
+  Widget _buildStreakCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentStreak = _streakInfo['current'] as int? ?? 0;
     final bestStreak = _streakInfo['best'] as int? ?? 0;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isSmall ? 16 : 24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -362,14 +369,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(isSmall ? 12 : 16),
                 decoration: BoxDecoration(
                   color: Colors.orange.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.local_fire_department, color: Colors.orange, size: 32),
+                child: Icon(Icons.local_fire_department, color: Colors.orange, size: isSmall ? 24 : 32),
               ),
-              const SizedBox(width: 20),
+              SizedBox(width: isSmall ? 12 : 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +384,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     Text(
                       'Activity Streak',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: isSmall ? 12 : 14,
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white38 : Colors.black38,
                         letterSpacing: 0.5,
@@ -386,7 +393,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     Text(
                       'Keep logging to grow!',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: isSmall ? 10 : 12,
                         color: isDark ? Colors.white12 : Colors.black26,
                       ),
                     ),
@@ -395,7 +402,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: isSmall ? 24 : 32),
           Row(
             children: [
               Expanded(
@@ -404,17 +411,19 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   currentStreak.toString(), 
                   'days', 
                   Colors.orange, 
-                  isDark
+                  isDark,
+                  isSmall
                 ),
               ),
-              Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+              Container(width: 1, height: isSmall ? 30 : 40, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
               Expanded(
                 child: _buildStreakStat(
                   'BEST', 
                   bestStreak.toString(), 
                   'days', 
                   isDark ? Colors.white70 : Colors.black54, 
-                  isDark
+                  isDark,
+                  isSmall
                 ),
               ),
             ],
@@ -424,7 +433,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildLevelCard() {
+  Widget _buildLevelCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const xpPerLevel = GamificationService.xpPerLevel;
     final levelProgress = (_xp % xpPerLevel) / xpPerLevel;
@@ -436,7 +445,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     if (_level >= 20) levelTitle = 'Lifestyle Legend';
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isSmall ? 16 : 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark 
@@ -463,7 +472,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ),
                 child: Text(
                   'Lvl $_level',
-                  style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: isSmall ? 14 : 18),
                 ),
               ),
               const SizedBox(width: 16),
@@ -474,14 +483,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     Text(
                       levelTitle,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: isSmall ? 18 : 20,
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white : Colors.black,
                       ),
                     ),
                     Text(
                       '$_xp Total XP earned',
-                      style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
+                      style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: isSmall ? 10 : 12),
                     ),
                   ],
                 ),
@@ -493,7 +502,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: levelProgress,
-              minHeight: 10,
+              minHeight: isSmall ? 6 : 10,
               backgroundColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
               valueColor: const AlwaysStoppedAnimation(Colors.teal),
             ),
@@ -504,11 +513,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
             children: [
               Text(
                 '${(_xp % xpPerLevel)} / $xpPerLevel XP',
-                style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 11, fontWeight: FontWeight.bold),
+                style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: isSmall ? 9 : 11, fontWeight: FontWeight.bold),
               ),
               Text(
                 '$xpToNext XP to Lvl ${_level + 1}',
-                style: TextStyle(color: Colors.teal.withValues(alpha: 0.8), fontSize: 11, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.teal.withValues(alpha: 0.8), fontSize: isSmall ? 9 : 11, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -517,7 +526,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildAchievementsSection() {
+  Widget _buildAchievementsSection(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final allAchievements = [
@@ -535,7 +544,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           child: Text(
             'Achievements',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: isSmall ? 20 : 24,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
             ),
@@ -545,11 +554,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 1.4,
+            childAspectRatio: isSmall ? 1.6 : 1.4,
           ),
           itemCount: allAchievements.length,
           itemBuilder: (context, index) {
@@ -582,7 +591,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: BorderRadius.circular(24),
@@ -601,13 +610,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     Icon(
                       ach['icon'] as IconData, 
                       color: isUnlocked ? Colors.orangeAccent : (isDark ? Colors.white10 : Colors.black12),
-                      size: 28,
+                      size: isSmall ? 22 : 28,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       ach['name'] as String,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: isSmall ? 11 : 13,
                         fontWeight: FontWeight.bold,
                         color: isUnlocked ? (isDark ? Colors.white : Colors.black) : (isDark ? Colors.white24 : Colors.black26),
                       ),
@@ -624,13 +633,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildStreakStat(String label, String value, String unit, Color color, bool isDark) {
+  Widget _buildStreakStat(String label, String value, String unit, Color color, bool isDark, bool isSmall) {
     return Column(
       children: [
         Text(
           label, 
           style: TextStyle(
-            fontSize: 10, 
+            fontSize: isSmall ? 8 : 10, 
             fontWeight: FontWeight.bold, 
             color: isDark ? Colors.white24 : Colors.black26,
             letterSpacing: 1.1,
@@ -639,17 +648,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
         const SizedBox(height: 8),
         Text(
           value, 
-          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: color)
+          style: TextStyle(fontSize: isSmall ? 28 : 32, fontWeight: FontWeight.bold, color: color)
         ),
         Text(
           unit, 
-          style: TextStyle(fontSize: 12, color: isDark ? Colors.white24 : Colors.black26)
+          style: TextStyle(fontSize: isSmall ? 10 : 12, color: isDark ? Colors.white24 : Colors.black26)
         ),
       ],
     );
   }
 
-  Widget _buildMacroAveragesCard() {
+  Widget _buildMacroAveragesCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Calculate averages for current period
@@ -690,7 +699,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             child: Text(
               'Nutrition average', 
               style: TextStyle(
-                fontSize: 20, 
+                fontSize: isSmall ? 18 : 20, 
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black87,
               )
@@ -703,29 +712,29 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           const SizedBox(height: 20),
           SizedBox(
-            height: 130, // Increased for sparklines
+            height: isSmall ? 120 : 130, 
             child: PageView(
               controller: _carouselController,
               onPageChanged: (idx) => setState(() => _currentCarouselPage = idx),
               children: [
                 // PAGE 1: MACROS
                 _buildCarouselPage([
-                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent, trendData: _nutritionHistory.map((n) => n.calories).toList()),
-                  _buildMacroAvgItem('PROTEIN', '${avgProt.round()}g', Colors.redAccent, trendData: _nutritionHistory.map((n) => n.protein).toList()),
-                  _buildMacroAvgItem('CARBS', '${avgCarb.round()}g', Colors.blueAccent, trendData: _nutritionHistory.map((n) => n.carbs).toList()),
-                  _buildMacroAvgItem('FATS', '${avgFat.round()}g', Colors.greenAccent, trendData: _nutritionHistory.map((n) => n.fat).toList()),
+                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent, trendData: _nutritionHistory.map((n) => n.calories).toList(), isSmall: isSmall),
+                  _buildMacroAvgItem('PROTEIN', '${avgProt.round()}g', Colors.redAccent, trendData: _nutritionHistory.map((n) => n.protein).toList(), isSmall: isSmall),
+                  _buildMacroAvgItem('CARBS', '${avgCarb.round()}g', Colors.blueAccent, trendData: _nutritionHistory.map((n) => n.carbs).toList(), isSmall: isSmall),
+                  _buildMacroAvgItem('FATS', '${avgFat.round()}g', Colors.greenAccent, trendData: _nutritionHistory.map((n) => n.fat).toList(), isSmall: isSmall),
                 ]),
                 // PAGE 2: CLINICAL (CALORIES + MICROS)
                 _buildCarouselPage([
-                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('FIBER', '${avgFiber.round()}g', const Color(0xFF52A574), isPriority: hasDigestive, trendData: _nutritionHistory.map((n) => n.fiber).toList()),
-                  _buildMacroAvgItem('SUGAR', '${avgSugar.round()}g', Colors.orangeAccent, isPriority: hasDiabetes, trendData: _nutritionHistory.map((n) => n.sugar).toList()),
-                  _buildMacroAvgItem('SODIUM', '${avgSodium.round()}mg', const Color(0xFFC26DB7), isPriority: hasHypertension, trendData: _nutritionHistory.map((n) => n.sodium).toList()),
+                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent, isSmall: isSmall),
+                  _buildMacroAvgItem('FIBER', '${avgFiber.round()}g', const Color(0xFF52A574), isPriority: hasDigestive, trendData: _nutritionHistory.map((n) => n.fiber).toList(), isSmall: isSmall),
+                  _buildMacroAvgItem('SUGAR', '${avgSugar.round()}g', Colors.orangeAccent, isPriority: hasDiabetes, trendData: _nutritionHistory.map((n) => n.sugar).toList(), isSmall: isSmall),
+                  _buildMacroAvgItem('SODIUM', '${avgSodium.round()}mg', const Color(0xFFC26DB7), isPriority: hasHypertension, trendData: _nutritionHistory.map((n) => n.sodium).toList(), isSmall: isSmall),
                 ]),
                 // PAGE 3: HEART HEALTH
                 _buildCarouselPage([
-                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('CHOL', '${avgChol.round()}mg', Colors.redAccent, isPriority: hasHeartHealth, trendData: _nutritionHistory.map((n) => n.cholesterol).toList()),
+                  _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent, isSmall: isSmall),
+                  _buildMacroAvgItem('CHOL', '${avgChol.round()}mg', Colors.redAccent, isPriority: hasHeartHealth, trendData: _nutritionHistory.map((n) => n.cholesterol).toList(), isSmall: isSmall),
                 ]),
               ],
             ),
@@ -738,7 +747,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             child: Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
           ),
           const SizedBox(height: 20),
-          _buildExtraAverages(isDark),
+          _buildExtraAverages(isDark, isSmall),
         ],
       ),
     );
@@ -778,7 +787,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildExtraAverages(bool isDark) {
+  Widget _buildExtraAverages(bool isDark, bool isSmall) {
     final now = DateTime.now();
     final sevenDaysAgo = now.subtract(const Duration(days: 6));
     
@@ -792,15 +801,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildSecondaryAvgItem('FASTING', '${_calculateAvgFasting()}h', 'avg', Colors.redAccent),
+            _buildSecondaryAvgItem('FASTING', '${_calculateAvgFasting()}h', 'avg', Colors.redAccent, isSmall),
             _buildVerticalDivider(isDark),
-            _buildSecondaryAvgItem('STEPS', '0', 'avg', Colors.greenAccent),
+            _buildSecondaryAvgItem('STEPS', '0', 'avg', Colors.greenAccent, isSmall),
           ],
         ),
         const SizedBox(height: 32),
         Text(
           '7-DAY HYDRATION CONSISTENCY', 
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white38 : Colors.black45, letterSpacing: 1.1)
+          style: TextStyle(fontSize: isSmall ? 8 : 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white38 : Colors.black45, letterSpacing: 1.1)
         ),
         const SizedBox(height: 16),
         Row(
@@ -812,13 +821,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
             final bool isTargetMet = ml >= 2000; // Assuming 2L goal
 
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              margin: EdgeInsets.symmetric(horizontal: isSmall ? 3 : 4),
               child: Column(
                 children: [
                   Icon(
                     Icons.water_drop, 
                     color: isTargetMet ? Colors.blueAccent : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-                    size: 24,
+                    size: isSmall ? 20 : 24,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -881,7 +890,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildMacroAvgItem(String label, String value, Color color, {List<double>? trendData, bool isPriority = false}) {
+  Widget _buildMacroAvgItem(String label, String value, Color color, {List<double>? trendData, bool isPriority = false, bool isSmall = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -903,7 +912,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           child: Text(
             value, 
             style: TextStyle(
-              fontSize: 18, 
+              fontSize: isSmall ? 16 : 18, 
               fontWeight: FontWeight.w900, 
               color: color,
             )
@@ -922,8 +931,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
         if (trendData != null && trendData.isNotEmpty) ...[
           const SizedBox(height: 8),
           SizedBox(
-            height: 24,
-            width: 40,
+            height: isSmall ? 20 : 24,
+            width: isSmall ? 35 : 40,
             child: LineChart(
               LineChartData(
                 gridData: const FlGridData(show: false),
@@ -959,18 +968,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildSecondaryAvgItem(String label, String value, String unit, Color color) {
+  Widget _buildSecondaryAvgItem(String label, String value, String unit, Color color, bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white38 : Colors.black45)),
+        Text(label, style: TextStyle(fontSize: isSmall ? 8 : 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white38 : Colors.black45)),
         const SizedBox(height: 6),
         RichText(
           text: TextSpan(
             children: [
-              TextSpan(text: value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+              TextSpan(text: value, style: TextStyle(fontSize: isSmall ? 16 : 18, fontWeight: FontWeight.bold, color: color)),
               const TextSpan(text: ' '),
-              TextSpan(text: unit, style: TextStyle(fontSize: 11, color: isDark ? Colors.white38 : Colors.black38)),
+              TextSpan(text: unit, style: TextStyle(fontSize: isSmall ? 9 : 11, color: isDark ? Colors.white38 : Colors.black38)),
             ],
           ),
         ),
@@ -982,7 +991,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Container(width: 1, height: 32, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05));
   }
 
-  Widget _buildVitalityTrendsCard() {
+  Widget _buildVitalityTrendsCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Calculate averages
@@ -1002,7 +1011,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final hasGlu = gluLogs.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isSmall ? 16 : 24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -1019,7 +1028,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               Text(
                 'Vitality Trends', 
                 style: TextStyle(
-                  fontSize: 20, 
+                  fontSize: isSmall ? 18 : 20, 
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : Colors.black87,
                 )
@@ -1031,11 +1040,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   );
                   _loadData();
                 },
-                icon: const Icon(Icons.add_circle_outline, color: Colors.blueAccent),
+                icon: Icon(Icons.add_circle_outline, color: Colors.blueAccent, size: isSmall ? 20 : 24),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isSmall ? 16 : 20),
           Row(
             children: [
               Expanded(
@@ -1045,7 +1054,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   'mmHg', 
                   Colors.redAccent, 
                   trendData: bpLogs.reversed.map((v) => (v.systolic ?? 0).toDouble()).toList(),
-                  isDark: isDark
+                  isDark: isDark,
+                  isSmall: isSmall
                 ),
               ),
               _buildVerticalDivider(isDark),
@@ -1056,7 +1066,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   'mg/dL', 
                   Colors.orangeAccent, 
                   trendData: gluLogs.reversed.map((v) => (v.glucose ?? 0).toDouble()).toList(),
-                  isDark: isDark
+                  isDark: isDark,
+                  isSmall: isSmall
                 ),
               ),
             ],
@@ -1067,7 +1078,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               child: Center(
                 child: Text(
                   'Log your readings to see trends.', 
-                  style: TextStyle(color: isDark ? Colors.white10 : Colors.black12, fontSize: 11, fontWeight: FontWeight.bold)
+                  style: TextStyle(color: isDark ? Colors.white10 : Colors.black12, fontSize: isSmall ? 9 : 11, fontWeight: FontWeight.bold)
                 ),
               ),
             ),
@@ -1076,7 +1087,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildMicronutrientBalanceCard() {
+  Widget _buildMicronutrientBalanceCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Calculate 7-day averages for micros
@@ -1090,7 +1101,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isSmall ? 16 : 24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -1104,7 +1115,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Text(
             'Clinical Marker Balance', 
             style: TextStyle(
-              fontSize: 20, 
+              fontSize: isSmall ? 18 : 20, 
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
             )
@@ -1112,21 +1123,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
           const SizedBox(height: 4),
           Text(
             'Aggregated stability for the last 7 days',
-            style: TextStyle(color: isDark ? Colors.white24 : Colors.black38, fontSize: 11, fontWeight: FontWeight.bold),
+            style: TextStyle(color: isDark ? Colors.white24 : Colors.black38, fontSize: isSmall ? 9 : 11, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            childAspectRatio: 1.5,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
+            childAspectRatio: isSmall ? 1.7 : 1.5,
+            mainAxisSpacing: isSmall ? 12 : 16,
+            crossAxisSpacing: isSmall ? 12 : 16,
             children: [
-              _buildMicroBalanceItem('Fiber', '${avgFiber.round()}g', const Color(0xFF52A574), Icons.grass),
-              _buildMicroBalanceItem('Sugar', '${avgSugar.round()}g', Colors.orangeAccent, Icons.icecream_outlined),
-              _buildMicroBalanceItem('Sodium', '${avgSodium.round()}mg', const Color(0xFFC26DB7), Icons.shutter_speed_outlined),
-              _buildMicroBalanceItem('Cholesterol', '${avgChol.round()}mg', Colors.redAccent, Icons.favorite_border),
+              _buildMicroBalanceItem('Fiber', '${avgFiber.round()}g', const Color(0xFF52A574), Icons.grass, isSmall),
+              _buildMicroBalanceItem('Sugar', '${avgSugar.round()}g', Colors.orangeAccent, Icons.icecream_outlined, isSmall),
+              _buildMicroBalanceItem('Sodium', '${avgSodium.round()}mg', const Color(0xFFC26DB7), Icons.shutter_speed_outlined, isSmall),
+              _buildMicroBalanceItem('Cholesterol', '${avgChol.round()}mg', Colors.redAccent, Icons.favorite_border, isSmall),
             ],
           ),
         ],
@@ -1134,7 +1145,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildMicroBalanceItem(String label, String value, Color color, IconData icon) {
+  Widget _buildMicroBalanceItem(String label, String value, Color color, IconData icon, bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1148,17 +1159,20 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 11, fontWeight: FontWeight.bold)),
-              Icon(icon, color: color.withValues(alpha: 0.5), size: 14),
+              Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: isSmall ? 9 : 11, fontWeight: FontWeight.bold)),
+              Icon(icon, color: color.withValues(alpha: 0.5), size: isSmall ? 12 : 14),
             ],
           ),
           const Spacer(),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18, 
-              fontWeight: FontWeight.w900, 
-              color: isDark ? Colors.white : Colors.black,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: isSmall ? 16 : 18, 
+                fontWeight: FontWeight.w900, 
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
           ),
         ],
@@ -1166,18 +1180,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildVitalityItem(String label, String value, String unit, Color color, {List<double>? trendData, required bool isDark}) {
+  Widget _buildVitalityItem(String label, String value, String unit, Color color, {List<double>? trendData, required bool isDark, bool isSmall = false}) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white24 : Colors.black26)),
+        Text(label, style: TextStyle(fontSize: isSmall ? 8 : 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white24 : Colors.black26)),
         const SizedBox(height: 8),
-        Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
-        Text(unit, style: TextStyle(fontSize: 10, color: isDark ? Colors.white38 : Colors.black38)),
+        Text(value, style: TextStyle(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w900, color: color)),
+        Text(unit, style: TextStyle(fontSize: isSmall ? 9 : 10, color: isDark ? Colors.white38 : Colors.black38)),
         if (trendData != null && trendData.length >= 2) ...[
           const SizedBox(height: 12),
           SizedBox(
-            height: 30,
-            width: 80,
+            height: isSmall ? 25 : 30,
+            width: isSmall ? 60 : 80,
             child: LineChart(
               LineChartData(
                 gridData: const FlGridData(show: false),
@@ -1202,7 +1216,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildJourneyCard() {
+  Widget _buildJourneyCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final current = _profile?.weightKg ?? 0.0;
     final target = _profile?.targetWeightKg ?? 0.0;
@@ -1216,7 +1230,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         final system = _profile?.unitSystem ?? 'Metric';
 
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(isSmall ? 16 : 20),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
             borderRadius: BorderRadius.circular(28),
@@ -1230,25 +1244,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
               Text(
                 'Your Journey', 
                 style: TextStyle(
-                  fontSize: 20, 
+                  fontSize: isSmall ? 18 : 20, 
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : Colors.black87,
                 )
               ),
               const SizedBox(height: 16),
-              _buildJourneyChart(starting, current, target),
+              _buildJourneyChart(starting, current, target, isSmall),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildJourneyStat('START', UnitConverter.fromMetric(starting, system, 'weight'), weightUnit, isDark),
-                  _buildJourneyStat('NOW', UnitConverter.fromMetric(current, system, 'weight'), weightUnit, isDark),
-                  _buildJourneyStat('GOAL', UnitConverter.fromMetric(target, system, 'weight'), weightUnit, isDark),
-                  _buildJourneyStat('LEFT', UnitConverter.fromMetric(remaining, system, 'weight'), weightUnit, isDark),
+                  _buildJourneyStat('START', UnitConverter.fromMetric(starting, system, 'weight'), weightUnit, isDark, isSmall),
+                  _buildJourneyStat('NOW', UnitConverter.fromMetric(current, system, 'weight'), weightUnit, isDark, isSmall),
+                  _buildJourneyStat('GOAL', UnitConverter.fromMetric(target, system, 'weight'), weightUnit, isDark, isSmall),
+                  _buildJourneyStat('LEFT', UnitConverter.fromMetric(remaining, system, 'weight'), weightUnit, isDark, isSmall),
                 ],
               ),
               const SizedBox(height: 20),
-              _buildTimelineTile(),
+              _buildTimelineTile(isSmall),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -1257,7 +1271,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   child: Text(
                     'LOG WEIGHT', 
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: isSmall ? 10 : 12,
                       fontWeight: FontWeight.bold, 
                       letterSpacing: 1.2, 
                       color: isDark ? Colors.white70 : Colors.black54
@@ -1272,7 +1286,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildTimelineTile() {
+  Widget _buildTimelineTile(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final current = _profile?.weightKg ?? 0;
     final target = _profile?.targetWeightKg ?? 0;
@@ -1334,14 +1348,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
               children: [
                 Text(
                   message,
-                  style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 11),
+                  style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: isSmall ? 10 : 11),
                 ),
                 Text(
                   dateDisplay,
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black87,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: isSmall ? 13 : 14,
                   ),
                 ),
               ],
@@ -1352,19 +1366,19 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildJourneyChart(double start, double current, double target) {
+  Widget _buildJourneyChart(double start, double current, double target, bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final system = _profile?.unitSystem ?? 'Metric';
     return SizedBox(
-      height: 120,
+      height: isSmall ? 100 : 120,
       child: Stack(
         children: [
           Positioned(
-            bottom: 30, left: 30, right: 30,
+            bottom: isSmall ? 25 : 30, left: 30, right: 30,
             child: Container(height: 1, color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
           ),
           CustomPaint(
-            size: const Size(double.infinity, 120),
+            size: Size(double.infinity, isSmall ? 100 : 120),
             painter: JourneyPainter(
               start: UnitConverter.fromMetric(start, system, 'weight'), 
               current: UnitConverter.fromMetric(current, system, 'weight'), 
@@ -1377,10 +1391,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildJourneyStat(String label, double val, String unit, bool isDark) {
+  Widget _buildJourneyStat(String label, double val, String unit, bool isDark, bool isSmall) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 9, color: isDark ? Colors.white38 : Colors.black38, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(fontSize: isSmall ? 8 : 9, color: isDark ? Colors.white38 : Colors.black38, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         RichText(
           text: TextSpan(
@@ -1388,12 +1402,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
               TextSpan(
                 text: val.toStringAsFixed(1), 
                 style: TextStyle(
-                  fontSize: 16, 
+                  fontSize: isSmall ? 14 : 16, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white : Colors.black87
                 )
               ),
-              TextSpan(text: ' $unit', style: TextStyle(fontSize: 10, color: isDark ? Colors.white38 : Colors.black38)),
+              TextSpan(text: ' $unit', style: TextStyle(fontSize: isSmall ? 9 : 10, color: isDark ? Colors.white38 : Colors.black38)),
             ],
           ),
         ),
@@ -1401,14 +1415,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildBmiCard() {
+  Widget _buildBmiCard(bool isSmall) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bmi = _calculateBmi();
     final status = _getBmiStatus(bmi);
     final color = _getBmiColor(bmi);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isSmall ? 16 : 20),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(28),
@@ -1424,7 +1438,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               Text(
                 'YOUR BMI', 
                 style: TextStyle(
-                  fontSize: 11, 
+                  fontSize: isSmall ? 10 : 11, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white38 : Colors.black38, 
                   letterSpacing: 1.1
@@ -1437,7 +1451,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isSmall ? 12 : 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -1445,7 +1459,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               Text(
                 bmi.toStringAsFixed(1), 
                 style: TextStyle(
-                  fontSize: 48, 
+                  fontSize: isSmall ? 40 : 48, 
                   fontWeight: FontWeight.bold, 
                   color: isDark ? Colors.white : Colors.black
                 )
@@ -1453,11 +1467,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
               const SizedBox(width: 10),
               Text(
                 status, 
-                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)
+                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: isSmall ? 12 : 14)
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isSmall ? 16 : 20),
           _buildBmiGauge(bmi),
           const SizedBox(height: 12),
           Row(
