@@ -279,6 +279,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
               const SizedBox(height: 20),
               _buildJourneyCard(),
               const SizedBox(height: 20),
+              _buildMicronutrientBalanceCard(),
+              const SizedBox(height: 20),
               _buildVitalityTrendsCard(),
               const SizedBox(height: 20),
               _buildBmiCard(),
@@ -716,14 +718,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 // PAGE 2: CLINICAL (CALORIES + MICROS)
                 _buildCarouselPage([
                   _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('FIBER', '${avgFiber.round()}g', const Color(0xFF52A574), isPriority: hasDigestive),
-                  _buildMacroAvgItem('SUGAR', '${avgSugar.round()}g', Colors.orangeAccent, isPriority: hasDiabetes),
-                  _buildMacroAvgItem('SODIUM', '${avgSodium.round()}mg', const Color(0xFFC26DB7), isPriority: hasHypertension),
+                  _buildMacroAvgItem('FIBER', '${avgFiber.round()}g', const Color(0xFF52A574), isPriority: hasDigestive, trendData: _nutritionHistory.map((n) => n.fiber).toList()),
+                  _buildMacroAvgItem('SUGAR', '${avgSugar.round()}g', Colors.orangeAccent, isPriority: hasDiabetes, trendData: _nutritionHistory.map((n) => n.sugar).toList()),
+                  _buildMacroAvgItem('SODIUM', '${avgSodium.round()}mg', const Color(0xFFC26DB7), isPriority: hasHypertension, trendData: _nutritionHistory.map((n) => n.sodium).toList()),
                 ]),
                 // PAGE 3: HEART HEALTH
                 _buildCarouselPage([
                   _buildMacroAvgItem('CALORIES', avgCal.round().toString(), Colors.orangeAccent),
-                  _buildMacroAvgItem('CHOL', '${avgChol.round()}mg', Colors.redAccent, isPriority: hasHeartHealth),
+                  _buildMacroAvgItem('CHOL', '${avgChol.round()}mg', Colors.redAccent, isPriority: hasHeartHealth, trendData: _nutritionHistory.map((n) => n.cholesterol).toList()),
                 ]),
               ],
             ),
@@ -1069,6 +1071,96 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMicronutrientBalanceCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Calculate 7-day averages for micros
+    double avgFiber = 0, avgSugar = 0, avgSodium = 0, avgChol = 0;
+    int days = _nutritionHistory.length;
+    if (days > 0) {
+      avgFiber = _nutritionHistory.fold(0.0, (sum, n) => sum + n.fiber) / days;
+      avgSugar = _nutritionHistory.fold(0.0, (sum, n) => sum + n.sugar) / days;
+      avgSodium = _nutritionHistory.fold(0.0, (sum, n) => sum + n.sodium) / days;
+      avgChol = _nutritionHistory.fold(0.0, (sum, n) => sum + n.cholesterol) / days;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: !isDark ? [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))
+        ] : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Clinical Marker Balance', 
+            style: TextStyle(
+              fontSize: 20, 
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black87,
+            )
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Aggregated stability for the last 7 days',
+            style: TextStyle(color: isDark ? Colors.white24 : Colors.black38, fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            childAspectRatio: 1.5,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            children: [
+              _buildMicroBalanceItem('Fiber', '${avgFiber.round()}g', const Color(0xFF52A574), Icons.grass),
+              _buildMicroBalanceItem('Sugar', '${avgSugar.round()}g', Colors.orangeAccent, Icons.icecream_outlined),
+              _buildMicroBalanceItem('Sodium', '${avgSodium.round()}mg', const Color(0xFFC26DB7), Icons.shutter_speed_outlined),
+              _buildMicroBalanceItem('Cholesterol', '${avgChol.round()}mg', Colors.redAccent, Icons.favorite_border),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMicroBalanceItem(String label, String value, Color color, IconData icon) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: TextStyle(color: isDark ? Colors.white38 : Colors.black45, fontSize: 11, fontWeight: FontWeight.bold)),
+              Icon(icon, color: color.withValues(alpha: 0.5), size: 14),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18, 
+              fontWeight: FontWeight.w900, 
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
         ],
       ),
     );
